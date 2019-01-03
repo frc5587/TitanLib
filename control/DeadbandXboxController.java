@@ -1,4 +1,4 @@
-package org.frc5587.lib;
+package org.frc5587.lib.control;
 
 import edu.wpi.first.wpilibj.XboxController;
 
