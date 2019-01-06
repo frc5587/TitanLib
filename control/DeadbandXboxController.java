@@ -1,5 +1,7 @@
 package org.frc5587.lib.control;
 
+import org.frc5587.lib.MathHelper;
+
 import edu.wpi.first.wpilibj.XboxController;
 
 public class DeadbandXboxController extends XboxController {
@@ -36,7 +38,7 @@ public class DeadbandXboxController extends XboxController {
     */
     @Override
     public double getX(Hand hand) {
-        return deadband(super.getX(hand));
+        return MathHelper.deadband(super.getX(hand), deadbandCutoff, 1);
     }
 
     /**
@@ -47,25 +49,15 @@ public class DeadbandXboxController extends XboxController {
      */
     @Override
     public double getY(Hand hand) {
-        return deadband(super.getY(hand));
+        return MathHelper.deadband(super.getY(hand), deadbandCutoff, 1);
     }
 
     /**
-     * Returns zero if the joystick is in the dead zone, else returns the joystick value as mapped
-     * to a scale that starts at the end of the deadzone as zero in order to prevent jump from
-     * zero to above the deadzone when the deadzone is left
+     * Whether the trigger is currently depressed.
      * 
-     * @param joystickValue Value of joystick
-     * @return The value of the joystick with the deadband applied
+     * @param hand Side of controller whose trigger should be checked.
+     * @return the state of the trigger.
      */
-    private double deadband(double joystickValue) {
-        if (Math.abs(joystickValue) < deadbandCutoff) {
-            return 0.0;
-        } else {
-            return (joystickValue - (Math.abs(joystickValue) / joystickValue * deadbandCutoff)) / (1 - deadbandCutoff);
-        }
-    }
-
     public boolean getTrigger(Hand hand) {
         return super.getTriggerAxis(hand) > deadbandCutoff;
     }

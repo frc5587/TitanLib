@@ -1,0 +1,10 @@
+# Ignore all generated javadocs
+docs/
+jquery/
+org/
+resources/
+*.html
+*.css
+*.js
+*.zip
+element-list
