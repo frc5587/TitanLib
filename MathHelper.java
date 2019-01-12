@@ -44,4 +44,72 @@ public class MathHelper {
             return (value - (Math.abs(value) / value * deadbandCutoff)) / (max - deadbandCutoff);
         }
     }
+
+    /**
+     * Maps the input x within range inMin to inMax to a new range between outMin
+     * and outMax. See the
+     * <a href="https://www.arduino.cc/reference/en/language/functions/math/map/">
+     * Arduino function map()</a> for more information
+     * 
+     * @param x      the value to remap
+     * @param inMin  the minimum potential of value x
+     * @param inMax  the maximum potential value of x
+     * @param outMin the minimum potential value of the new range
+     * @param outMax the maximum potential value of the new range
+     * @return the value found after remapping x from the old to new range
+     */
+    public static double map(double x, double inMin, double inMax, double outMin, double outMax) {
+        return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+    }
+
+    /**
+     * Maps the input x within range inMin to inMax to a new range between outMin
+     * and outMax. See the
+     * <a href="https://www.arduino.cc/reference/en/language/functions/math/map/">
+     * Arduino function map()</a> for more information
+     * 
+     * @param x      the value to remap
+     * @param inMin  the minimum potential of value x
+     * @param inMax  the maximum potential value of x
+     * @param outMin the minimum potential value of the new range
+     * @param outMax the maximum potential value of the new range
+     * @return the value found after remapping x from the old to new range
+     */
+    public static float map(float x, float inMin, float inMax, float outMin, float outMax) {
+        return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+    }
+
+    /**
+     * Maps the input x within range inMin to inMax to a new range between outMin
+     * and outMax. See the
+     * <a href="https://www.arduino.cc/reference/en/language/functions/math/map/">
+     * Arduino function map()</a> for more information
+     * 
+     * @param x      the value to remap
+     * @param inMin  the minimum potential of value x
+     * @param inMax  the maximum potential value of x
+     * @param outMin the minimum potential value of the new range
+     * @param outMax the maximum potential value of the new range
+     * @return the value found after remapping x from the old to new range
+     */
+    public static long map(long x, long inMin, long inMax, long outMin, long outMax) {
+        return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+    }
+
+    /**
+     * Maps the input x within range inMin to inMax to a new range between outMin
+     * and outMax. See the
+     * <a href="https://www.arduino.cc/reference/en/language/functions/math/map/">
+     * Arduino function map()</a> for more information
+     * 
+     * @param x      the value to remap
+     * @param inMin  the minimum potential of value x
+     * @param inMax  the maximum potential value of x
+     * @param outMin the minimum potential value of the new range
+     * @param outMax the maximum potential value of the new range
+     * @return the value found after remapping x from the old to new range
+     */
+    public static int map(int x, int inMin, int inMax, int outMin, int outMax) {
+        return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+    }
 }
