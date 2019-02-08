@@ -15,14 +15,12 @@ import org.frc5587.lib.TitanDrive.DriveSignal;
 
 import edu.wpi.first.wpilibj.GyroBase;
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.PWMSpeedController;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public abstract class AbstractDrive extends Subsystem {
     protected TalonSRX leftMaster, rightMaster;
-    protected IMotorController leftSlavePhoenix, rightSlavePhoenix;
-    protected PWMSpeedController leftSlavePWM, rightSlavePWM;
+    protected IMotorController leftSlave, rightSlave;
     protected GyroBase gyro;
     protected AHRS ahrs;
 
@@ -38,15 +36,13 @@ public abstract class AbstractDrive extends Subsystem {
             IMotorController rightSlave) {
         // Set motors to correct objects and connect the masters and slaves
         this.leftMaster = leftMaster;
-        this.leftSlavePhoenix = leftSlave;
+        this.leftSlave = leftSlave;
         this.rightMaster = rightMaster;
-        this.rightSlavePhoenix = rightSlave;
+        this.rightSlave = rightSlave;
         leftSlave.follow(leftMaster);
         rightSlave.follow(rightMaster);
 
         // Invert the right side of the drivetrain
-        this.rightMaster.setInverted(true);
-        this.rightSlavePhoenix.setInverted(true);
 
         // Set encoder rotation as opposite direction relative to motor rotation
         this.leftMaster.setSensorPhase(true);
@@ -86,15 +82,16 @@ public abstract class AbstractDrive extends Subsystem {
         if (enabled) {
             leftMaster.setNeutralMode(NeutralMode.Brake);
             rightMaster.setNeutralMode(NeutralMode.Brake);
-            leftSlavePhoenix.setNeutralMode(NeutralMode.Brake);
-            rightSlavePhoenix.setNeutralMode(NeutralMode.Brake);
+            leftSlave.setNeutralMode(NeutralMode.Brake);
+            rightSlave.setNeutralMode(NeutralMode.Brake);
         } else {
             leftMaster.setNeutralMode(NeutralMode.Coast);
             rightMaster.setNeutralMode(NeutralMode.Coast);
-            leftSlavePhoenix.setNeutralMode(NeutralMode.Coast);
-            rightSlavePhoenix.setNeutralMode(NeutralMode.Coast);
+            leftSlave.setNeutralMode(NeutralMode.Coast);
+            rightSlave.setNeutralMode(NeutralMode.Coast);
         }
     }
+
 
     /* --- BASIC MANUAL CONTROL CODE --- */
 
@@ -106,8 +103,10 @@ public abstract class AbstractDrive extends Subsystem {
     }
 
     public void vbusArcade(double throttle, double turn) {
+        System.out.println("Running arcade: " + throttle + " | " + turn);
         DriveSignal d = TitanDrive.arcadeDrive(throttle, turn);
 
+        System.out.println("Setting to: " + d.left + " | " + d.right);
         leftMaster.set(ControlMode.PercentOutput, d.left);
         rightMaster.set(ControlMode.PercentOutput, d.right);
     }

@@ -13,23 +13,41 @@ public class GyroCompMPRunner extends Command {
     private AbstractDrive drive;
     private EncoderFollower lEncoderFollower, rEncoderFollower;
     private Notifier looper;
-    private String name = "Unknown Name";
+    private String name = "Anonymous Trajectory";
     private boolean forwards, pathFinished = false;
     private PIDVA pidvaLeft, pidvaRight;
     private double wheelDiameterMeters, initialHeading = 0;
 
-    public GyroCompMPRunner(AbstractDrive drive, Pathgen pathgen, String pathName, PIDVA pidvaLeft, PIDVA pidvaRight, double gyrokP) {
-        this(drive, pathgen, Pathgen.getTrajectoryFromFile(pathName), true, pidvaLeft, pidvaRight, gyrokP);
+    public GyroCompMPRunner(AbstractDrive drive, String pathName, Pathgen pathgen, PIDVA pidvaLeft, PIDVA pidvaRight,
+            double gyrokP) {
+        this(drive, Pathgen.getTrajectoryFromFile(pathName), true, pathgen, pidvaLeft, pidvaRight, gyrokP);
         name = pathName;
     }
 
-    public GyroCompMPRunner(AbstractDrive drive, Pathgen pathgen, String pathName, boolean forwards, PIDVA pidvaLeft,
+    public GyroCompMPRunner(AbstractDrive drive, String pathName, boolean forwards, Pathgen pathgen, PIDVA pidvaLeft,
             PIDVA pidvaRight, double gyrokP) {
-        this(drive, pathgen, Pathgen.getTrajectoryFromFile(pathName), forwards, pidvaLeft, pidvaRight, gyrokP);
+        this(drive, Pathgen.getTrajectoryFromFile(pathName), forwards, pathgen, pidvaLeft, pidvaRight, gyrokP);
         name = pathName;
     }
 
-    public GyroCompMPRunner(AbstractDrive drive, Pathgen pathgen, Trajectory trajectory, boolean forwards,
+    public GyroCompMPRunner(AbstractDrive drive, Trajectory trajectory, Pathgen pathgen, PIDVA pidvaLeft,
+            PIDVA pidvaRight, double gyrokP) {
+        this(drive, trajectory, true, pathgen, pidvaLeft, pidvaRight, gyrokP);
+    }
+
+    public GyroCompMPRunner(AbstractDrive drive, Trajectory trajectory, boolean forwards, Pathgen pathgen,
+            PIDVA pidvaLeft, PIDVA pidvaRight, double gyrokP) {
+        this(drive, pathgen.getLeftSide(trajectory), pathgen.getRightSide(trajectory), forwards, pidvaLeft, pidvaRight,
+                gyrokP);
+        System.out.println("Trajectory length: " + trajectory.length());
+    }
+
+    public GyroCompMPRunner(AbstractDrive drive, Trajectory leftTraj, Trajectory rightTraj, PIDVA pidvaLeft,
+            PIDVA pidvaRight, double gyrokP) {
+        this(drive, leftTraj, rightTraj, true, pidvaLeft, pidvaRight, gyrokP);
+    }
+
+    public GyroCompMPRunner(AbstractDrive drive, Trajectory leftTraj, Trajectory rightTraj, boolean forwards,
             PIDVA pidvaLeft, PIDVA pidvaRight, double gyrokP) {
         requires(drive);
 
@@ -41,10 +59,9 @@ public class GyroCompMPRunner extends Command {
 
         this.wheelDiameterMeters = drive.wheelDiameterMeters;
 
-        this.lEncoderFollower = new EncoderFollower(pathgen.getLeftSide(trajectory));
-        this.rEncoderFollower = new EncoderFollower(pathgen.getRightSide(trajectory));
+        this.lEncoderFollower = new EncoderFollower(leftTraj);
+        this.rEncoderFollower = new EncoderFollower(rightTraj);
         this.looper = new Notifier(new ProfileLooper(drive.stuPerRev, gyrokP));
-        System.out.println("Trajectory length: " + trajectory.length());
     }
 
     @Override
@@ -54,7 +71,7 @@ public class GyroCompMPRunner extends Command {
 
     public void initialize() {
         lEncoderFollower.configureEncoder(drive.getLeftPosition(), drive.stuPerRev, wheelDiameterMeters);
-        rEncoderFollower.configureEncoder(drive.getRightPosition(),drive.stuPerRev, wheelDiameterMeters);
+        rEncoderFollower.configureEncoder(drive.getRightPosition(), drive.stuPerRev, wheelDiameterMeters);
 
         lEncoderFollower.configurePIDVA(pidvaLeft.kP, pidvaLeft.kI, pidvaLeft.kD, pidvaLeft.kV, pidvaLeft.kA);
         rEncoderFollower.configurePIDVA(pidvaRight.kP, pidvaRight.kI, pidvaRight.kD, pidvaRight.kV, pidvaRight.kA);
@@ -103,22 +120,20 @@ public class GyroCompMPRunner extends Command {
                 double left = 0, right = 0;
 
                 if (!lEncoderFollower.isFinished()) {
-                    SmartDashboard.putNumber("Left Expected Pos",
-                            lEncoderFollower.getSegment().position * stuPerInch);
+                    SmartDashboard.putNumber("Left Expected Pos", lEncoderFollower.getSegment().position * stuPerInch);
                     SmartDashboard.putNumber("Left Expected Vel",
                             lEncoderFollower.getSegment().velocity * stuPerInch / 10f);
-                    SmartDashboard.putNumber("Left Pos Error", lEncoderFollower.getSegment().position
-                            - drive.getLeftPosition() / (double) stuPerInch);
+                    SmartDashboard.putNumber("Left Pos Error",
+                            lEncoderFollower.getSegment().position - drive.getLeftPosition() / (double) stuPerInch);
                     SmartDashboard.putNumber("Left Vel Error", lEncoderFollower.getSegment().velocity
                             - drive.getLeftVelocity() / (double) stuPerInch * 10);
                 }
                 if (!rEncoderFollower.isFinished()) {
-                    SmartDashboard.putNumber("Right Expected Pos",
-                            rEncoderFollower.getSegment().position * stuPerInch);
+                    SmartDashboard.putNumber("Right Expected Pos", rEncoderFollower.getSegment().position * stuPerInch);
                     SmartDashboard.putNumber("Right Expected Vel",
                             rEncoderFollower.getSegment().velocity * stuPerInch / 10f);
-                    SmartDashboard.putNumber("Right Pos Error", rEncoderFollower.getSegment().position
-                            - drive.getRightPosition() / (double) stuPerInch);
+                    SmartDashboard.putNumber("Right Pos Error",
+                            rEncoderFollower.getSegment().position - drive.getRightPosition() / (double) stuPerInch);
                     SmartDashboard.putNumber("Left Vel Error", rEncoderFollower.getSegment().velocity
                             - drive.getRightVelocity() / (double) stuPerInch * 10);
                 }
