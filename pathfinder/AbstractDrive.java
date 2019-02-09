@@ -33,7 +33,7 @@ public abstract class AbstractDrive extends Subsystem {
     public Notifier profileNotifer = new Notifier(new ProcessProfileRunnable());
 
     public AbstractDrive(TalonSRX leftMaster, TalonSRX rightMaster, IMotorController leftSlave,
-            IMotorController rightSlave) {
+            IMotorController rightSlave, boolean flipRight) {
         // Set motors to correct objects and connect the masters and slaves
         this.leftMaster = leftMaster;
         this.leftSlave = leftSlave;
@@ -42,7 +42,19 @@ public abstract class AbstractDrive extends Subsystem {
         leftSlave.follow(leftMaster);
         rightSlave.follow(rightMaster);
 
+        // Left should not be reversed
+        leftMaster.setInverted(false);
+        leftSlave.setInverted(false);
+
         // Invert the right side of the drivetrain
+        if (flipRight) {
+            rightMaster.setInverted(true);
+            rightSlave.setInverted(true);
+        } else {
+            // The Talon might have been used in reversed state in past, so just to be sure
+            rightMaster.setInverted(false);
+            rightSlave.setInverted(false);
+        }
 
         // Set encoder rotation as opposite direction relative to motor rotation
         this.leftMaster.setSensorPhase(true);
@@ -103,10 +115,8 @@ public abstract class AbstractDrive extends Subsystem {
     }
 
     public void vbusArcade(double throttle, double turn) {
-        System.out.println("Running arcade: " + throttle + " | " + turn);
         DriveSignal d = TitanDrive.arcadeDrive(throttle, turn);
 
-        System.out.println("Setting to: " + d.left + " | " + d.right);
         leftMaster.set(ControlMode.PercentOutput, d.left);
         rightMaster.set(ControlMode.PercentOutput, d.right);
     }
