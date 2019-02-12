@@ -104,7 +104,6 @@ public abstract class AbstractDrive extends Subsystem {
         }
     }
 
-
     /* --- BASIC MANUAL CONTROL CODE --- */
 
     public void vbusCurve(double throttle, double curve, boolean isQuickTurn) {
@@ -255,8 +254,9 @@ public abstract class AbstractDrive extends Subsystem {
         } else if (gyro != null) {
             return gyro.getAngle();
         } else {
-            throw new NullPointerException(
+            System.out.println(
                     "Neither the AHRS nor a Gyro were set for the drivetrain before attempting to read heading");
+            return Double.NaN;
         }
     }
 
