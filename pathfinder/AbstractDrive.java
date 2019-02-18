@@ -260,6 +260,11 @@ public abstract class AbstractDrive extends Subsystem {
         }
     }
 
+    public double getHeading(Double wrapValue) {
+        var heading = getHeading() % 360;
+        return ((heading > 180.0) ? (heading - 360.0) : ((heading < -180.0) ? (heading + 360.0) : heading));
+    }
+
     public MotionProfileStatus[] getStatuses() {
         return statuses;
     }
