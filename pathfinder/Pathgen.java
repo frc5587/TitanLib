@@ -5,6 +5,7 @@ import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.Waypoint;
 import jaci.pathfinder.modifiers.TankModifier;
 import java.io.File;
+import java.io.IOException;
 
 public class Pathgen {
     public static final String DIRECTORY = "/home/lvuser/resources";
@@ -67,13 +68,20 @@ public class Pathgen {
     }
 
     /**
-     * Load profile from file
+     * Load profile from file. If the file cannot be loaded, null is returned
      * 
      * @param name Filename of profile, don't append .csv extension
      */
     public static Trajectory getTrajectoryFromFile(String name) {
         File myFile = new File(DIRECTORY + "/" + name + ".csv");
-        Trajectory trajectory = Pathfinder.readFromCSV(myFile);
+
+        Trajectory trajectory;
+        try {
+            trajectory = Pathfinder.readFromCSV(myFile);
+        } catch (IOException e) {
+            System.out.println(e.getStackTrace());
+            trajectory = null;
+        }
         return trajectory;
     }
 
