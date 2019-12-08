@@ -30,4 +30,4 @@ $ git submodule add https://github.com/frc5587/Java-Libs.git <directory_location
 (eg: git submodule add https://github.com/frc5587/Java-Libs.git src/main/java/org/frc5587/lib)
 ```
 
-Note: if desired, the branch of the submodule repo can be switched through the git tab on the vscode sidebar.
+Note: the branch of the submodule repo can be switched through the git tab on the vscode sidebar.
