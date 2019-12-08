@@ -10,7 +10,7 @@ import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.followers.EncoderFollower;
 
 public class GyroCompMPRunner extends Command {
-    private AbstractDrive drive;
+    private PhoenixAbstractDrive drive;
     private EncoderFollower lEncoderFollower, rEncoderFollower;
     private Notifier looper;
     private String name = "Anonymous Trajectory";
@@ -18,36 +18,36 @@ public class GyroCompMPRunner extends Command {
     private PIDVA pidvaLeft, pidvaRight;
     private double wheelDiameterMeters, initialHeading = 0;
 
-    public GyroCompMPRunner(AbstractDrive drive, String pathName, Pathgen pathgen, PIDVA pidvaLeft, PIDVA pidvaRight,
+    public GyroCompMPRunner(PhoenixAbstractDrive drive, String pathName, Pathgen pathgen, PIDVA pidvaLeft, PIDVA pidvaRight,
             double gyrokP) {
         this(drive, Pathgen.getTrajectoryFromFile(pathName), true, pathgen, pidvaLeft, pidvaRight, gyrokP);
         name = pathName;
     }
 
-    public GyroCompMPRunner(AbstractDrive drive, String pathName, boolean forwards, Pathgen pathgen, PIDVA pidvaLeft,
+    public GyroCompMPRunner(PhoenixAbstractDrive drive, String pathName, boolean forwards, Pathgen pathgen, PIDVA pidvaLeft,
             PIDVA pidvaRight, double gyrokP) {
         this(drive, Pathgen.getTrajectoryFromFile(pathName), forwards, pathgen, pidvaLeft, pidvaRight, gyrokP);
         name = pathName;
     }
 
-    public GyroCompMPRunner(AbstractDrive drive, Trajectory trajectory, Pathgen pathgen, PIDVA pidvaLeft,
+    public GyroCompMPRunner(PhoenixAbstractDrive drive, Trajectory trajectory, Pathgen pathgen, PIDVA pidvaLeft,
             PIDVA pidvaRight, double gyrokP) {
         this(drive, trajectory, true, pathgen, pidvaLeft, pidvaRight, gyrokP);
     }
 
-    public GyroCompMPRunner(AbstractDrive drive, Trajectory trajectory, boolean forwards, Pathgen pathgen,
+    public GyroCompMPRunner(PhoenixAbstractDrive drive, Trajectory trajectory, boolean forwards, Pathgen pathgen,
             PIDVA pidvaLeft, PIDVA pidvaRight, double gyrokP) {
         this(drive, pathgen.getLeftSide(trajectory), pathgen.getRightSide(trajectory), forwards, pidvaLeft, pidvaRight,
                 gyrokP);
         System.out.println("Trajectory length: " + trajectory.length());
     }
 
-    public GyroCompMPRunner(AbstractDrive drive, Trajectory leftTraj, Trajectory rightTraj, PIDVA pidvaLeft,
+    public GyroCompMPRunner(PhoenixAbstractDrive drive, Trajectory leftTraj, Trajectory rightTraj, PIDVA pidvaLeft,
             PIDVA pidvaRight, double gyrokP) {
         this(drive, leftTraj, rightTraj, true, pidvaLeft, pidvaRight, gyrokP);
     }
 
-    public GyroCompMPRunner(AbstractDrive drive, Trajectory leftTraj, Trajectory rightTraj, boolean forwards,
+    public GyroCompMPRunner(PhoenixAbstractDrive drive, Trajectory leftTraj, Trajectory rightTraj, boolean forwards,
             PIDVA pidvaLeft, PIDVA pidvaRight, double gyrokP) {
         requires(drive);
 

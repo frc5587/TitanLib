@@ -13,12 +13,12 @@ import org.frc5587.lib.pathfinder.TalonPath;
 import edu.wpi.first.wpilibj.command.Command;
 
 public class MotionProfileFiller extends Command {
-    AbstractDrive drive;
+    PhoenixAbstractDrive drive;
     Pathgen pathgen;
     String profileName;
     TrajectoryPoint[][] profiles;
 
-    public MotionProfileFiller(AbstractDrive drive, Pathgen pathgen, String profileName, boolean zeroTalonDistance) {
+    public MotionProfileFiller(PhoenixAbstractDrive drive, Pathgen pathgen, String profileName, boolean zeroTalonDistance) {
         this.profileName = profileName;
         this.drive = drive;
 

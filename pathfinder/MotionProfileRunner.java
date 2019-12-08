@@ -5,10 +5,10 @@ import com.ctre.phoenix.motion.SetValueMotionProfile;
 import edu.wpi.first.wpilibj.command.Command;
 
 public class MotionProfileRunner extends Command {
-    AbstractDrive drive;
+    PhoenixAbstractDrive drive;
     boolean ready = false;
 
-    public MotionProfileRunner(AbstractDrive drivetrain) {
+    public MotionProfileRunner(PhoenixAbstractDrive drivetrain) {
         this.drive = drivetrain;
         requires(drivetrain);
     }
