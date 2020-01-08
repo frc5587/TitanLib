@@ -10,9 +10,9 @@ import java.io.PrintWriter;
 import org.frc5587.lib.pathfinder.Pathgen;
 import org.frc5587.lib.pathfinder.TalonPath;
 
-import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 
-public class MotionProfileFiller extends Command {
+public class MotionProfileFiller extends CommandBase {
     AbstractDrive drive;
     Pathgen pathgen;
     String profileName;

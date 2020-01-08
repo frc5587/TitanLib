@@ -2,15 +2,15 @@ package org.frc5587.lib.pathfinder;
 
 import com.ctre.phoenix.motion.SetValueMotionProfile;
 
-import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 
-public class MotionProfileRunner extends Command {
+public class MotionProfileRunner extends CommandBase {
     AbstractDrive drive;
     boolean ready = false;
 
     public MotionProfileRunner(AbstractDrive drivetrain) {
         this.drive = drivetrain;
-        requires(drivetrain);
+        addRequirements(drivetrain);
     }
 
     public void initialize() {

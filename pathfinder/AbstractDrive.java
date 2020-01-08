@@ -15,10 +15,10 @@ import org.frc5587.lib.TitanDrive.DriveSignal;
 
 import edu.wpi.first.wpilibj.GyroBase;
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public abstract class AbstractDrive extends Subsystem {
+public abstract class AbstractDrive extends SubsystemBase {
     protected TalonSRX leftMaster, rightMaster;
     protected IMotorController leftSlave, rightSlave;
     protected GyroBase gyro;

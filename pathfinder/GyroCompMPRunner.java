@@ -3,13 +3,13 @@ package org.frc5587.lib.pathfinder;
 import org.frc5587.lib.pid.PIDVA;
 
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.followers.EncoderFollower;
 
-public class GyroCompMPRunner extends Command {
+public class GyroCompMPRunner extends CommandBase {
     private AbstractDrive drive;
     private EncoderFollower lEncoderFollower, rEncoderFollower;
     private Notifier looper;
@@ -49,7 +49,7 @@ public class GyroCompMPRunner extends Command {
 
     public GyroCompMPRunner(AbstractDrive drive, Trajectory leftTraj, Trajectory rightTraj, boolean forwards,
             PIDVA pidvaLeft, PIDVA pidvaRight, double gyrokP) {
-        requires(drive);
+        addRequirements(drive);
 
         this.drive = drive;
         this.forwards = forwards;
