@@ -28,7 +28,7 @@ From inside a VSCode window,
 
    So if you selected `C:\Documents\` in step five and name your project "Hello World", the code will end up in `C:\Documents\Hello World\`
 
-7. Enter "5587" in the "Enter a team number" text field"
+7. Enter "5587" in the "Enter a team number" text field
 8. Click the "Generate Project" button
 9. Choose either "Yes (New Window)" or "Yes (Current Window)" in the dialogue that pops up to open your new project
 
@@ -53,7 +53,7 @@ git init
 ![Switching accounts](./images/SwitchingAccounts.png)
 2. Click the "New" button to start creating a new repository where your previously generated project will end up
 ![New repository button](./images/NewRepoButton.png)
-3. Enter a repository name, optional description, and set whether the repository will be publicly visible or private to our team (you'll probably want the later) on the page that pops up. However, **don't Initialize the repository with a README, add a `.gitignore`, or add a license** because you're importing code that already exists
+3. Enter a repository name, optional description, and set whether the repository will be publicly visible or private to our team (you'll probably want the latter) on the page that pops up. However, **don't Initialize the repository with a README, add a `.gitignore`, or add a license** because you're importing code that already exists
 ![New repository button](./images/CreatingRepo.png)
 
 ### Connecting the local git project and GitHub
