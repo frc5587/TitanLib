@@ -17,11 +17,19 @@ public class DeadbandJoystick extends Joystick {
         return MathHelper.deadband(this.getY(), 0.1, 1);
     }
 
+    public double deadbandZ() {
+        return MathHelper.deadband(this.getZ(), 0.1, 1);
+    }
+
     public double curveY() {
         return 1 / this.deadbandY();
     }
 
     public double curveX() {
         return 1 / this.deadbandX();
+    }
+
+    public double curveZ() {
+        return 1 / this.deadbandZ();
     }
 }
