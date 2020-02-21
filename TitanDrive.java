@@ -1,5 +1,7 @@
 package org.frc5587.lib;
 
+import edu.wpi.first.wpiutil.math.MathUtil;
+
 /**
  * This Code contains modified code that is part of WPILIB, accessible at
  * https://github.com/wpilibsuite/allwpilib
@@ -40,8 +42,8 @@ public class TitanDrive {
      *                      bur removes linearity
      */
     public static DriveSignal arcadeDrive(double throttle, double turn, boolean squaredInputs) {
-        throttle = applyDeadband(MathHelper.limit(throttle, -1.0, 1.0), kDeadband);
-        turn = applyDeadband(MathHelper.limit(turn, -1.0, 1.0), kDeadband);
+        throttle = applyDeadband(MathUtil.clamp(throttle, -1.0, 1.0), kDeadband);
+        turn = applyDeadband(MathUtil.clamp(turn, -1.0, 1.0), kDeadband);
 
         if (squaredInputs) {
             throttle = Math.copySign(throttle * throttle, throttle);
@@ -76,8 +78,8 @@ public class TitanDrive {
     }
 
     public static DriveSignal curvatureDrive(double throttle, double curve, boolean isQuickTurn) {
-        throttle = applyDeadband(MathHelper.limit(throttle, -1.0, 1.0), kDeadband);
-        curve = applyDeadband(MathHelper.limit(curve, -1.0, 1.0), kDeadband);
+        throttle = applyDeadband(MathUtil.clamp(throttle, -1.0, 1.0), kDeadband);
+        curve = applyDeadband(MathUtil.clamp(curve, -1.0, 1.0), kDeadband);
 
         double angularPower;
         boolean overPower;
@@ -132,15 +134,7 @@ public class TitanDrive {
      * @param deadband range around zero
      */
     protected static double applyDeadband(double value, double deadband) {
-        if (Math.abs(value) > deadband) {
-            if (value > 0.0) {
-                return (value - deadband) / (1.0 - deadband);
-            } else {
-                return (value + deadband) / (1.0 - deadband);
-            }
-        } else {
-            return 0.0;
-        }
+        return MathHelper.deadband(value, deadband, 1);
     }
 
     public static class DriveSignal {
