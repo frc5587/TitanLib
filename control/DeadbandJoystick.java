@@ -28,6 +28,12 @@ public class DeadbandJoystick extends Joystick {
         this(port, 0.1);
     }
 
+    /**
+     * Applies a deadband for getting the axes, so anything between 
+     * -deadband <= 0 <= deadband will be zero
+     * 
+     * @return the axis after applying the deadband
+     */
     @Override
     public double getRawAxis(int axis) {
         // Apply deadband when getting axis so all axes will have deadbanded signal
