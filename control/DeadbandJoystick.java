@@ -1,53 +1,36 @@
 package org.frc5587.lib.control;
 
-import edu.wpi.first.wpilibj.Joystick;
-
 import org.frc5587.lib.MathHelper;
 
+import edu.wpi.first.wpilibj.Joystick;
+
 public class DeadbandJoystick extends Joystick {
-    public DeadbandJoystick(int port) {
+    private final double deadbandCutoff;
+
+    /**
+     * Construct an instance of a joystick which ignores axis inputs that are below
+     * the specified deadband cutoff.
+     *
+     * @param port The port on the Driver Station that the joystick is plugged into.
+     */
+    public DeadbandJoystick(int port, double deadband) {
         super(port);
+        this.deadbandCutoff = deadband;
     }
 
-    public double deadbandX() {
-        return MathHelper.deadband(this.getX(), 0.1, 1);
+    /**
+     * Construct an instance of a joystick which ignores axis inputs that are below
+     * a default cutoff.
+     *
+     * @param port The port on the Driver Station that the joystick is plugged into.
+     */
+    public DeadbandJoystick(int port) {
+        this(port, 0.1);
     }
 
-    public double deadbandY() {
-        return MathHelper.deadband(this.getY(), 0.1, 1);
-    }
-
-    public double deadbandZ() {
-        return MathHelper.deadband(this.getZ(), 0.1, 1);
-    }
-
-    public double curveY() {
-        double y = this.deadbandY();
-        return Math.copySign(y * y, y);
-    }
-
-    public double curveX() {
-        double x = this.deadbandX();
-        return Math.copySign(x * x, x);
-    }
-
-    public double curveZ() {
-        double z = this.deadbandZ();
-        return Math.copySign(z * z, z);
-    }
-
-    public double curveYnd() {
-        double y = this.getY();
-        return Math.copySign(y * y, y);
-    }
-
-    public double curveXnd() {
-        double x = this.getX();
-        return Math.copySign(x * x, x);
-    }
-
-    public double curveZnd() {
-        double z = this.getZ();
-        return Math.copySign(z * z, z);
+    @Override
+    public double getRawAxis(int axis) {
+        // Apply deadband when getting axis so all axes will have deadbanded signal
+        return MathHelper.deadband(super.getRawAxis(axis), deadbandCutoff, 1);
     }
 }
