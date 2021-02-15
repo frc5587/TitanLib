@@ -35,4 +35,14 @@ public class DeadbandXboxController extends XboxController {
         // Apply deadband when getting axis so all axes will have deadbanded signal
         return MathHelper.deadband(super.getRawAxis(axis), deadbandCutoff, 1);
     }
+
+        /**
+     * Whether the trigger is currently depressed.
+     * 
+     * @param hand Side of controller whose trigger should be checked.
+     * @return the state of the trigger.
+     */
+    public boolean getTrigger(Hand hand) {
+        return super.getTriggerAxis(hand) > deadbandCutoff;
+    }
 }
