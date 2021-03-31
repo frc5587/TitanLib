@@ -5,6 +5,7 @@ import org.frc5587.lib.MathHelper;
 import edu.wpi.first.wpilibj.XboxController;
 
 public class DeadbandXboxController extends XboxController {
+    private static double DEFAULT_DEADBAND = 0.1;
     private final double deadbandCutoff;
 
     /**
@@ -27,7 +28,7 @@ public class DeadbandXboxController extends XboxController {
      * @param port The port on the Driver Station that the joystick is plugged into.
      */
     public DeadbandXboxController(int port) {
-        this(port, 0.1);
+        this(port, DEFAULT_DEADBAND);
     }
 
     @Override

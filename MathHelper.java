@@ -10,8 +10,8 @@ public class MathHelper {
      * given range <code>-1 * max</code> and <code>max</code>.
      * 
      * <p>
-     * Note that all inputed values will be eliminated if the maximum possible
-     * signal indicated by `max` is smaller than the deadband cutoff. Additonally,
+     * Note that all inputted values will be eliminated if the maximum possible
+     * signal indicated by `max` is smaller than the deadband cutoff. Additionally,
      * the method itself does limit outputted signals to be within the maximum
      * range. If this is desired, use
      * {@link edu.wpi.first.wpiutil.math.MathUtil#clamp(double, double, double)}.
