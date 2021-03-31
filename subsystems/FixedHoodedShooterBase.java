@@ -13,17 +13,17 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     protected CANSparkMax leadMotor;
     protected CANSparkMax followerMotor;
     protected CANEncoder encoder;
-    protected boolean oneOrTwoMotors;   // false for one, true for two
+    protected boolean oneOrTwoMotors; // false for one, true for two
     protected ShooterFeedbackController feedbackController;
     protected UNP unp;
     protected boolean setpointEnabled = false;
     protected double setpointVelocityRPS = 0;
-
+    protected double targetHeightFromShooter = 0;
 
     /**
-     * Creates with the assumption of two shooter motors 
+     * Creates with the assumption of two shooter motors
      * 
-     * @param leadMotorID CAN ID of leader motor
+     * @param leadMotorID     CAN ID of leader motor
      * @param followerMotorID CAN ID of follower motor
      */
     public FixedHoodedShooterBase(int leadMotorID, int followerMotorID) {
@@ -51,7 +51,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
 
         configureLeaderSpark();
     }
-    
+
     /**
      * Sets JRAD constants, should be done in constructor
      */
@@ -75,7 +75,43 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
         if (setpointEnabled) {
             setVoltage(feedbackController.setSetpointAndCalculate(setpointVelocityRPS));
         }
-        
+
+    }
+
+    /**
+     * Calculates shooter wheel velocity for a given distance using the UNP
+     * regression constants
+     * 
+     * @param distance distance from target - METERS
+     * @return velocity flywheel needs to spin up to - ROTATIONS PER SECOND
+     */
+    public double calculateVelocityRPSForDistance(double distance) {
+        return (unp.U * distance) + (unp.P / (Math.pow(distance, 2) - unp.N));
+    }
+
+    /**
+     * Calculated the optimal velocity using the UNP regression constants and then
+     * sets the setpoint. It will only spin the shooter up if JRAD control has been
+     * enabled.
+     * 
+     * @param distance distance from target
+     */
+    public void calculateAndSetVelocity(double distance) {
+        setVelocityRPS(calculateVelocityRPSForDistance(distance));
+    }
+
+    /**
+     * Sets the setpoint, this will spin the shooter up to the setpoint if JRAD
+     * control has been enabled
+     * 
+     * Note: if tuned properly, the JRAD will intentionally overshoot the velocity
+     * (by around 15%, but not necessarily), this is done preemptively so that when
+     * the ball exits the shooter, it is spinning at the correct velocity
+     * 
+     * @param velocityRPS velocity to spin to - ROTATIONS PER SECOND
+     */
+    public void setVelocityRPS(double velocityRPS) {
+        setpointVelocityRPS = velocityRPS;
     }
 
     /**
@@ -120,14 +156,16 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     public boolean atSetpoint() {
         return feedbackController.atSetpoint();
     }
-    
+
     /**
-     * Gets the velocity of the first motor, but they should be spinning together, so it represents both of their speeds
+     * Gets the velocity of the first motor, but they should be spinning together,
+     * so it represents both of their speeds
      * 
      * @return velocity - ROTATIONS PER SECOND
      */
     protected abstract double getVelocityRPS();
 
     protected abstract void configureLeaderSpark();
+
     protected abstract void configureFollowerSpark();
 }
