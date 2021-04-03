@@ -32,6 +32,22 @@ public class MathHelper {
     }
 
     /**
+     * Applies a simple deadband to `value`, so if the `value` is less than
+     * `deadbandCutoff` this will return 0, else, it will return `value`
+     * 
+     * @param value          the value to be deadbanded
+     * @param deadbandCutoff the cutoff (>0)
+     * @return the deadbanded value
+     */
+    public static double deadband(double value, double deadbandCutoff) {
+        if (Math.abs(value) < deadbandCutoff) {
+            return 0.0;
+        } else {
+            return value;
+        }
+    }
+
+    /**
      * Maps the input x within range inMin to inMax to a new range between outMin
      * and outMax. See the
      * <a href="https://www.arduino.cc/reference/en/language/functions/math/map/">

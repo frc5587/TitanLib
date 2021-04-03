@@ -35,7 +35,7 @@ public class PIDTunerHelper extends PIDController {
         if (SmartDashboard.containsKey(dName)) {
             setD(SmartDashboard.getNumber(dName, Double.NaN));
         } else {
-            SmartDashboard.putNumber(pName, getD());
+            SmartDashboard.putNumber(dName, getD());
         }
 
         if (SmartDashboard.containsKey(setpointName)) {
@@ -48,6 +48,8 @@ public class PIDTunerHelper extends PIDController {
     @Override
     public double calculate(double measurement) {
         update();
+
+        SmartDashboard.putNumber(name + " measurement", measurement);
 
         return super.calculate(measurement);
     }
