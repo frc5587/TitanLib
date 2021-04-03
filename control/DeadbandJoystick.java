@@ -16,7 +16,7 @@ public class DeadbandJoystick extends Joystick {
         /**
          * Curves the value so it is shallow for a bit, but quickly increases
          * 
-         * https://www.desmos.com/calculator/mpnkeiwde0
+         * https://www.desmos.com/calculator/ehg1nvfznl
          * 
          * @param value expected between [-1, 1]
          * @return the curved value
