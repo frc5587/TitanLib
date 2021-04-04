@@ -3,23 +3,23 @@ package org.frc5587.lib.pid;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class PIDTunerHelper extends PIDController {
-    private String name;
+public class PIDTunerHelper extends PIDController implements ControllerTunerHelper {
     private String pName;
     private String iName;
     private String dName;
     private String setpointName;
+    private String measurementName;
 
-    public PIDTunerHelper(String name, double kp, double ki, double kd) {
-        super(kp, ki, kd);
-        this.name = name;
+    public PIDTunerHelper(String name, double kP, double kI, double kD) {
+        super(kP, kI, kD);
         this.pName = name + " p";
         this.iName = name + " i";
         this.dName = name + " d";
-        this.setpointName = name + " goto";
+        this.setpointName = name + " setpoint";
+        this.measurementName = name + " measurement";
     }
 
-    public void update() {
+    public void updateValues() {
         if (SmartDashboard.containsKey(pName)) {
             setP(SmartDashboard.getNumber(pName, Double.NaN));
         } else {
@@ -47,9 +47,9 @@ public class PIDTunerHelper extends PIDController {
 
     @Override
     public double calculate(double measurement) {
-        update();
+        updateValues();
 
-        SmartDashboard.putNumber(name + " measurement", measurement);
+        SmartDashboard.putNumber(measurementName, measurement);
 
         return super.calculate(measurement);
     }

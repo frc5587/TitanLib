@@ -4,7 +4,7 @@ import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import org.frc5587.lib.pid.JRAD;
+import org.frc5587.lib.pid.JRADShooterController;
 import org.frc5587.lib.pid.UNP;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -14,7 +14,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     protected CANSparkMax followerMotor;
     protected CANEncoder encoder;
     protected boolean oneOrTwoMotors; // false for one, true for two
-    protected ShooterFeedbackController feedbackController;
+    protected JRADShooterController feedbackController;
     protected UNP unp;
     protected boolean setpointEnabled = false;
     protected double setpointVelocityRPS = 0;
@@ -53,14 +53,14 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     }
 
     /**
-     * Sets JRAD constants, should be done in constructor
+     * Sets JRAD controller, should be done in constructor of implemented class
      */
-    protected void setJRAD(JRAD jrad) {
-        feedbackController = new ShooterFeedbackController(jrad, this::getVelocityRPS);
+    protected void setJRADController(JRADShooterController controller) {
+        feedbackController = controller;
     }
 
     /**
-     * Sets UNP regression constants, should be done in constructor
+     * Sets UNP regression constants, should be done in constructor of implemented class
      */
     protected void setUNP(UNP unp) {
         this.unp = unp;
