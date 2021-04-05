@@ -12,6 +12,7 @@ public class DeadbandJoystick extends Joystick {
     public static class Curve {
         public static final double LINE_SLOPE = 0.3623;
         public static final double X_5_SLOPE = 0.638;
+        public static final double DAMPEN_RATIO = 0.4;
 
         /**
          * Curves the value so it is shallow for a bit, but quickly increases
@@ -23,6 +24,10 @@ public class DeadbandJoystick extends Joystick {
          */
         public static double curve(double value) {
             return (LINE_SLOPE * value) + (X_5_SLOPE * Math.pow(value, 5));
+        }
+
+        public static double dampen(double value, double dampenAmount) {
+            return value - (value * Math.abs(dampenAmount) * DAMPEN_RATIO);
         }
     }
 
@@ -69,5 +74,7 @@ public class DeadbandJoystick extends Joystick {
         return Curve.curve(getY());
     }
 
-
+    public double getXCurveDampened() {
+        return Curve.curve(Curve.dampen(getX(), getY()));
+    }
 }
