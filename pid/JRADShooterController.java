@@ -45,6 +45,10 @@ public class JRADShooterController {
         this.period = period;
     }
 
+    public void setVelocitySupplier(DoubleSupplier velocitySupplier) {
+        motorVelocitySupplier = velocitySupplier;
+    }
+
     /**
      * @param currentVelocityRPS the current velocity - ROTATIONS PER SECOND
      * @return the voltage to set the motor to
