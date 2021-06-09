@@ -12,7 +12,7 @@ public class DeadbandJoystick extends Joystick {
     public static class Curve {
         public static final double LINE_SLOPE = 0.3623;
         public static final double X_5_SLOPE = 0.638;
-        public static final double DAMPEN_RATIO = 0.4;
+        public static final double DAMPEN_RATIO = 0.25;
 
         /**
          * Curves the value so it is shallow for a bit, but quickly increases
