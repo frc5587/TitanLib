@@ -3,6 +3,19 @@ package org.frc5587.lib.controllers;
 
 import java.util.function.DoubleSupplier;
 
+/**
+ * This is a shooter controller designed for used with a fixed angle shooter,
+ * hence its use in {@link FixedHoodedShooterBase}
+ * 
+ * It uses the UNP regression model (show here:
+ * https://www.desmos.com/calculator/yr1pxmhu0g) to determine the proper
+ * velocity of the shooter flywheels based on the distance it is from the
+ * shooter target. It also uses the JRAD controller (based on:
+ * https://www.team254.com/frc-day-12-13-build-blog/) to control the voltage of
+ * the motors based on the target velocity and current velocity. When properly
+ * tuned, this will quickly account and anticipate the drop in velocity from
+ * shooting a ball
+ */
 public class UnifiedShooterController {
     private static final double DEFAULT_LOOP_TIME = 0.02;
 
@@ -92,9 +105,11 @@ public class UnifiedShooterController {
     }
 
     /**
-     * Calculates the voltage to set the motors to given current velocity of the motors.
+     * Calculates the voltage to set the motors to given current velocity of the
+     * motors.
      * 
-     * @param motorVelocityRPS current velocity of the shooter motor(s) - ROTATIONS PER SECOND
+     * @param motorVelocityRPS current velocity of the shooter motor(s) - ROTATIONS
+     *                         PER SECOND
      * @return voltage to set motor(s) to - VOLTS
      */
     public double calculate(double motorVelocityRPS) {
@@ -104,7 +119,8 @@ public class UnifiedShooterController {
     }
 
     /**
-     * Calculates proper voltage with all known data and pulls the current velocity of the motor.
+     * Calculates proper voltage with all known data and pulls the current velocity
+     * of the motor.
      * 
      * @return voltage to set motor(s) to - VOLTS
      */
@@ -115,7 +131,8 @@ public class UnifiedShooterController {
     /**
      * Calculates the voltage to set the motor to
      * 
-     * @param motorVelocityRPS current velocity of the shooter motor(s) - ROTATIONS PER SECOND
+     * @param motorVelocityRPS   current velocity of the shooter motor(s) -
+     *                           ROTATIONS PER SECOND
      * @param distanceFromTarget distance from target - METERS
      * @return voltage to set motor(s) to - VOLTS
      */
@@ -123,8 +140,10 @@ public class UnifiedShooterController {
         setDistance(distanceFromTarget);
         return calculate(motorVelocityRPS);
     }
+
     /**
-     * Sets the distance from the shooter target and then calculates the proper voltage to set the motors to.
+     * Sets the distance from the shooter target and then calculates the proper
+     * voltage to set the motors to.
      * 
      * @param distanceFromTarget distance from the shooter target - METERS
      * @return voltage to set the shooter - VOLTS
