@@ -1,5 +1,5 @@
 
-package org.frc5587.lib.pid;
+package org.frc5587.lib.controllers;
 
 import java.util.function.DoubleSupplier;
 
@@ -35,7 +35,7 @@ public class UnifiedShooterController {
 
     /**
      * The main feature of this is the UNP regression model, shown in this Desmos
-     * graph, https://www.desmos.com/calculator/05dhrcxs7v. The purple line in the
+     * graph, https://www.desmos.com/calculator/yr1pxmhu0g. The purple line in the
      * regression curve and the orange dots are measured data. Essentially, you give
      * this the distance from the target, and it does the UNP regression and then
      * passes that output into the JRAD controller.
@@ -161,7 +161,9 @@ public class UnifiedShooterController {
         this.targetDistance = distanceFromTarget;
     }
 
-
+    public double getDistance() {
+        return targetDistance;
+    }
 
     public void reset() {
         lastOutput = 0;

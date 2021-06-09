@@ -1,4 +1,4 @@
-package org.frc5587.lib.pid;
+package org.frc5587.lib.controllers.tunerHelpers;
 
 public interface ControllerTunerHelper {
     /**

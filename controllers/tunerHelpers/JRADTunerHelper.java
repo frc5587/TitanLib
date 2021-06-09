@@ -1,4 +1,6 @@
-package org.frc5587.lib.pid;
+package org.frc5587.lib.controllers.tunerHelpers;
+
+import org.frc5587.lib.controllers.JRADShooterController;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 

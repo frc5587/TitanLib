@@ -4,8 +4,7 @@ import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import org.frc5587.lib.pid.JRADShooterController;
-import org.frc5587.lib.pid.UNP;
+import org.frc5587.lib.controllers.UnifiedShooterController;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -13,11 +12,10 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     protected CANSparkMax leadMotor;
     protected CANSparkMax followerMotor;
     protected CANEncoder encoder;
-    protected boolean oneOrTwoMotors; // false for one, true for two
-    protected JRADShooterController feedbackController;
-    protected UNP unp;
+    protected boolean hasTwoMotors; // false for one, true for two motors
+    protected UnifiedShooterController shooterController;
     protected boolean setpointEnabled = false;
-    protected double setpointVelocityRPS = 0;
+    protected double distanceFromTarget = 5;
     protected double targetHeightFromShooter = 0;
 
     /**
@@ -29,7 +27,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     public FixedHoodedShooterBase(int leadMotorID, int followerMotorID) {
         this(leadMotorID);
 
-        oneOrTwoMotors = true;
+        hasTwoMotors = true;
         followerMotor = new CANSparkMax(followerMotorID, MotorType.kBrushless);
         followerMotor.follow(leadMotor);
 
@@ -44,7 +42,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     public FixedHoodedShooterBase(int leadMotorID) {
         super();
 
-        oneOrTwoMotors = false;
+        hasTwoMotors = false;
         leadMotor = new CANSparkMax(leadMotorID, MotorType.kBrushless);
 
         encoder = leadMotor.getEncoder();
@@ -53,65 +51,31 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     }
 
     /**
-     * Sets JRAD controller, should be done in constructor of implemented class
+     * Sets the shooter controller, should be done in constructor of implemented class
      */
-    protected void setJRADController(JRADShooterController controller) {
-        feedbackController = controller;
+    protected void setShooterController(UnifiedShooterController shooterController) {
+        this. shooterController = shooterController; 
     }
 
     /**
-     * Sets UNP regression constants, should be done in constructor of implemented class
-     */
-    protected void setUNP(UNP unp) {
-        this.unp = unp;
-    }
-
-    /**
-     * If the JRAD control in enabled, it will update the motors based on the
-     * setpoint
+     * If distance control is enabled, it will update the motors based on the distance from the target
      */
     @Override
     public void periodic() {
         if (setpointEnabled) {
-            setVoltage(feedbackController.setSetpointAndCalculate(setpointVelocityRPS));
+            setVoltage(shooterController.setDistanceAndCalculate(distanceFromTarget));
         }
 
     }
 
     /**
-     * Calculates shooter wheel velocity for a given distance using the UNP
-     * regression constants
+     * Sets the distance the shooter is from the target.
+     * This will spin the shooter up if control is enabled
      * 
-     * @param distance distance from target - METERS
-     * @return velocity flywheel needs to spin up to - ROTATIONS PER SECOND
+     * @param distanceFromTarget distance from the target - METERS
      */
-    public double calculateVelocityRPSForDistance(double distance) {
-        return (unp.U * distance) + (unp.P / (Math.pow(distance, 2) - unp.N));
-    }
-
-    /**
-     * Calculated the optimal velocity using the UNP regression constants and then
-     * sets the setpoint. It will only spin the shooter up if JRAD control has been
-     * enabled.
-     * 
-     * @param distance distance from target
-     */
-    public void calculateAndSetVelocity(double distance) {
-        setVelocityRPS(calculateVelocityRPSForDistance(distance));
-    }
-
-    /**
-     * Sets the setpoint, this will spin the shooter up to the setpoint if JRAD
-     * control has been enabled
-     * 
-     * Note: if tuned properly, the JRAD will intentionally overshoot the velocity
-     * (by around 15%, but not necessarily), this is done preemptively so that when
-     * the ball exits the shooter, it is spinning at the correct velocity
-     * 
-     * @param velocityRPS velocity to spin to - ROTATIONS PER SECOND
-     */
-    public void setVelocityRPS(double velocityRPS) {
-        setpointVelocityRPS = velocityRPS;
+    public void setDistanceFromTarget(double distanceFromTarget) {
+        this.distanceFromTarget = distanceFromTarget;
     }
 
     /**
@@ -124,17 +88,17 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     }
 
     /**
-     * Resets feedback controller and enables JRAD control
+     * Resets shooter controller and enables distance control
      */
-    public void enableJRADControl() {
-        feedbackController.reset();
+    public void enableDistanceControl() {
+        shooterController.reset();
         setpointEnabled = true;
     }
 
     /**
-     * Disables JRAD control and stops motors
+     * Disables distance control and stops motors
      */
-    public void disableJRADControl() {
+    public void disableDistanceControl() {
         setpointEnabled = false;
         setThrottle(0);
     }
@@ -154,7 +118,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
      * @return whether shooter is at the setpoint
      */
     public boolean atSetpoint() {
-        return feedbackController.atSetpoint();
+        return shooterController.atSetpoint();
     }
 
     /**
