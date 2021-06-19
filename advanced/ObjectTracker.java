@@ -1,4 +1,4 @@
-package org.frc5587.lib.data;
+package org.frc5587.lib.advanced;
 
 /**
  * This class can be used to track any object whether it be static or in motion
