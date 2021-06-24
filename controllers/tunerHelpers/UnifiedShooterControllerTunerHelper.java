@@ -15,6 +15,7 @@ public class UnifiedShooterControllerTunerHelper extends UnifiedShooterControlle
     private String distanceName;
     private String measurementName;
     private String outputName;
+    private String spinName;
 
     public UnifiedShooterControllerTunerHelper(String name, double kF, double kJ, double kU, double kN, double kP) {
         super(kF, kJ, kU, kN, kP);
@@ -27,6 +28,7 @@ public class UnifiedShooterControllerTunerHelper extends UnifiedShooterControlle
         this.distanceName = name + " distance";
         this.outputName = name + " output";
         this.measurementName = name + " measurement";
+        this.spinName = name + " spin to";
     }
 
     public void updateValues() {
@@ -66,8 +68,27 @@ public class UnifiedShooterControllerTunerHelper extends UnifiedShooterControlle
             SmartDashboard.putNumber(distanceName, getDistance());
         }
 
+        if (!SmartDashboard.containsKey(spinName)) {
+            SmartDashboard.putNumber(spinName, 0);
+        }
+
         SmartDashboard.putNumber(setpointName, getSetpoint());
         SmartDashboard.putNumber(outputName, getLastOutput());
+    }
+
+    /**
+     * Allows someone to set the value on SmartDashboard in order to tune the UNP
+     * regression model. If the SmartDashboard value of `spinName` is not 0, then it
+     * will spin up to that value, otherwise it will go with whatever the current
+     * UNP model says.
+     */
+    @Override
+    public double calculateUNP(double distance) {
+        if (SmartDashboard.getNumber(spinName, 0) != 0) {
+            return SmartDashboard.getNumber(spinName, 0);
+        } else {
+            return super.calculateUNP(distance);
+        }
     }
 
     @Override
@@ -78,5 +99,5 @@ public class UnifiedShooterControllerTunerHelper extends UnifiedShooterControlle
 
         return super.calculate(currentVelocityRPS);
     }
-    
+
 }
