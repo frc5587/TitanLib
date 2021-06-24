@@ -14,6 +14,7 @@ public class UnifiedShooterControllerTunerHelper extends UnifiedShooterControlle
     private String setpointName;
     private String distanceName;
     private String measurementName;
+    private String outputName;
 
     public UnifiedShooterControllerTunerHelper(String name, double kF, double kJ, double kU, double kN, double kP) {
         super(kF, kJ, kU, kN, kP);
@@ -24,6 +25,7 @@ public class UnifiedShooterControllerTunerHelper extends UnifiedShooterControlle
         this.pName = name + " p";
         this.setpointName = name + " setpoint";
         this.distanceName = name + " distance";
+        this.outputName = name + " output";
         this.measurementName = name + " measurement";
     }
 
@@ -65,6 +67,7 @@ public class UnifiedShooterControllerTunerHelper extends UnifiedShooterControlle
         }
 
         SmartDashboard.putNumber(setpointName, getSetpoint());
+        SmartDashboard.putNumber(outputName, getLastOutput());
     }
 
     @Override

@@ -29,7 +29,11 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
 
         hasTwoMotors = true;
         followerMotor = new CANSparkMax(followerMotorID, MotorType.kBrushless);
-        followerMotor.follow(leadMotor);
+        // followerMotor.follow(leadMotor);
+
+        
+        encoder = followerMotor.getEncoder();
+        encoder.setPosition(0);
 
         configureFollowerSpark();
     }
@@ -45,7 +49,6 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
         hasTwoMotors = false;
         leadMotor = new CANSparkMax(leadMotorID, MotorType.kBrushless);
 
-        encoder = leadMotor.getEncoder();
 
         configureLeaderSpark();
     }
@@ -54,7 +57,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
      * Sets the shooter controller, should be done in constructor of implemented class
      */
     protected void setShooterController(UnifiedShooterController shooterController) {
-        this. shooterController = shooterController; 
+        this.shooterController = shooterController; 
     }
 
     /**
@@ -85,6 +88,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
      */
     public void setVoltage(double voltage) {
         leadMotor.setVoltage(voltage);
+        followerMotor.setVoltage(voltage);
     }
 
     /**
@@ -111,6 +115,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
     public void setThrottle(double throttle) {
         if (!setpointEnabled) {
             leadMotor.set(throttle);
+            followerMotor.set(throttle);
         }
     }
 

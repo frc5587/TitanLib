@@ -149,7 +149,7 @@ public class UnifiedShooterController {
      * @return voltage to set the shooter - VOLTS
      */
     public double setDistanceAndCalculate(double distanceFromTarget) {
-        setDistance(setpointVelocityRPS);
+        setDistance(distanceFromTarget);
         return calculate();
     }
 
@@ -169,6 +169,10 @@ public class UnifiedShooterController {
      */
     public double getSetpoint() {
         return setpointVelocityRPS;
+    }
+
+    public double getLastOutput() {
+        return lastOutput;
     }
 
     /**

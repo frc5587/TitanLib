@@ -66,6 +66,14 @@ public class DeadbandJoystick extends Joystick {
         return MathHelper.deadband(value, deadbandCutoff);
     }
 
+    public double getXExp() {
+        return Math.pow(getX(), exponent);
+    }
+
+    public double getYExp() {
+        return Math.pow(getY(), exponent);
+    }
+
     public double getXCurved() {
         return Curve.curve(getX());
     }
