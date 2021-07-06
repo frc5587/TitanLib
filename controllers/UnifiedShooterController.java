@@ -8,7 +8,7 @@ import java.util.function.DoubleSupplier;
  * hence its use in {@link FixedHoodedShooterBase}
  * 
  * It uses the UNP regression model (show here:
- * https://www.desmos.com/calculator/yr1pxmhu0g) to determine the proper
+ * https://www.desmos.com/calculator/yqs3muc58d) to determine the proper
  * velocity of the shooter flywheels based on the distance it is from the
  * shooter target. It also uses the JRAD controller (based on:
  * https://www.team254.com/frc-day-12-13-build-blog/) to control the voltage of
