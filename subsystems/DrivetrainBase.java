@@ -12,6 +12,14 @@ public class DrivetrainBase {
     private final WPI_TalonFX leftFollower = new WPI_TalonFX(2);
     private final WPI_TalonFX rightFollower = new WPI_TalonFX(3);
 
+    // placeholders for a SparkMax-based drivetrain
+    /*
+    private final CANSparkMax leftLeader = new CANSparkMax(0, MotorType.kBrushless);
+    private final CANSparkMax rightLeader = new CANSparkMax(1, MotorType.kBrushless);
+    private final CANSparkMax leftFollower = new CANSparkMax(2, MotorType.kBrushless);
+    private final CANSparkMax rightFollower = new CANSparkMax(3, MotorType.kBrushless);
+    */
+
     // group the leader and follower motors so they can be controlled at the same time
     private final SpeedControllerGroup leftGroup = new SpeedControllerGroup(leftLeader, leftFollower);
     private final SpeedControllerGroup rightGroup = new SpeedControllerGroup(rightLeader, rightFollower);
