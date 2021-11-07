@@ -1,6 +1,5 @@
 package org.frc5587.lib.advanced;
 
-import java.nio.Buffer;
 import java.util.function.BiFunction;
 
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -38,7 +37,7 @@ public class AddressableLEDController {
     /**
      * This stops the LED step handler if it is running.
      */
-    public void stopLEDStepHandler() {
+    public void stopLEDStepHandlerNotifier() {
         if (ledNotifier != null) {
             ledNotifier.stop();
             ledNotifier.close();
@@ -52,8 +51,8 @@ public class AddressableLEDController {
      * @param ledStepperFunction custom LED controller function <step number, LEDbuffer, LEDbuffer>
      * @param period time between each run of the function (recommended as 0.02)
      */
-    public void startLEDStepHandler(BiFunction<Integer, AddressableLEDBuffer, AddressableLEDBuffer> ledStepperFunction, double period) {
-        stopLEDStepHandler();
+    public void startLEDStepHandlerNotifier(BiFunction<Integer, AddressableLEDBuffer, AddressableLEDBuffer> ledStepperFunction, double period) {
+        stopLEDStepHandlerNotifier();
 
         ledNotifier = new Notifier(() -> {LEDStepHandler(ledStepperFunction);});
         ledNotifier.startPeriodic(period);
