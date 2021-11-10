@@ -11,18 +11,15 @@ import org.frc5587.lib.pid.FPID;
 
 public abstract class DrivetrainBase extends PIDSubsystem {
     // create leader and follower motors for the drivetrain
-    protected WPI_TalonFX leftLeader; //, rightLeader, leftFollower, rightFollower;
-    protected WPI_TalonFX rightLeader;
-    protected WPI_TalonFX leftFollower;
-    protected WPI_TalonFX rightFollower;
+    protected WPI_TalonFX leftLeader, rightLeader, leftFollower, rightFollower;
 
     // group the leader and follower motors so they can be controlled at the same time
-    protected SpeedControllerGroup leftGroup; // = new SpeedControllerGroup(leftLeader, leftFollower);
-    protected SpeedControllerGroup rightGroup; // = new SpeedControllerGroup(rightLeader, rightFollower);
+    protected SpeedControllerGroup leftGroup, rightGroup;
 
     // make the speed controller groups into one drivetrain object
     protected DifferentialDrive differentialDrive = new DifferentialDrive(leftGroup, rightGroup);
 
+    // create variables needed for PID. these will all be changed by the subclass.
     protected AHRS ahrs;
     protected FPID turnFPID;
     protected double turnFPIDThrottle;
@@ -36,6 +33,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     protected CANSparkMax rightFollower = new CANSparkMax(3, MotorType.kBrushless);
     */
 
+    // set all of the variables from the subclass to this abstract class
     public DrivetrainBase(WPI_TalonFX leftLeader, WPI_TalonFX rightLeader, WPI_TalonFX leftFollower, WPI_TalonFX rightFollower, FPID turnFPID, double turnFPIDThrottle, boolean invertGyro) {
         super(new PIDController(turnFPID.kP, turnFPID.kI, turnFPID.kD));
         
@@ -51,6 +49,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         configureMotors();
     }
     
+    // create a required method for subclasses
     public abstract void configureMotors();
 
     // drive with a given throttle and curve (arcade drive)
@@ -75,6 +74,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         this.tankDriveVolts(-leftVolts, -rightVolts);
     }
 
+    // gets the direction of the robot
     public double getHeading() {
         return ahrs.getAngle() * (invertGyro ? -1 : 1);
         // return gyro.getAngle();
