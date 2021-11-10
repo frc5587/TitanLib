@@ -10,6 +10,7 @@ public class AddressableLEDController {
     private int port;
     private int length;
     private int step = 0;
+    private int maxBrightness = 255;
 
     private AddressableLED leds;
     private AddressableLEDBuffer ledBuffer;
@@ -94,7 +95,7 @@ public class AddressableLEDController {
      * @return the modified LED buffer
      */
     public AddressableLEDBuffer stretchRainbow(int stepPeriod, int step, AddressableLEDBuffer buffer) {
-        return rainbow(stepPeriod, length, length, step, buffer);
+        return rainbow(stepPeriod, length, length, maxBrightness, step, buffer);
     }
 
     /**
@@ -111,11 +112,10 @@ public class AddressableLEDController {
      *                   handler]
      * @return the modified LED buffer
      */
-    public static AddressableLEDBuffer rainbow(int stepPeriod, int wavelength, int length, int step,
+    public static AddressableLEDBuffer rainbow(int stepPeriod, int wavelength, int length, int value, int step,
             AddressableLEDBuffer buffer) {
-        int degrees = 360;
-        int saturation = 1;
-        int value = 1;
+        int degrees = 180;
+        int saturation = 255;
 
         for (int i = 0; i < length; i++) {
             int shiftedI = (i + (step * wavelength / stepPeriod)) % length;
@@ -134,6 +134,7 @@ public class AddressableLEDController {
      * @param b blue value [0, 255]
      */
     public void setColorRGB(int r, int g, int b) {
+        System.out.println("asdfasdf");
         for (int i = 0; i < length; i++) {
             ledBuffer.setRGB(i, r, g, b);
         }
