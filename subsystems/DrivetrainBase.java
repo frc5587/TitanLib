@@ -17,7 +17,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     protected SpeedControllerGroup leftGroup, rightGroup;
 
     // make the speed controller groups into one drivetrain object
-    protected DifferentialDrive differentialDrive = new DifferentialDrive(leftGroup, rightGroup);
+    protected DifferentialDrive differentialDrive;
 
     // create variables needed for PID. these will all be changed by the subclass.
     protected AHRS ahrs;
@@ -46,6 +46,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         this.invertGyro = invertGyro;
         leftGroup = new SpeedControllerGroup(leftLeader, leftFollower);
         rightGroup = new SpeedControllerGroup(rightLeader, rightFollower);
+        differentialDrive = new DifferentialDrive(leftGroup, rightGroup);
         configureMotors();
     }
     
