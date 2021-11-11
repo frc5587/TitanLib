@@ -84,7 +84,7 @@ public class AddressableLEDController {
     }
 
     /**
-     * Same as rainbow() except the rainbow is stretch out over the whole length of
+     * Same as rainbow() except the rainbow is stretched out over the whole length of
      * the LED strip.
      * 
      * @param stepPeriod number of steps for the pattern to move a whole wavelength
@@ -134,7 +134,6 @@ public class AddressableLEDController {
      * @param b blue value [0, 255]
      */
     public void setColorRGB(int r, int g, int b) {
-        System.out.println("asdfasdf");
         for (int i = 0; i < length; i++) {
             ledBuffer.setRGB(i, r, g, b);
         }
