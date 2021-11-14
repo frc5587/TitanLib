@@ -55,8 +55,8 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         int i = 0;
         // make arrays to put each type of motor in
         WPI_TalonFX[] leaders = new WPI_TalonFX[2];
-        WPI_TalonFX[] leftFollowers = new WPI_TalonFX[4];
-        WPI_TalonFX[] rightFollowers = new WPI_TalonFX[4];
+        WPI_TalonFX[] leftFollowers = new WPI_TalonFX[(motors.length/2)-1];
+        WPI_TalonFX[] rightFollowers = new WPI_TalonFX[(motors.length/2)-1];
         for(WPI_TalonFX motor : motors) {
             // if the motor isn't the first motor in either half of the motors array, it's a follower.
             // if the motor is in the first half of the motors array, it's on the left side.
@@ -92,8 +92,21 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         turnController.setIntegratorRange(-1, 1);
         turnController.setTolerance((double) constants.get("TURN_PID_TOLERANCE_DEG"));
         // make speedcontroller groups with the leader and follower motors we got earlier
-        leftGroup = new SpeedControllerGroup(leftLeader, leftFollowers);
-        rightGroup = new SpeedControllerGroup(rightLeader, rightFollowers);
+        // if there are no followers, do not include the followers in the speedcontrollergroups.
+        if(leftFollowers.length != 0) {
+            leftGroup = new SpeedControllerGroup(leftLeader, leftFollowers);
+        }
+        else {
+            leftGroup = new SpeedControllerGroup(leftLeader);
+        }
+
+        if(rightFollowers.length != 0) {
+            rightGroup = new SpeedControllerGroup(rightLeader, rightFollowers);
+        }
+        else {
+            rightGroup = new SpeedControllerGroup(rightLeader);
+        }
+
         differentialDrive = new DifferentialDrive(leftGroup, rightGroup);
         configureMotors();
     }
