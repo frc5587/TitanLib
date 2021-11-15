@@ -2,7 +2,6 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.advanced.LimitedPoseMap;
 import org.frc5587.lib.pid.FPID;
-import java.util.Hashtable;
 import com.kauailabs.navx.frc.AHRS;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -30,7 +29,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     protected DifferentialDrive differentialDrive;
 
     // create a hashtable to look up constants
-    protected Hashtable<String, Object> constants;
+    protected DriveConstants constants;
 
     // create variables needed for odometry.
     protected AHRS ahrs;
@@ -44,34 +43,49 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     private double lastAngleSetpoint = Double.NaN;
     private final PIDController turnController;
 
+    public static class DriveConstants {
+        public final FPID turnFPID;
+        public final double turnPIDThrottle, turnPIDToleranceDeg, wheelDiameterMeters;
+        public final int historyLimit;
+        public final boolean invertGyro, invertLeft, invertRight;
+
+        public DriveConstants(FPID turnFPID, double turnPIDThrottle, double turnPIDToleranceDeg, double wheelDiameterMeters, int historyLimit, boolean invertGyro, boolean invertLeft, boolean invertRight) {
+            this.turnFPID = turnFPID;
+            this.turnPIDThrottle = turnPIDThrottle;
+            this.turnPIDToleranceDeg = turnPIDToleranceDeg;
+            this.wheelDiameterMeters = wheelDiameterMeters;
+            this.historyLimit = historyLimit;
+            this.invertGyro = invertGyro;
+            this.invertLeft = invertLeft;
+            this.invertRight = invertRight;
+        }
+    }
+
     // set all of the variables from the subclass to this abstract class
-    public DrivetrainBase(Hashtable<String, Object> constants, WPI_TalonFX...motors) {
-        super(new PIDController((double) ((FPID) constants.get("TURN_FPID")).kP, (double) ((FPID) constants.get("TURN_FPID")).kI, (double) ((FPID) constants.get("TURN_FPID")).kD));        
+    public DrivetrainBase(DriveConstants constants, int[] leftMotorIDs, int[] rightMotorIDs) {
+        super(new PIDController(constants.turnFPID.kP, constants.turnFPID.kI, constants.turnFPID.kD));        
         // disable PID control on start
         this.disable();
         this.constants = constants;
-        // check how many motors were given
-        int numMotors = motors.length;
-        int i = 0;
+        // int i = 0;
         // make arrays to put each type of motor in
         WPI_TalonFX[] leaders = new WPI_TalonFX[2];
-        WPI_TalonFX[] leftFollowers = new WPI_TalonFX[(motors.length/2)-1];
-        WPI_TalonFX[] rightFollowers = new WPI_TalonFX[(motors.length/2)-1];
-        for(WPI_TalonFX motor : motors) {
-            // if the motor isn't the first motor in either half of the motors array, it's a follower.
-            // if the motor is in the first half of the motors array, it's on the left side.
-            if(!(i+1 == 1 || i+1 == numMotors/2) && ((i+1) < (numMotors/2))) {
-                leftFollowers[i] = motor;
+        WPI_TalonFX[] leftFollowers = new WPI_TalonFX[leftMotorIDs.length-1];
+        WPI_TalonFX[] rightFollowers = new WPI_TalonFX[rightMotorIDs.length-1];
+        for(int i = 0; i < leftMotorIDs.length; i++) {
+            if(i == 0) {
+                leaders[0] = new WPI_TalonFX(leftMotorIDs[i]);
             }
-
-            // if the motor is in the second half of the motors array, it goes on the right.
-            else if(!(i+1 == 1 || i+1 == numMotors/2) && !((i+1) < (numMotors/2))) {
-                rightFollowers[i] = motor;
-            }
-
-            // if the motor is the first motor in either half of the motors array, it's a leader.
             else {
-                leaders[i] = motor;
+                leftFollowers[i-1] = new WPI_TalonFX(leftMotorIDs[i]);
+            }
+        }
+        for(int i = 0; i < rightMotorIDs.length; i++) {
+            if(i == 0) {
+                leaders[1] = new WPI_TalonFX(rightMotorIDs[i]);
+            }
+            else {
+                rightFollowers[i-1] = new WPI_TalonFX(rightMotorIDs[i]);
             }
         }
         // the first leader will be the left one
@@ -81,16 +95,14 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         // set all variables declared at the top to those given in the constructor (mostly constants)
         var currentAngle = Rotation2d.fromDegrees(getHeading360());
         this.odometry = new DifferentialDriveOdometry(currentAngle);
-        this.poseHistory =  new LimitedPoseMap((int) constants.get("HISTORY_LIMIT"));
-        this.turnFPID = (FPID) constants.get("TURN_FPID");
-        this.turnFPIDThrottle = (double) constants.get("TURN_PID_FORWARD_THROTTLE");
-        this.invertGyro = (boolean) constants.get("INVERT_GYRO_DIRECTION");
-        this.invertLeft = (boolean) constants.get("LEFT_SIDE_INVERTED") ? 1 : -1;
-        this.invertRight = (boolean) constants.get("RIGHT_SIDE_INVERTED") ? 1 : -1;
+        this.poseHistory =  new LimitedPoseMap(constants.historyLimit);
+        this.turnFPID = constants.turnFPID;
+        this.turnFPIDThrottle = (double) constants.turnPIDThrottle;
+        this.invertGyro = (boolean) constants.invertGyro;
         turnController = getController();
         turnController.enableContinuousInput(-180, 180);
         turnController.setIntegratorRange(-1, 1);
-        turnController.setTolerance((double) constants.get("TURN_PID_TOLERANCE_DEG"));
+        turnController.setTolerance(constants.turnPIDToleranceDeg);
         // make speedcontroller groups with the leader and follower motors we got earlier
         // if there are no followers, do not include the followers in the speedcontrollergroups.
         if(leftFollowers.length != 0) {
@@ -126,8 +138,8 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     // a tank drive that sets the voltages of the motors
     public void tankDriveVolts(double leftVolts, double rightVolts) {
-        leftGroup.setVoltage(invertLeft * leftVolts);
-        rightGroup.setVoltage(invertRight * rightVolts);
+        leftGroup.setVoltage(leftVolts);
+        rightGroup.setVoltage(rightVolts);
         differentialDrive.feed();
     }
 
@@ -147,7 +159,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     private double rotationsToMeters(double rotations) {
         // number of rotations * circumference of wheel
-        return rotations * (double) constants.get("WHEEL_DIAMETER_METERS") * Math.PI;
+        return rotations * (double) constants.wheelDiameterMeters * Math.PI;
     }
 
     public double getLeftPositionMeters() {
@@ -159,17 +171,17 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     }
 
     public double getLeftVelocityRPM() {
-        return leftLeader.getSelectedSensorVelocity() / 2;
+        return leftLeader.getSelectedSensorVelocity(); // TODO: Removed / 2. Check if correct.
     }
 
     public double getRightVelocityRPM() {
-        return rightLeader.getSelectedSensorVelocity() / 2;
+        return rightLeader.getSelectedSensorVelocity(); // TODO: Removed / 2. Check if correct.
     }
 
     // converts rotations per minute (RPM) to meters per second (MPS)
     private double rpmToMPS(double rotationsPerMinute) {
         var radiansPerSecond = Units.rotationsPerMinuteToRadiansPerSecond(rotationsPerMinute);
-        var linearMetersPerSecond = (double) radiansPerSecond * (double) constants.get("WHEEL_RADIUS_METERS");
+        var linearMetersPerSecond = (double) radiansPerSecond * (constants.wheelDiameterMeters / 2);
         return linearMetersPerSecond;
     }
 
@@ -313,8 +325,8 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     // sets the speeds of the speedcontrollergroups rather than the differentrialdrive
     public void setDrive(double speed) {
-        leftGroup.set(invertLeft * speed);
-        rightGroup.set(invertRight * speed);
+        leftGroup.set(speed);
+        rightGroup.set(speed);
     }
 
     // stops all motors
