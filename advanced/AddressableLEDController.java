@@ -49,6 +49,26 @@ public class AddressableLEDController {
     }
 
     /**
+     * Starts the notifier handler that will run the step function of the custom
+     * pattern object. It is recommended to have the period be 0.02, meaning it will
+     * run 50 times a second, but any number should work just fine.
+     * 
+     * @param ledPattern custom LED pattern object, use if you really need to
+     *                   preserve variables between runs, otherwise use the other
+     *                   version of this method to make things simpler
+     * @param period     time between each run of the function (recommended as 0.02)
+     */
+    public void startLEDStepHandlerNotifier(CustomLEDPattern ledPattern, double period) {
+        stopLEDStepHandlerNotifier();
+
+        ledNotifier = new Notifier(() -> {
+            LEDStepHandler(ledPattern::step);
+        });
+
+        ledNotifier.startPeriodic(period);
+    }
+
+    /**
      * Starts the notifier handler that will run the custom function. It is
      * recommended to have the period be 0.02, meaning it will run 50 times a
      * second, but any number should work just fine.
@@ -84,8 +104,8 @@ public class AddressableLEDController {
     }
 
     /**
-     * Same as rainbow() except the rainbow is stretched out over the whole length of
-     * the LED strip.
+     * Same as rainbow() except the rainbow is stretched out over the whole length
+     * of the LED strip.
      * 
      * @param stepPeriod number of steps for the pattern to move a whole wavelength
      * @param step       the step number, each step will generally be 1/50th of a
