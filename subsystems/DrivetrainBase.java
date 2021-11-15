@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.controller.PIDController;
@@ -20,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 public abstract class DrivetrainBase extends PIDSubsystem {
     // create leader and follower motors for the drivetrain, as well as encoders that will attach to the leaders.
     protected WPI_TalonFX leftLeader, rightLeader, leftFollower, rightFollower;
-    protected Encoder leftEncoder, rightEncoder;
 
     // group the leader and follower motors so they can be controlled at the same time
     protected SpeedControllerGroup leftGroup, rightGroup;
@@ -36,8 +34,6 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     protected FPID turnFPID;
     protected double turnFPIDThrottle;
     protected boolean invertGyro;
-    protected int invertLeft;
-    protected int invertRight;
     protected DifferentialDriveOdometry odometry;
     private final LimitedPoseMap poseHistory;
     private double lastAngleSetpoint = Double.NaN;
@@ -47,17 +43,15 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         public final FPID turnFPID;
         public final double turnPIDThrottle, turnPIDToleranceDeg, wheelDiameterMeters;
         public final int historyLimit;
-        public final boolean invertGyro, invertLeft, invertRight;
+        public final boolean invertGyro;
 
-        public DriveConstants(FPID turnFPID, double turnPIDThrottle, double turnPIDToleranceDeg, double wheelDiameterMeters, int historyLimit, boolean invertGyro, boolean invertLeft, boolean invertRight) {
+        public DriveConstants(FPID turnFPID, double turnPIDThrottle, double turnPIDToleranceDeg, double wheelDiameterMeters, int historyLimit, boolean invertGyro) {
             this.turnFPID = turnFPID;
             this.turnPIDThrottle = turnPIDThrottle;
             this.turnPIDToleranceDeg = turnPIDToleranceDeg;
             this.wheelDiameterMeters = wheelDiameterMeters;
             this.historyLimit = historyLimit;
             this.invertGyro = invertGyro;
-            this.invertLeft = invertLeft;
-            this.invertRight = invertRight;
         }
     }
 
@@ -300,7 +294,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         // Update the pose
         var gyroAngle = Rotation2d.fromDegrees(getHeading360());
         odometry.update(gyroAngle, getLeftPositionMeters(), getRightPositionMeters());
-        var translation = odometry.getPoseMeters().getTranslation();
+        //var translation = odometry.getPoseMeters().getTranslation();
 
         // Log the pose
         poseHistory.put(Timer.getFPGATimestamp(), getPose());
