@@ -62,6 +62,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     }
 
     // set all of the variables from the subclass to this abstract class
+    // MotorIDs: a arrays of integer CAN IDs used to make motors. index 0 should ALWAYS be the leader motor, and anything else is a follower.
     public DrivetrainBase(DriveConstants constants, int[] leftMotorIDs, int[] rightMotorIDs) {
         super(new PIDController(constants.turnFPID.kP, constants.turnFPID.kI, constants.turnFPID.kD));        
         // disable PID control on start
@@ -72,14 +73,19 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         WPI_TalonFX[] leaders = new WPI_TalonFX[2];
         WPI_TalonFX[] leftFollowers = new WPI_TalonFX[leftMotorIDs.length-1];
         WPI_TalonFX[] rightFollowers = new WPI_TalonFX[rightMotorIDs.length-1];
+        // put each motor in an array corresponding to its type (leader or follower)
         for(int i = 0; i < leftMotorIDs.length; i++) {
+            // if it's the first one in the array, it's a leader
             if(i == 0) {
+                // make a new motor with the given ID and put it in the array
                 leaders[0] = new WPI_TalonFX(leftMotorIDs[i]);
             }
+            // otherwise it's a follower
             else {
                 leftFollowers[i-1] = new WPI_TalonFX(leftMotorIDs[i]);
             }
         }
+        // do the same for the right motors
         for(int i = 0; i < rightMotorIDs.length; i++) {
             if(i == 0) {
                 leaders[1] = new WPI_TalonFX(rightMotorIDs[i]);
