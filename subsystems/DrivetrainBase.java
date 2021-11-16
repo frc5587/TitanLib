@@ -63,8 +63,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         this.disable();
         this.constants = constants;
         // int i = 0;
-        // make arrays to put each type of motor in
-        WPI_TalonFX[] leaders = new WPI_TalonFX[2];
+        // make arrays to put each type of follower motor in
         WPI_TalonFX[] leftFollowers = new WPI_TalonFX[leftMotorIDs.length-1];
         WPI_TalonFX[] rightFollowers = new WPI_TalonFX[rightMotorIDs.length-1];
         // put each motor in an array corresponding to its type (leader or follower)
@@ -72,7 +71,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
             // if it's the first one in the array, it's a leader
             if(i == 0) {
                 // make a new motor with the given ID and put it in the array
-                leaders[0] = new WPI_TalonFX(leftMotorIDs[i]);
+                this.leftLeader = new WPI_TalonFX(leftMotorIDs[i]);
             }
             // otherwise it's a follower
             else {
@@ -82,23 +81,19 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         // do the same for the right motors
         for(int i = 0; i < rightMotorIDs.length; i++) {
             if(i == 0) {
-                leaders[1] = new WPI_TalonFX(rightMotorIDs[i]);
+                this.rightLeader = new WPI_TalonFX(rightMotorIDs[i]);
             }
             else {
                 rightFollowers[i-1] = new WPI_TalonFX(rightMotorIDs[i]);
             }
         }
-        // the first leader will be the left one
-        this.leftLeader = leaders[0];
-        // the second leader will be the right one
-        this.rightLeader = leaders[1];
         // set all variables declared at the top to those given in the constructor (mostly constants)
         var currentAngle = Rotation2d.fromDegrees(getHeading360());
         this.odometry = new DifferentialDriveOdometry(currentAngle);
         this.poseHistory =  new LimitedPoseMap(constants.historyLimit);
         this.turnFPID = constants.turnFPID;
-        this.turnFPIDThrottle = (double) constants.turnPIDThrottle;
-        this.invertGyro = (boolean) constants.invertGyro;
+        this.turnFPIDThrottle = constants.turnPIDThrottle;
+        this.invertGyro = constants.invertGyro;
         turnController = getController();
         turnController.enableContinuousInput(-180, 180);
         turnController.setIntegratorRange(-1, 1);
@@ -159,7 +154,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     private double rotationsToMeters(double rotations) {
         // number of rotations * circumference of wheel
-        return rotations * (double) constants.wheelDiameterMeters * Math.PI;
+        return rotations * constants.wheelDiameterMeters * Math.PI;
     }
 
     public double getLeftPositionMeters() {
@@ -180,8 +175,8 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     // converts rotations per minute (RPM) to meters per second (MPS)
     private double rpmToMPS(double rotationsPerMinute) {
-        var radiansPerSecond = Units.rotationsPerMinuteToRadiansPerSecond(rotationsPerMinute);
-        var linearMetersPerSecond = (double) radiansPerSecond * (constants.wheelDiameterMeters / 2);
+        double radiansPerSecond = Units.rotationsPerMinuteToRadiansPerSecond(rotationsPerMinute);
+        double linearMetersPerSecond = radiansPerSecond * (constants.wheelDiameterMeters / 2);
         return linearMetersPerSecond;
     }
 
