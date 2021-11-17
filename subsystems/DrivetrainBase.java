@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 public abstract class DrivetrainBase extends PIDSubsystem {
     // create leader and follower motors for the drivetrain, as well as encoders that will attach to the leaders.
     protected WPI_TalonFX leftLeader, rightLeader, leftFollower, rightFollower;
+    protected WPI_TalonFX[] leftFollowers;
+    protected WPI_TalonFX[] rightFollowers;
 
     // group the leader and follower motors so they can be controlled at the same time
     protected SpeedControllerGroup leftGroup, rightGroup;
@@ -64,8 +66,8 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         this.constants = constants;
         // int i = 0;
         // make arrays to put each type of follower motor in
-        WPI_TalonFX[] leftFollowers = new WPI_TalonFX[leftMotorIDs.length-1];
-        WPI_TalonFX[] rightFollowers = new WPI_TalonFX[rightMotorIDs.length-1];
+        leftFollowers = new WPI_TalonFX[leftMotorIDs.length-1];
+        rightFollowers = new WPI_TalonFX[rightMotorIDs.length-1];
         // put each motor in an array corresponding to its type (leader or follower)
         for(int i = 0; i < leftMotorIDs.length; i++) {
             // if it's the first one in the array, it's a leader
@@ -195,8 +197,13 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     // gets the direction of the robot
     public double getHeading() {
-        return ahrs.getAngle() * (invertGyro ? -1 : 1);
-        // return gyro.getAngle();
+        try {
+            return ahrs.getAngle() * (invertGyro ? -1 : 1);
+        }
+        catch(NullPointerException e) {
+            System.out.println("Ur mom is a nullpointerexception");
+            return 0;
+        }
     }
 
     public double getHeading360() {
@@ -304,7 +311,12 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     @Override
     protected void useOutput(double output, double setpoint) {
-        arcadeDrive(turnFPIDThrottle, output + Math.copySign(turnFPID.kF, output));
+        try {
+            arcadeDrive(turnFPIDThrottle, (output + Math.copySign(turnFPID.kF, output)));
+        }
+        catch(NullPointerException e) {
+            System.out.println("Ur mom is a nullpointerexception");
+        }
     }
 
     @Override
