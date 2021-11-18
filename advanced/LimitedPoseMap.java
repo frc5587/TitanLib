@@ -1,5 +1,6 @@
 package org.frc5587.lib.advanced;
 
+import java.util.Map;
 import java.util.TreeMap;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
@@ -63,12 +64,12 @@ public class LimitedPoseMap extends TreeMap<Double, Pose2d> {
      *         provided time
      */
     public Pose2d getClosest(Double time) {
-        var low = floorEntry(time);
-        var high = ceilingEntry(time);
+        Map.Entry<Double, Pose2d> low = floorEntry(time);
+        Map.Entry<Double, Pose2d> high = ceilingEntry(time);
 
         if (low != null && high != null) {
-            var lowDifference = Math.abs(time - low.getKey());
-            var highDifference = Math.abs(time - high.getKey());
+            double lowDifference = Math.abs(time - low.getKey());
+            double highDifference = Math.abs(time - high.getKey());
             return lowDifference < highDifference ? low.getValue() : high.getValue();
         } else if (low != null || high != null) {
             return low != null ? low.getValue() : high.getValue();
