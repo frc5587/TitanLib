@@ -278,7 +278,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     }
 
     public double getTurnRate() {
-        return -ahrs.getRate(); // TODO: check if negative sign can be removed
+        return ahrs.getRate(); // TODO: negative sign removed, check if correct
     }
 
     // sets the idle modes of all motors
