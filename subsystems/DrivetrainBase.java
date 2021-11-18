@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 
 public abstract class DrivetrainBase extends PIDSubsystem {
-    // create leader and follower motors for the drivetrain, as well as encoders that will attach to the leaders.
-    protected WPI_TalonFX leftLeader, rightLeader, leftFollower, rightFollower;
+    // create leader and follower motors for the drivetrain
+    protected WPI_TalonFX leftLeader, rightLeader;
     protected WPI_TalonFX[] leftFollowers;
     protected WPI_TalonFX[] rightFollowers;
 
@@ -64,7 +64,6 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         // disable PID control on start
         this.disable();
         this.constants = constants;
-        // int i = 0;
         // make arrays to put each type of follower motor in
         leftFollowers = new WPI_TalonFX[leftMotorIDs.length-1];
         rightFollowers = new WPI_TalonFX[rightMotorIDs.length-1];
@@ -207,11 +206,11 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     }
 
     public double getHeading360() {
-        return Math.IEEEremainder(getHeading(), 360.0/* d */);
+        return Math.IEEEremainder(getHeading(), 360.0);
     }
 
     public double getHeading180() {
-        var heading = getHeading() % 360;
+        double heading = getHeading() % 360;
         if (heading > 180) {
             return heading - 360;
         } else if (heading < -180) {
@@ -266,15 +265,19 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     }
 
     public double getTurnRate() {
-        return -ahrs.getRate();
+        return -ahrs.getRate(); // TODO: check if negative sign can be removed
     }
 
     // sets the idle modes of all motors
     public void setNeutralModes(NeutralMode idleMode) {
         leftLeader.setNeutralMode(idleMode);
-        leftFollower.setNeutralMode(idleMode);
         rightLeader.setNeutralMode(idleMode);
-        rightFollower.setNeutralMode(idleMode);
+        for(WPI_TalonFX motor : leftFollowers) {
+            motor.setNeutralMode(idleMode);
+        }
+        for(WPI_TalonFX motor : rightFollowers) {
+            motor.setNeutralMode(idleMode);
+        }
     }
 
     // checks if the pidcontroller is at the last setpoint
@@ -294,9 +297,8 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         super.periodic();
 
         // Update the pose
-        var gyroAngle = Rotation2d.fromDegrees(getHeading360());
+        Rotation2d gyroAngle = Rotation2d.fromDegrees(getHeading360());
         odometry.update(gyroAngle, getLeftPositionMeters(), getRightPositionMeters());
-        //var translation = odometry.getPoseMeters().getTranslation();
 
         // Log the pose
         poseHistory.put(Timer.getFPGATimestamp(), getPose());
