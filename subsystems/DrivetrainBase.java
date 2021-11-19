@@ -127,7 +127,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     // create a required method for subclasses
     public abstract void configureMotors();
 
-    /* COMMANDS */
+    /* CONTROL METHODS */
     // drive with a given throttle and curve (arcade drive)
     public void arcadeDrive(double throttle, double curve) {
         differentialDrive.arcadeDrive(throttle, curve, false);
@@ -213,7 +213,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
             return ahrs.getAngle() * (invertGyro ? -1 : 1);
         }
         catch(NullPointerException e) {
-            System.out.println("Ur mom is a nullpointerexception");
+            System.out.println("NullPointerException" + e + "from getHeading. \n A constant was likely not given by DriveConstants object");
             return 0;
         }
     }
@@ -331,7 +331,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
             arcadeDrive(turnFPIDThrottle, (output + Math.copySign(turnFPID.kF, output)));
         }
         catch(NullPointerException e) {
-            System.out.println("Ur mom is a nullpointerexception");
+            System.out.println("NullPointerException" + e + "from useOutput. \n A constant was likely not given by DriveConstants object");
         }
     }
 
