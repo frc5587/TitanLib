@@ -68,7 +68,7 @@ public abstract class PivotingArmBase extends SubsystemBase {
 
     // move the arm based on a given throttle 
     public void moveArmThrottle(double throttle) {
-        motorGroup.set(throttle);
+        motorGroup.set(throttle * constants.armSpeedMultiplier);
     }
 
     // move the arm based on a constant multiplier (for operation with buttons)
@@ -99,12 +99,12 @@ public abstract class PivotingArmBase extends SubsystemBase {
         SmartDashboard.putNumber("Goto Position", 14);
     }
 
-    // public void refreshPID() {
-    //     SmartDashboard.putNumber("Angle", getAngleDegrees());
-    //     SmartDashboard.putNumber("Encoder Val", getPositionTicks());
-    //     SmartDashboard.putNumber("FF", calcFeedForward());
-    //     SmartDashboard.putNumber("Vel", getVelocityDegreesPerSecond());
-    // }
+    public void refreshPID() {
+        // SmartDashboard.putNumber("Angle", getAngleDegrees());
+        // SmartDashboard.putNumber("Encoder Val", getPositionTicks());
+        // SmartDashboard.putNumber("FF", calcFeedForward());
+        // SmartDashboard.putNumber("Vel", getVelocityDegreesPerSecond());
+    }
     
     // gets the encoder's position
     public double getPositionRotation() {
