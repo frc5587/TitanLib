@@ -100,10 +100,10 @@ public abstract class PivotingArmBase extends SubsystemBase {
     }
 
     public void refreshPID() {
-        // SmartDashboard.putNumber("Angle", getAngleDegrees());
-        // SmartDashboard.putNumber("Encoder Val", getPositionTicks());
-        // SmartDashboard.putNumber("FF", calcFeedForward());
-        // SmartDashboard.putNumber("Vel", getVelocityDegreesPerSecond());
+        SmartDashboard.putNumber("Angle", getPositionDegrees());
+        SmartDashboard.putNumber("Encoder Val", getPositionRotation());
+        SmartDashboard.putNumber("FF", calcFeedForward());
+        SmartDashboard.putNumber("Vel", getVelocityDegreesPerSecond());
     }
     
     // gets the encoder's position
@@ -111,9 +111,17 @@ public abstract class PivotingArmBase extends SubsystemBase {
         return leader.getSelectedSensorPosition();
     }
 
+    public double getPositionDegrees() {
+        return getPositionRotation() * 180;
+    }
+
     // gets the arm's velocity in rotations per minute
     public double getVelocityRPM() {
         return leader.getSelectedSensorVelocity(); // TODO: Removed / 2. Check if correct.
+    }
+
+    public double getVelocityDegreesPerSecond() {
+        return getVelocityRPM() * 180;
     }
 
     // converts rotations per minute (RPM) to meters per second (MPS)
