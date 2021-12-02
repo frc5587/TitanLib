@@ -270,7 +270,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     // resets the odometry to a given position param
     public void resetOdometry(Pose2d pose) {
         resetEncoders();
-        odometry.resetPosition(pose, ahrs.getRotation2d());
+        // odometry.resetPosition(pose, ahrs.getRotation2d()); TODO: uncomment this line when ahrs gets updated to wpilib 2022
     }
 
     public double getAverageEncoderDistance() {
