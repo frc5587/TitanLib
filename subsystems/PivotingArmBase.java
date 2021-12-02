@@ -11,12 +11,14 @@ import edu.wpi.first.wpilibj.SpeedController;
 
 public abstract class PivotingArmBase extends PIDSubsystem {
     protected ArmsConstants constants;
+    // the leader motor is defined as its own variable, while followers are put into an array for easy use.
     protected SpeedController leader;
-    protected SpeedControllerGroup motorGroup;
     protected SpeedController[] followers;
+    protected SpeedControllerGroup motorGroup;
 
+    // what type of value we can get from an encoder
     public static enum EncoderValueType {
-        kVelocity, kPosition
+        Velocity, Position
     }
 
     public static class ArmsConstants {
@@ -35,12 +37,15 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         }
     }
 
+    // pass motors as an array of SpeedControllers, eg. WPI_TalonFX[] or CANSparkMax[]
     public PivotingArmBase(ArmsConstants constants, SpeedController[] motors) {
         super(new PIDController(constants.pid.kP, constants.pid.kI, constants.pid.kD));
+        //disable PID control when starting
         this.disable();
 
         this.constants = constants;
         
+        // make followers a new array of SpeedControllers that is 1 value less long than the motors array (because the leader won't be used)
         followers = new SpeedController[motors.length-1];
         // put each motor in an array corresponding to its type (leader or follower)
         for(int i = 0; i < motors.length; i++) {
@@ -66,8 +71,11 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         configureMotors();
     }
 
+    // have the implementing class configure the motors
     public abstract void configureMotors();
 
+    // the implementing class also needs to get and set encoder values
+    // param type: what type of value we're getting from the encoder. values Position and Velocity as defined above in EncoderValueType
     public abstract double getEncoderValue(EncoderValueType type);
 
     public abstract void setEncoderPosition(double position);
@@ -96,15 +104,17 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         motorGroup.setVoltage(-voltage);
     }
 
+    // calculates the feedForward for the PIDController
     public double calcFeedForward() {
         double ff = constants.ff.calculate(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0) / 12;
         return ff;
     }
 
     public void startPID() {
-        SmartDashboard.putNumber("Goto Position", 14);
+        SmartDashboard.putNumber("Goto Position", 0);
     }
 
+    // displays various PID values on SmartDashboard
     public void refreshPID() {
         SmartDashboard.putNumber("Angle", getPositionDegrees());
         SmartDashboard.putNumber("Encoder Val", getPositionRotation());
@@ -114,7 +124,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     
     // gets the encoder's position
     public double getPositionRotation() {
-        return getEncoderValue(EncoderValueType.kPosition);
+        return getEncoderValue(EncoderValueType.Position);
     }
 
     public double getPositionDegrees() {
@@ -123,7 +133,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
 
     // gets the arm's velocity in rotations per minute
     public double getVelocityRPM() {
-        return getEncoderValue(EncoderValueType.kVelocity); // TODO: Removed / 2. Check if correct.
+        return getEncoderValue(EncoderValueType.Velocity); // TODO: Removed / 2. Check if correct.
     }
 
     public double getVelocityDegreesPerSecond() {
@@ -142,21 +152,23 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         return rpmToMPS(getVelocityRPM());
     }
 
+    // uses PID output to move the arm
     @Override
     protected void useOutput(double output, double setpoint) {
         try {
             moveArmThrottle(output);
         }
         catch(NullPointerException e) {
-            System.out.println("NullPointerException" + e + "from useOutput. \n A constant was likely not given by DriveConstants object");
+            System.out.println("NullPointerException " + e + " from useOutput. \n A constant was likely not given by DriveConstants object");
         }
     }
 
     @Override
     protected double getMeasurement() {
-        return getEncoderValue(EncoderValueType.kPosition);
+        return getEncoderValue(EncoderValueType.Position);
     }
 
+    // sets encoders back to 0
     public void resetEncoders() {
         setEncoderPosition(0);
     }
