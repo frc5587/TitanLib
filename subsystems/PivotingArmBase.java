@@ -1,20 +1,23 @@
 package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.pid.PID;
-
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.PIDSubsystem;
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.SpeedController;
 
-public abstract class PivotingArmBase extends SubsystemBase {
+public abstract class PivotingArmBase extends PIDSubsystem {
     protected ArmsConstants constants;
-    protected WPI_TalonFX leader;
+    protected SpeedController leader;
     protected SpeedControllerGroup motorGroup;
-    protected WPI_TalonFX[] followers;
+    protected SpeedController[] followers;
+
+    public static enum EncoderValueType {
+        kVelocity, kPosition
+    }
 
     public static class ArmsConstants {
         public double armSpeedMultiplier, armArcDiameter;
@@ -32,39 +35,42 @@ public abstract class PivotingArmBase extends SubsystemBase {
         }
     }
 
-    public PivotingArmBase(ArmsConstants constants, int[] motorIDs) {
-        super();
+    public PivotingArmBase(ArmsConstants constants, SpeedController[] motors) {
+        super(new PIDController(constants.pid.kP, constants.pid.kI, constants.pid.kD));
+        this.disable();
+
         this.constants = constants;
-        followers = new WPI_TalonFX[motorIDs.length-1];
+        
+        followers = new SpeedController[motors.length-1];
         // put each motor in an array corresponding to its type (leader or follower)
-        for(int i = 0; i < motorIDs.length; i++) {
+        for(int i = 0; i < motors.length; i++) {
             // if it's the first one in the array, it's a leader
             if(i == 0) {
                 // make a new motor with the given ID and put it in the array
-                this.leader = new WPI_TalonFX(motorIDs[i]);
+                this.leader = motors[i];
             }
             // otherwise it's a follower
             else {
-                followers[i-1] = new WPI_TalonFX(motorIDs[i]);
+                followers[i-1] = motors[i];
             }
         }
 
         // if there are no followers, don't put the array in the speedcontroller group
         if(followers.length == 0) {
-            //motorGroup = new SpeedControllerGroup(leader);
+            motorGroup = new SpeedControllerGroup(leader);
         }
         else {
-            motorGroup = new SpeedControllerGroup((SpeedController) leader, (SpeedController[]) followers);
+            motorGroup = new SpeedControllerGroup(leader, followers);
         }
 
-        leader.config_kP(constants.pidSlot, constants.pid.kP);
-        leader.config_kI(constants.pidSlot, constants.pid.kI);
-        leader.config_kD(constants.pidSlot, constants.pid.kD);
-        leader.config_kF(constants.pidSlot, calcFeedForward());
         configureMotors();
     }
 
     public abstract void configureMotors();
+
+    public abstract double getEncoderValue(EncoderValueType type);
+
+    public abstract void setEncoderPosition(double position);
 
     // move the arm based on a given throttle 
     public void moveArmThrottle(double throttle) {
@@ -108,7 +114,7 @@ public abstract class PivotingArmBase extends SubsystemBase {
     
     // gets the encoder's position
     public double getPositionRotation() {
-        return leader.getSelectedSensorPosition();
+        return getEncoderValue(EncoderValueType.kPosition);
     }
 
     public double getPositionDegrees() {
@@ -117,7 +123,7 @@ public abstract class PivotingArmBase extends SubsystemBase {
 
     // gets the arm's velocity in rotations per minute
     public double getVelocityRPM() {
-        return leader.getSelectedSensorVelocity(); // TODO: Removed / 2. Check if correct.
+        return getEncoderValue(EncoderValueType.kVelocity); // TODO: Removed / 2. Check if correct.
     }
 
     public double getVelocityDegreesPerSecond() {
@@ -136,8 +142,23 @@ public abstract class PivotingArmBase extends SubsystemBase {
         return rpmToMPS(getVelocityRPM());
     }
 
+    @Override
+    protected void useOutput(double output, double setpoint) {
+        try {
+            moveArmThrottle(output);
+        }
+        catch(NullPointerException e) {
+            System.out.println("NullPointerException" + e + "from useOutput. \n A constant was likely not given by DriveConstants object");
+        }
+    }
+
+    @Override
+    protected double getMeasurement() {
+        return getEncoderValue(EncoderValueType.kPosition);
+    }
+
     public void resetEncoders() {
-        leader.setSelectedSensorPosition(0);
+        setEncoderPosition(0);
     }
 
     // stops the speedcontroller group
@@ -148,7 +169,7 @@ public abstract class PivotingArmBase extends SubsystemBase {
     // stops every motor without going through the speedcontroller group
     public void stopMotors() {
         leader.set(0);
-        for(WPI_TalonFX follower : followers) {
+        for(SpeedController follower : followers) {
             follower.set(0);
         }
     }
