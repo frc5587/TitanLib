@@ -40,10 +40,13 @@ public class DeadbandXboxController extends XboxController {
         /**
      * Whether the trigger is currently depressed.
      * 
-     * @param hand Side of controller whose trigger should be checked.
      * @return the state of the trigger.
      */
-    public boolean getTrigger(Hand hand) {
-        return super.getTriggerAxis(hand) > deadbandCutoff;
+    public boolean getLeftTrigger() {
+        return super.getLeftTriggerAxis() > deadbandCutoff;
+    }
+
+    public boolean getRightTrigger() {
+        return super.getRightTriggerAxis() > deadbandCutoff;
     }
 }

@@ -6,15 +6,15 @@ import com.kauailabs.navx.frc.AHRS;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
-import edu.wpi.first.wpilibj.controller.PIDController;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 
 public abstract class DrivetrainBase extends PIDSubsystem {
     // create leader and follower motors for the drivetrain
@@ -23,7 +23,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     protected WPI_TalonFX[] rightFollowers;
 
     // group the leader and follower motors so they can be controlled at the same time
-    protected SpeedControllerGroup leftGroup, rightGroup;
+    protected MotorControllerGroup leftGroup, rightGroup;
 
     // make the speed controller groups into one drivetrain object
     protected DifferentialDrive differentialDrive;
@@ -105,19 +105,19 @@ public abstract class DrivetrainBase extends PIDSubsystem {
             }
         }
         // make speedcontroller groups with the leader and follower motors we got earlier
-        // if there are no followers, do not include the followers in the speedcontrollergroups.
+        // if there are no followers, do not include the followers in the MotorControllerGroups.
         if(leftFollowers.length != 0) {
-            leftGroup = new SpeedControllerGroup(leftLeader, leftFollowers);
+            leftGroup = new MotorControllerGroup(leftLeader, leftFollowers);
         }
         else {
-            leftGroup = new SpeedControllerGroup(leftLeader);
+            leftGroup = new MotorControllerGroup(leftLeader);
         }
 
         if(rightFollowers.length != 0) {
-            rightGroup = new SpeedControllerGroup(rightLeader, rightFollowers);
+            rightGroup = new MotorControllerGroup(rightLeader, rightFollowers);
         }
         else {
-            rightGroup = new SpeedControllerGroup(rightLeader);
+            rightGroup = new MotorControllerGroup(rightLeader);
         }
 
         differentialDrive = new DifferentialDrive(leftGroup, rightGroup);
@@ -150,7 +150,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         this.tankDriveVolts(-leftVolts, -rightVolts);
     }
 
-    // sets the speeds of the speedcontrollergroups rather than the differentrialdrive
+    // sets the speeds of the MotorControllerGroups rather than the differentrialdrive
     public void setDrive(double speed) {
         leftGroup.set(speed);
         rightGroup.set(speed);
@@ -340,7 +340,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         return getHeading();
     }
 
-    // stops the drivetrain's speedcontrollergroups rather than the differentialdrive
+    // stops the drivetrain's MotorControllerGroups rather than the differentialdrive
     public void stopDrivetrain() {
         leftGroup.set(0);
         rightGroup.set(0);
