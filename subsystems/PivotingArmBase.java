@@ -90,7 +90,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
 
     // move the arm based on a given throttle 
     public void moveArmThrottle(double throttle) {
-        motorGroup.set(throttle * constants.armSpeedMultiplier);
+        motorGroup.set(-throttle * constants.armSpeedMultiplier);
     }
 
     // move the arm based on a constant multiplier (for operation with buttons)
@@ -136,7 +136,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     }
 
     public double getPositionDegrees() {
-        return getPositionRotation() * 180;
+        return getPositionRotation() / 180;
     }
 
     // gets the arm's velocity in rotations per minute
@@ -145,7 +145,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     }
 
     public double getVelocityDegreesPerSecond() {
-        return getVelocityRPM() * 180;
+        return getVelocityRPM() / 180;
     }
 
     // converts rotations per minute (RPM) to meters per second (MPS)
