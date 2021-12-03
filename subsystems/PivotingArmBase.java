@@ -1,12 +1,13 @@
 package org.frc5587.lib.subsystems;
 
-import org.frc5587.lib.pid.PID;
+import org.frc5587.lib.pid.FPID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.SpeedController;
 
 public abstract class PivotingArmBase extends PIDSubsystem {
@@ -16,6 +17,8 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     protected SpeedController[] followers;
     protected SpeedControllerGroup motorGroup;
 
+    private DigitalInput armLimitSwitch;
+
     // what type of value we can get from an encoder
     public static enum EncoderValueType {
         Velocity, Position
@@ -24,27 +27,28 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     public static class ArmsConstants {
         public double armSpeedMultiplier, armArcDiameter;
         public int limitSwitchPort, pidSlot;
-        public PID pid;
+        public FPID fpid;
         public ArmFeedforward ff;
 
-        public ArmsConstants(double armSpeedMultiplier, double armArcDiameter, int limitSwitchPort, int pidSlot, PID pid, ArmFeedforward ff) {
+        public ArmsConstants(double armSpeedMultiplier, double armArcDiameter, int limitSwitchPort, int pidSlot, FPID fpid, ArmFeedforward ff) {
             this.armSpeedMultiplier = armSpeedMultiplier;
             this.armArcDiameter = armArcDiameter;
             this.limitSwitchPort = limitSwitchPort;
             this.pidSlot = pidSlot;
-            this.pid = pid;
+            this.fpid = fpid;
             this.ff = ff;
         }
     }
 
     // pass motors as an array of SpeedControllers, eg. WPI_TalonFX[] or CANSparkMax[]
     public PivotingArmBase(ArmsConstants constants, SpeedController[] motors) {
-        super(new PIDController(constants.pid.kP, constants.pid.kI, constants.pid.kD));
+        super(new PIDController(constants.fpid.kP, constants.fpid.kI, constants.fpid.kD));
         //disable PID control when starting
         this.disable();
 
         this.constants = constants;
-        
+        armLimitSwitch = new DigitalInput(constants.limitSwitchPort);
+
         // make followers a new array of SpeedControllers that is 1 value less long than the motors array (because the leader won't be used)
         followers = new SpeedController[motors.length-1];
         // put each motor in an array corresponding to its type (leader or follower)
@@ -79,6 +83,10 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     public abstract double getEncoderValue(EncoderValueType type);
 
     public abstract void setEncoderPosition(double position);
+
+    public abstract void setFPID();
+
+    public abstract void setFeedForward(double ff);
 
     // move the arm based on a given throttle 
     public void moveArmThrottle(double throttle) {
@@ -152,6 +160,14 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         return rpmToMPS(getVelocityRPM());
     }
 
+    public DigitalInput getArmLimitSwitch() {
+        return armLimitSwitch;
+    }
+
+    public boolean getLimitSwitchValue() {
+        return !(armLimitSwitch.get());
+    }
+    
     // uses PID output to move the arm
     @Override
     protected void useOutput(double output, double setpoint) {
@@ -166,6 +182,13 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     @Override
     protected double getMeasurement() {
         return getEncoderValue(EncoderValueType.Position);
+    }
+
+    @Override
+    public void periodic() {
+        System.out.println(getPositionDegrees());
+        refreshPID();
+        setFeedForward(calcFeedForward());
     }
 
     // sets encoders back to 0
