@@ -4,7 +4,6 @@ import org.frc5587.lib.pid.FPID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -127,7 +126,6 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         SmartDashboard.putNumber("Angle", getPositionDegrees());
         SmartDashboard.putNumber("Encoder Val", getPositionRotation());
         SmartDashboard.putNumber("FF", calcFeedForward());
-        SmartDashboard.putNumber("Vel", getVelocityDegreesPerSecond());
     }
     
     // gets the encoder's position
@@ -137,27 +135,6 @@ public abstract class PivotingArmBase extends PIDSubsystem {
 
     public double getPositionDegrees() {
         return getPositionRotation() / 180;
-    }
-
-    // gets the arm's velocity in rotations per minute
-    public double getVelocityRPM() {
-        return getEncoderValue(EncoderValueType.Velocity); // TODO: Removed / 2. Check if correct.
-    }
-
-    public double getVelocityDegreesPerSecond() {
-        return getVelocityRPM() / 180;
-    }
-
-    // converts rotations per minute (RPM) to meters per second (MPS)
-    private double rpmToMPS(double rotationsPerMinute) {
-        double radiansPerSecond = Units.rotationsPerMinuteToRadiansPerSecond(rotationsPerMinute);
-        double linearMetersPerSecond = radiansPerSecond * (constants.armArcDiameter / 2);
-        return linearMetersPerSecond;
-    }
-
-    // gets the arm's velocity in meters per second
-    public double getVelocityMPS() {
-        return rpmToMPS(getVelocityRPM());
     }
 
     public DigitalInput getArmLimitSwitch() {
