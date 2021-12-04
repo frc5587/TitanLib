@@ -11,8 +11,6 @@ public abstract class IntakeBase extends SubsystemBase {
     protected SpeedController[] followers;
     protected SpeedControllerGroup motorGroup;
 
-    public abstract void configureMotors();
-
     public static class IntakeConstants {
         public int leaderID;
         public int followerIDs;
@@ -31,8 +29,9 @@ public abstract class IntakeBase extends SubsystemBase {
         }
     }
 
-    public void Intake(IntakeConstants constants, SpeedController[] motors) {
+    public IntakeBase(IntakeConstants constants, SpeedController[] motors) {
         followers = new SpeedControllerGroup[motors.length - 1];
+        this.constants = constants;
         // put each motor in an array correspondoing to its type (leader or follower)
         for (int i = 0; i < motors.length; i++) {
             // if its first, its a leader
@@ -44,13 +43,26 @@ public abstract class IntakeBase extends SubsystemBase {
             }
         }
 
-    // if there are no followers, don't put the array in the SpeedControllerGroup
-    if (followers.length == 0) {
-        motorGroup = new SpeedControllerGroup(leader);
-    } else {
-        motorGroup = new SpeedControllerGroup(leader, followers);
-    }
-
+        // if there are no followers, don't put the array in the SpeedControllerGroup
+        if (followers.length == 0) {
+            motorGroup = new SpeedControllerGroup(leader);
+        } else {
+            motorGroup = new SpeedControllerGroup(leader, followers);
+        }
     configureMotors();
     }
+
+    public abstract void configureMotors();
+
+    public void forward() {
+        motorGroup.set(constants.throttle);
+    };
+
+    public void backward() {
+        motorGroup.set(-constants.throttle);
+    };
+
+    public void stop() {
+        motorGroup.set(0);
+    };
 };
