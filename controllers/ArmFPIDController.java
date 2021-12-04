@@ -85,7 +85,11 @@ public class ArmFPIDController extends PIDController {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("PIDController");
         builder.addDoubleProperty("f", this::getF, this::setF);
-        super.initSendable(builder);
+        builder.addDoubleProperty("p", this::getP, this::setP);
+        builder.addDoubleProperty("i", this::getI, this::setI);
+        builder.addDoubleProperty("d", this::getD, this::setD);
+        builder.addDoubleProperty("setpoint", this::getSetpoint, this::setSetpoint);
     }
 }
