@@ -20,6 +20,16 @@ public class ArmFPIDController extends PIDController {
         armFF = new ArmFeedforward(sCosVA[0], sCosVA[1], sCosVA[2], sCosVA[3]);
     }
 
+    // you can also pass an ArmFeedforward instead of an array of the values needed to create one
+    public ArmFPIDController(double f, double p, double i, double d, ArmFeedforward armFF) {
+        super(p, i, d);
+        this.f = f;
+        this.p = p;
+        this.i = i;
+        this.d = d;
+        this.armFF = armFF;
+    }
+
     // returns true if Feedforward is enabled
     public boolean isFEnabled() {
         return !fDisabled;
