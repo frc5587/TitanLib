@@ -1,11 +1,11 @@
 package org.frc5587.lib.subsystems;
 
+import org.frc5587.lib.controllers.ArmFPIDController;
 import org.frc5587.lib.pid.FPID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.SpeedController;
 
@@ -41,7 +41,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
 
     // pass motors as an array of SpeedControllers, eg. WPI_TalonFX[] or CANSparkMax[]
     public PivotingArmBase(ArmsConstants constants, SpeedController[] motors) {
-        super(new PIDController(constants.fpid.kP, constants.fpid.kI, constants.fpid.kD));
+        super(new ArmFPIDController(constants.fpid.kF, constants.fpid.kP, constants.fpid.kI, constants.fpid.kD, constants.ff));
         //disable PID control when starting
         this.disable();
 
@@ -83,10 +83,6 @@ public abstract class PivotingArmBase extends PIDSubsystem {
 
     public abstract void setEncoderPosition(double position);
 
-    public abstract void setFPID();
-
-    public abstract void setFeedForward(double ff);
-
     // move the arm based on a given throttle 
     public void moveArmThrottle(double throttle) {
         motorGroup.set(-throttle * constants.armSpeedMultiplier);
@@ -113,8 +109,8 @@ public abstract class PivotingArmBase extends PIDSubsystem {
 
     // calculates the feedForward for the PIDController
     public double calcFeedForward() {
-        double ff = constants.ff.calculate(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0) / 12;
-        return ff;
+        // double ff = constants.ff.calculate(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0) / 12;
+        return ((ArmFPIDController) getController()).calculateF(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0);
     }
 
     public void startPID() {
@@ -165,7 +161,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     public void periodic() {
         System.out.println(getPositionDegrees());
         refreshPID();
-        setFeedForward(calcFeedForward());
+        ((ArmFPIDController) getController()).setF(calcFeedForward());
     }
 
     // sets encoders back to 0
