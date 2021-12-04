@@ -8,21 +8,31 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public abstract class PistonControl extends SubsystemBase{
     private DoubleSolenoid[] doubleSolenoidPistons;
 
-    public PistonControl(int[] pistonIDS) {
+    public PistonControl(int[][] pistonIDS) {
         doubleSolenoidPistons = new DoubleSolenoid[pistonIDS.length/2];
-        int[][] a= {
-            {}
-        };
-        // TODO Create 2D array to rid of i+=2
-        for(int i = 0; i < pistonIDS.length; i+=2) {
-            doubleSolenoidPistons[i] = new DoubleSolenoid(pistonIDS[i], pistonIDs[i + 1]);
+
+        for(int i = 0; i < pistonIDS.length; i++) {
+            doubleSolenoidPistons[i] = new DoubleSolenoid(pistonIDS[i][0], pistonIDS[i][1]);
         }
     }
 
-    // TODO Include extend() and retract() methods as an alternative
+    // Implementation: pistonsSet(kForward)
     public void pistonsSet(Value direction) {
         for(DoubleSolenoid piston : doubleSolenoidPistons) {
             piston.set(direction);
-        }        
+        }
+    }
+
+    // Utilize these 2 methods as alternatives to the pistonsSet method
+    public void extend() {
+        for(DoubleSolenoid piston : doubleSolenoidPistons) {
+            piston.set(Value.kForward);
+        }
+    }
+
+    public void retract() {
+        for(DoubleSolenoid piston : doubleSolenoidPistons) {
+            piston.set(Value.kReverse);
+        }
     }
 }
