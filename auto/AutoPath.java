@@ -12,15 +12,15 @@ public class AutoPath {
     public final Path path;
     public Trajectory trajectory;
 
-    public AutoPath(String fileName) throws IOException {
+    public AutoPath(String fileName) {
         filePath = "paths/output/" + fileName + ".wpilib.json";
         path = Filesystem.getDeployDirectory().toPath().resolve(filePath);
 
         try {
             this.trajectory = TrajectoryUtil.fromPathweaverJson(path);
         } catch (IOException e) {
-            System.out.println("Could not find path file: " + filePath);
-            throw e;
+            System.out.println("*** WARNING***\nCould not find path file: " + filePath + "\n" + e + "\n--------");
+            trajectory = null;  // If it throws an error here, its very annoying because then you have to catch it everywhere else
         }
     }
 }
