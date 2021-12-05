@@ -32,7 +32,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     protected DriveConstants constants;
 
     // create variables needed for odometry.
-    protected AHRS ahrs;
+    protected AHRS ahrs = new AHRS();
     protected FPID turnFPID;
     protected double turnFPIDThrottle;
     protected boolean invertGyro;
@@ -141,7 +141,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     // a tank drive that sets the voltages of the motors
     public void tankDriveVolts(double leftVolts, double rightVolts) {
         leftGroup.setVoltage(leftVolts);
-        rightGroup.setVoltage(rightVolts);
+        rightGroup.setVoltage(-rightVolts);
         differentialDrive.feed();
     }
 
