@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 
 public class ArmFPIDController extends PIDController {
     protected double f, p, i, d;
-    private ArmFeedforward armFF;
+    protected ArmFeedforward armFF;
     private boolean fDisabled = false;
 
     // params fpid are Feedforward and PID gains, param sCosVA is an array of the ks, kcos, kv, and ka used by an ArmFeedForward
@@ -83,6 +83,8 @@ public class ArmFPIDController extends PIDController {
         }
     }
 
+    // initializes this as a Sendable Object; using all of the f, p, i and d values.
+    // this can't just use PIDController's initSendable method, because we need f as well.
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.setSmartDashboardType("PIDController");
