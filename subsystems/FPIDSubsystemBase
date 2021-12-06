@@ -74,7 +74,7 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
 
     // move the mechanism based on a given throttle 
     public void moveByThrottle(double throttle) {
-        motorGroup.set(-throttle * constants.speedMultiplier);
+        motorGroup.set(-throttle * constants.speedMultiplier); // negative throttle is on purpose!
     }
 
     // move the mechanism based on a constant multiplier (for operation with buttons)
