@@ -30,7 +30,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         public FPID fpid;
         public ArmFeedforward ff;
 
-        public ArmsConstants(double armSpeedMultiplier, double armArcDiameter, int limitSwitchPort, FPID fpid, ArmFeedforward ff) {
+        public ArmsConstants(double armSpeedMultiplier, int limitSwitchPort, FPID fpid, ArmFeedforward ff) {
             this.armSpeedMultiplier = armSpeedMultiplier;
             this.limitSwitchPort = limitSwitchPort;
             this.fpid = fpid;
@@ -163,6 +163,12 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     }
 
     @Override
+    public void disable() {
+        this.m_enabled = false;
+        motorGroup.set(0);
+    }
+
+    @Override
     protected double getMeasurement() {
         return getEncoderValue(EncoderValueType.Position);
     }
@@ -172,6 +178,9 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         System.out.println(getPositionDegrees());
         refreshPID();
         controller.setF(calcFeedForward());
+        // double setpoint = constants.ff.calculate(Math.toRadians(getPositionDegrees()), getEncoderValue(EncoderValueType.Velocity));
+        // double output = controller.calculate(getMeasurement(), setpoint, getEncoderValue(EncoderValueType.Velocity));
+        // useOutput(output, setpoint);
     }
 
     // sets encoders back to 0
