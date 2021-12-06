@@ -17,6 +17,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     protected SpeedControllerGroup motorGroup;
 
     private DigitalInput armLimitSwitch;
+    private ArmFPIDController controller;
 
     // what type of value we can get from an encoder
     public static enum EncoderValueType {
@@ -42,8 +43,15 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     // pass motors as an array of SpeedControllers, eg. WPI_TalonFX[] or CANSparkMax[]
     public PivotingArmBase(ArmsConstants constants, SpeedController[] motors) {
         super(new ArmFPIDController(constants.fpid.kF, constants.fpid.kP, constants.fpid.kI, constants.fpid.kD, constants.ff));
+        // set the controller variable to the ArmFPIDController we just made above
+        controller = (ArmFPIDController) getController();
         //disable PID control when starting
         this.disable();
+
+        /* THE BELOW LINES WILL BE USED AFTER CHARACTERIZATION. DO NOT USE THEM NOW */
+
+        // this.enable();
+        // controller.enableFeedForward();
 
         this.constants = constants;
         armLimitSwitch = new DigitalInput(constants.limitSwitchPort);
@@ -110,7 +118,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     // calculates the feedForward for the PIDController
     public double calcFeedForward() {
         // double ff = constants.ff.calculate(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0) / 12;
-        return ((ArmFPIDController) getController()).calculateF(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0);
+        return controller.calculateF(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0);
     }
 
     public void startPID() {
@@ -161,7 +169,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     public void periodic() {
         System.out.println(getPositionDegrees());
         refreshPID();
-        ((ArmFPIDController) getController()).setF(calcFeedForward());
+        controller.setF(calcFeedForward());
     }
 
     // sets encoders back to 0
