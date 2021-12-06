@@ -25,16 +25,14 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     }
 
     public static class ArmsConstants {
-        public double armSpeedMultiplier, armArcDiameter;
-        public int limitSwitchPort, pidSlot;
+        public double armSpeedMultiplier;
+        public int limitSwitchPort;
         public FPID fpid;
         public ArmFeedforward ff;
 
-        public ArmsConstants(double armSpeedMultiplier, double armArcDiameter, int limitSwitchPort, int pidSlot, FPID fpid, ArmFeedforward ff) {
+        public ArmsConstants(double armSpeedMultiplier, double armArcDiameter, int limitSwitchPort, FPID fpid, ArmFeedforward ff) {
             this.armSpeedMultiplier = armSpeedMultiplier;
-            this.armArcDiameter = armArcDiameter;
             this.limitSwitchPort = limitSwitchPort;
-            this.pidSlot = pidSlot;
             this.fpid = fpid;
             this.ff = ff;
         }
@@ -90,6 +88,10 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     public abstract double getEncoderValue(EncoderValueType type);
 
     public abstract void setEncoderPosition(double position);
+
+    public ArmFPIDController getArmController() {
+        return controller;
+    }
 
     // move the arm based on a given throttle 
     public void moveArmThrottle(double throttle) {
