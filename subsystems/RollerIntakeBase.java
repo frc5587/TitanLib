@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public abstract class IntakeBase extends SubsystemBase {
+public abstract class RollerIntakeBase extends SubsystemBase {
     protected IntakeConstants constants;
 
     // 1 leader variable is utilized, while an array for followers is used for ease of use
@@ -27,7 +27,7 @@ public abstract class IntakeBase extends SubsystemBase {
         }
     }
 
-    public IntakeBase(IntakeConstants constants, SpeedController[] motors) {
+    public RollerIntakeBase(IntakeConstants constants, SpeedController[] motors) {
         // Add motors to a SpeedControllerGroup, minus 1 to remove the leader
         followers = new SpeedControllerGroup[motors.length - 1];
         this.constants = constants;
