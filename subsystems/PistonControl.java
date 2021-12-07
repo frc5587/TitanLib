@@ -13,7 +13,7 @@ public abstract class PistonControl extends SubsystemBase {
      * constants.java
      */
     public PistonControl(int[][] pistonIDS) {
-        doubleSolenoidPistons = new DoubleSolenoid[pistonIDS.length / 2];
+        doubleSolenoidPistons = new DoubleSolenoid[pistonIDS.length];
 
         for (int i = 0; i < pistonIDS.length; i++) {
             doubleSolenoidPistons[i] = new DoubleSolenoid(pistonIDS[i][0], pistonIDS[i][1]);
