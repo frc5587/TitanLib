@@ -16,8 +16,8 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
     protected SpeedController[] followers;
     protected SpeedControllerGroup motorGroup;
 
-    private DigitalInput limitSwitch;
-    private ArmFPIDController controller;
+    private final DigitalInput limitSwitch;
+    private final ArmFPIDController controller;
 
     // what type of value we can get from an encoder
     public static enum EncoderValueType {
