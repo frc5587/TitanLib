@@ -29,14 +29,10 @@ public abstract class PistonControl extends SubsystemBase {
 
     // Utilize these 2 methods as alternatives to the pistonsSet method
     public void extend() {
-        for (DoubleSolenoid piston : doubleSolenoidPistons) {
             pistonsSet(Value.kForward);
-        }
     }
 
     public void retract() {
-        for (DoubleSolenoid piston : doubleSolenoidPistons) {
             pistonsSet(Value.kReverse);
-        }
     }
 }
