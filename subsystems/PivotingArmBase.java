@@ -163,12 +163,6 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     }
 
     @Override
-    public void disable() {
-        this.m_enabled = false;
-        motorGroup.set(0);
-    }
-
-    @Override
     protected double getMeasurement() {
         return getEncoderValue(EncoderValueType.Position);
     }
