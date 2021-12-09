@@ -1,15 +1,14 @@
 package org.frc5587.lib.subsystems;
 
-import org.frc5587.lib.controllers.ArmFPIDController;
 import org.frc5587.lib.pid.FPID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.SpeedController;
 
-public abstract class FPIDSubsystemBase extends PIDSubsystem {
+public abstract class FPIDSubsystem extends PIDSubsystem {
     protected FPIDConstants constants;
     // the leader motor is defined as its own variable, while followers are put into an array for easy use.
     protected SpeedController leader;
@@ -17,21 +16,68 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
     protected SpeedControllerGroup motorGroup;
 
     private final DigitalInput limitSwitch;
-    private final ArmFPIDController controller;
+    private double ffGain;
 
     // what type of value we can get from an encoder
     public static enum EncoderValueType {
         Velocity, Position
     }
 
-    public static class FPIDConstants {
-        public double speedMultiplier;
-        public int limitSwitchPort;
-        public FPID fpid;
-        public ArmFeedforward ff;
+    public static class FeedforwardModel {
+        public final double kS;
+        public final double kCos;
+        public final double kV;
+        public final double kA;
 
-        public ArmsConstants(double speedMultiplier, int limitSwitchPort, FPID fpid, ArmFeedforward ff) {
+        // sets all given values for static, gravity, velocity, and acceleration gains.
+        public FeedforwardModel(double kS, double kCos, double kV, double kA) {
+            this.kS = kS;
+            this.kCos = kCos;
+            this.kV = kV;
+            this.kA = kA;
+        }
+
+        // use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
+        public FeedforwardModel(double kS, double kV, double kA) {
+            this(kS, 0, kV, kA);
+        }
+
+        public double calculateAll(double positionRadians, double velocityRadPerSec, double accelRadPerSecSquared) {
+            return (
+                kS * Math.signum(velocityRadPerSec) 
+                + kCos * Math.cos(positionRadians)
+                + kV * velocityRadPerSec
+                + kA * accelRadPerSecSquared
+            );
+        }
+
+        public double calculateByAngle(double positionRadians, double velocityRadPerSec) {
+            return (
+                kS * Math.signum(velocityRadPerSec) 
+                + kCos * Math.cos(positionRadians)
+                + kV * velocityRadPerSec
+            );
+        }
+
+        public double calculateNoAngle(double velocityRadPerSec, double accelRadPerSecSquared) {
+            return (
+                kS * Math.signum(velocityRadPerSec)
+                + kV * velocityRadPerSec
+                + kA * accelRadPerSecSquared
+            );
+        }
+    }
+
+    public static class FPIDConstants {
+        public double speedMultiplier, gearing;
+        public int limitSwitchPort, encoderCPR;
+        public FPID fpid;
+        public FeedforwardModel ff;
+
+        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, int limitSwitchPort, FPID fpid, FeedforwardModel ff) {
             this.speedMultiplier = speedMultiplier;
+            this.gearing = gearing;
+            this.encoderCPR = encoderCPR;
             this.limitSwitchPort = limitSwitchPort;
             this.fpid = fpid;
             this.ff = ff;
@@ -39,12 +85,11 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
     }
 
     // pass motors as an array of SpeedControllers, eg. WPI_TalonFX[] or CANSparkMax[]
-    public FPIDSubsystemBase(FPIDConstants constants, SpeedController[] motors) {
-        super(new ArmFPIDController(constants.fpid.kF, constants.fpid.kP, constants.fpid.kI, constants.fpid.kD, constants.ff));
-        // set the controller variable to the ArmFPIDController we just made above
-        controller = (ArmFPIDController) getController();
+    public FPIDSubsystem(FPIDConstants constants, SpeedController[] motors) {
+        super(new PIDController(constants.fpid.kP, constants.fpid.kI, constants.fpid.kD));
         //disable PID control when starting
         this.disable();
+        this.ffGain = constants.fpid.kF;
 
         /* THE BELOW LINES WILL BE USED AFTER CHARACTERIZATION. DO NOT USE THEM NOW */
 
@@ -68,10 +113,6 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
 
     public abstract void setEncoderPosition(double position);
 
-    public ArmFPIDController getFPIDController() {
-        return controller;
-    }
-
     // move the mechanism based on a given throttle 
     public void moveByThrottle(double throttle) {
         motorGroup.set(-throttle * constants.speedMultiplier); // negative throttle is on purpose!
@@ -87,10 +128,21 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
         motorGroup.setVoltage((inverted ? -1 : 1) * voltage);
     }
 
-    // calculates the feedForward for the PIDController
+    // calculates Feedforward using given position and velocity values (using an ArmFeedforward)
+    // override this method if using a subsystem other than an arm.
+    public double calcFeedForward(double position, double velocity) {
+        return constants.ff.calculateByAngle(position, velocity);
+    }
+
+    // calculates the Feedforward with a default value (using an ArmFeedforward)
+    // override this method if using a subsystem other than an arm.
     public double calcFeedForward() {
-        // double ff = constants.ff.calculate(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0) / 12;
-        return controller.calculateF(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0);
+        return constants.ff.calculateByAngle(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0);
+    }
+
+    // returns the Feedforward gain
+    public double getF() {
+        return ffGain;
     }
 
     public void startPID() {
@@ -98,15 +150,16 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
     }
 
     // displays various PID values on SmartDashboard
+    // defaults to values from an arm. override this method if using a subsystem other than an arm.
     public void refreshPID() {
         SmartDashboard.putNumber("Angle", getPositionDegrees());
         SmartDashboard.putNumber("Encoder Val", getPositionRotation());
         SmartDashboard.putNumber("FF", calcFeedForward());
     }
     
-    // gets the encoder's position
+    // gets the encoder's position in full arm rotations. 
     public double getPositionRotation() {
-        return getEncoderValue(EncoderValueType.Position);
+        return getEncoderValue(EncoderValueType.Position) / constants.gearing / constants.encoderCPR;
     }
 
     public double getPositionDegrees() {
@@ -125,7 +178,7 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
     @Override
     protected void useOutput(double output, double setpoint) {
         try {
-            moveByThrottle(output);
+            moveByThrottle(output * ffGain);
         }
         catch(NullPointerException e) {
             System.out.println("NullPointerException " + e + " from useOutput. \n A constant was likely not given by DriveConstants object");
@@ -145,9 +198,9 @@ public abstract class FPIDSubsystemBase extends PIDSubsystem {
 
     @Override
     public void periodic() {
-        System.out.println(getPositionDegrees());
+        // System.out.println(getPositionDegrees());
         refreshPID();
-        controller.setF(calcFeedForward());
+        ffGain = calcFeedForward();
         // double setpoint = constants.ff.calculate(Math.toRadians(getPositionDegrees()), getEncoderValue(EncoderValueType.Velocity));
         // double output = controller.calculate(getMeasurement(), setpoint, getEncoderValue(EncoderValueType.Velocity));
         // useOutput(output, setpoint);
