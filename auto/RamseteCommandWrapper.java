@@ -106,7 +106,7 @@ public class RamseteCommandWrapper extends CommandBase {
      * @return the command
      */
     public RamseteCommandWrapper resetOdometryOnStart() {
-        willZeroOdometry = true;
+        willResetOdometry = true;
         return this;
     }
 
@@ -122,6 +122,7 @@ public class RamseteCommandWrapper extends CommandBase {
 
         if (willResetOdometry) {
             drivetrain.resetOdometry(trajectory.getInitialPose());
+            System.out.println(trajectory.getInitialPose());
         }
 
         pathFollowCommand = ramsete;
@@ -132,6 +133,8 @@ public class RamseteCommandWrapper extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
+        super.execute();
+        // ramsete.
     }
 
     // Called once the command ends or is interrupted.
