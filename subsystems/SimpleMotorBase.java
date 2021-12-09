@@ -11,20 +11,20 @@ public abstract class SimpleMotorBase extends SubsystemBase {
     public SimpleMotorBase(SpeedController[] motors, double throttle) {
         motorGroup = new SpeedControllerGroup(motors);
         this.throttle = throttle;
-    configureMotors();
+        configureMotors();
     }
 
     public abstract void configureMotors();
 
     public void forward() {
         motorGroup.set(throttle);
-    };
+    }
 
     public void backward() {
         motorGroup.set(-throttle);
-    };
+    }
 
     public void stop() {
         motorGroup.set(0);
-    };
-};
+    }
+}
