@@ -2,12 +2,11 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.pid.PID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 
 public abstract class FPIDSubsystem extends PIDSubsystem {
     protected FPIDConstants constants;
@@ -73,12 +72,11 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     public FPIDSubsystem(FPIDConstants constants, SpeedController[] motors) {
         super(new PIDController(constants.pid.kP, constants.pid.kI, constants.pid.kD));
         //enable PID control when starting
-
         this.enable();
 
         this.constants = constants;
-        limitSwitch = new DigitalInput(constants.limitSwitchPort);
 
+        limitSwitch = new DigitalInput(constants.limitSwitchPort);
         motorGroup = new SpeedControllerGroup(motors);
 
         configureMotors();
@@ -90,12 +88,10 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     // the implementing class also needs to get and set encoder values
     // param type: what type of value we're getting from the encoder. values Position and Velocity as defined above in EncoderValueType
     public abstract double getEncoderValue(EncoderValueType type);
-
     public abstract void setEncoderPosition(double position);
 
-    // the implementing class should calculate Feedforward because we don't know what model to use
+    // the implementing class should decide how to calculate Feedforward because we don't know what model to use
     public abstract double calcFeedForward(double position, double velocity);
-
     public abstract double calcFeedForward();
 
     // it should also do getMeasurement because we don't know what measurement to use
@@ -120,10 +116,6 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     public void moveByVolts(double voltage, boolean inverted) {
         motorGroup.setVoltage((inverted ? -1 : 1) * voltage);
     }
-
-    public void startPID() {
-        SmartDashboard.putNumber("Goto Position", 0);
-    }
     
     public DigitalInput getLimitSwitch() {
         return limitSwitch;
@@ -145,7 +137,7 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         }
     }
 
-    // disables the subsystem without useing useOutput
+    // disables the subsystem without using useOutput
     @Override
     public void disable() {
         this.m_enabled = false;
