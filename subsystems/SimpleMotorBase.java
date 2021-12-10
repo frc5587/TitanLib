@@ -9,6 +9,7 @@ public abstract class SimpleMotorBase extends SubsystemBase {
     protected double throttle;
 
     public SimpleMotorBase(SpeedController[] motors, double throttle) {
+        // Create SpeedControllerGroup with the motors passed in as a parameter
         motorGroup = new SpeedControllerGroup(motors);
         this.throttle = throttle;
         configureMotors();
