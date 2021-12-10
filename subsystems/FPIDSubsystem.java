@@ -11,13 +11,10 @@ import edu.wpi.first.wpilibj.SpeedController;
 
 public abstract class FPIDSubsystem extends PIDSubsystem {
     protected FPIDConstants constants;
-    // the leader motor is defined as its own variable, while followers are put into an array for easy use.
-    protected SpeedController leader;
-    protected SpeedController[] followers;
+    protected SpeedController[] motors;
     protected SpeedControllerGroup motorGroup;
 
     private final DigitalInput limitSwitch;
-    private double ffGain;
 
     // what type of value we can get from an encoder
     public static enum EncoderValueType {
@@ -122,11 +119,6 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         return constants.ff.calculate(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0);
     }
 
-    // returns the Feedforward gain
-    public double getF() {
-        return ffGain;
-    }
-
     public void startPID() {
         SmartDashboard.putNumber("Goto Position", 0);
     }
@@ -204,9 +196,8 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
 
     // stops every motor without going through the speedcontroller group
     public void stopMotors() {
-        leader.set(0);
-        for(SpeedController follower : followers) {
-            follower.set(0);
+        for(SpeedController motor : motors) {
+            motor.set(0);
         }
     }
 }
