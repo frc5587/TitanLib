@@ -1,12 +1,12 @@
 package org.frc5587.lib.subsystems;
 
-import org.frc5587.lib.controllers.ArmFPIDController;
 import org.frc5587.lib.pid.FPID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.SpeedController;
 
 public abstract class PivotingArmBase extends PIDSubsystem {
@@ -17,7 +17,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     protected SpeedControllerGroup motorGroup;
 
     private DigitalInput armLimitSwitch;
-    private ArmFPIDController controller;
+    private PIDController controller;
 
     // what type of value we can get from an encoder
     public static enum EncoderValueType {
@@ -40,9 +40,9 @@ public abstract class PivotingArmBase extends PIDSubsystem {
 
     // pass motors as an array of SpeedControllers, eg. WPI_TalonFX[] or CANSparkMax[]
     public PivotingArmBase(ArmsConstants constants, SpeedController[] motors) {
-        super(new ArmFPIDController(constants.fpid.kF, constants.fpid.kP, constants.fpid.kI, constants.fpid.kD, constants.ff));
+        super(new PIDController(constants.fpid.kP, constants.fpid.kI, constants.fpid.kD));
         // set the controller variable to the ArmFPIDController we just made above
-        controller = (ArmFPIDController) getController();
+        controller = getController();
         //disable PID control when starting
         this.disable();
 
@@ -89,7 +89,7 @@ public abstract class PivotingArmBase extends PIDSubsystem {
 
     public abstract void setEncoderPosition(double position);
 
-    public ArmFPIDController getArmController() {
+    public PIDController getArmController() {
         return controller;
     }
 
@@ -117,12 +117,6 @@ public abstract class PivotingArmBase extends PIDSubsystem {
         motorGroup.setVoltage(-voltage);
     }
 
-    // calculates the feedForward for the PIDController
-    public double calcFeedForward() {
-        // double ff = constants.ff.calculate(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0) / 12;
-        return controller.calculateF(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0);
-    }
-
     public void startPID() {
         SmartDashboard.putNumber("Goto Position", 0);
     }
@@ -131,7 +125,6 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     public void refreshPID() {
         SmartDashboard.putNumber("Angle", getPositionDegrees());
         SmartDashboard.putNumber("Encoder Val", getPositionRotation());
-        SmartDashboard.putNumber("FF", calcFeedForward());
     }
     
     // gets the encoder's position
@@ -171,7 +164,6 @@ public abstract class PivotingArmBase extends PIDSubsystem {
     public void periodic() {
         System.out.println(getPositionDegrees());
         refreshPID();
-        controller.setF(calcFeedForward());
         // double setpoint = constants.ff.calculate(Math.toRadians(getPositionDegrees()), getEncoderValue(EncoderValueType.Velocity));
         // double output = controller.calculate(getMeasurement(), setpoint, getEncoderValue(EncoderValueType.Velocity));
         // useOutput(output, setpoint);
