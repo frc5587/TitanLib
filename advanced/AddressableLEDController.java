@@ -4,9 +4,9 @@ import java.util.function.BiFunction;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class AddressableLEDController {
+public class AddressableLEDController extends SubsystemBase {
     private int port;
     private int length;
     private int step = 0;
@@ -15,19 +15,21 @@ public class AddressableLEDController {
     private AddressableLED leds;
     private AddressableLEDBuffer ledBuffer;
 
-    private Notifier ledNotifier;
+    private BiFunction<Integer, AddressableLEDBuffer, AddressableLEDBuffer> ledStepperFunction;
 
-    /***
+    /**
      * Initialized the controller. This controller is meant to control individually
      * addressable LEDs. It works for WS2812 architecture, but it should work for
      * WS2812B as well.
      * 
      * @param port   PWM header port number
      * @param length number of LEDs on the strip
+     * @param ledStepperFunction function to step the LED strip, its given the step and buffer, and is expected to return the modified buffer
      */
-    public AddressableLEDController(int port, int length) {
+    public AddressableLEDController(int port, int length, BiFunction<Integer, AddressableLEDBuffer, AddressableLEDBuffer> ledStepperFunction) {
         this.port = port;
         this.length = length;
+        this.ledStepperFunction = ledStepperFunction;
 
         leds = new AddressableLED(port);
         ledBuffer = new AddressableLEDBuffer(length);
@@ -38,69 +40,48 @@ public class AddressableLEDController {
     }
 
     /**
-     * This stops the LED step handler if it is running.
+     * Initialized the controller. This controller is meant to control individually
+     * addressable LEDs. It works for WS2812 architecture, but it should work for
+     * WS2812B as well.
+     * 
+     * @param port   PWM header port number
+     * @param length number of LEDs on the strip
+     * @param ledPattern this just gives a little more control than the ledStepperFunction
      */
-    public void stopLEDStepHandlerNotifier() {
-        if (ledNotifier != null) {
-            ledNotifier.stop();
-            ledNotifier.close();
-            ledNotifier = null;
-        }
+    public AddressableLEDController(int port, int length, CustomLEDPattern ledPattern) {
+        this(port, length, (BiFunction<Integer, AddressableLEDBuffer, AddressableLEDBuffer>) ledPattern::step); //this casting is necessary other java gets made and is like "its too vague!?!?!" cause technically ledPattern::step could be null, and then it wouldn't know which constructor to call
     }
 
     /**
-     * Starts the notifier handler that will run the step function of the custom
-     * pattern object. It is recommended to have the period be 0.02, meaning it will
-     * run 50 times a second, but any number should work just fine.
-     * 
-     * @param ledPattern custom LED pattern object, use if you really need to
-     *                   preserve variables between runs, otherwise use the other
-     *                   version of this method to make things simpler
-     * @param period     time between each run of the function (recommended as 0.02)
+     * Steps the pattern function and updates the LEDs
      */
-    public void startLEDStepHandlerNotifier(CustomLEDPattern ledPattern, double period) {
-        stopLEDStepHandlerNotifier();
-
-        ledNotifier = new Notifier(() -> {
-            LEDStepHandler(ledPattern::step);
-        });
-
-        ledNotifier.startPeriodic(period);
-    }
-
-    /**
-     * Starts the notifier handler that will run the custom function. It is
-     * recommended to have the period be 0.02, meaning it will run 50 times a
-     * second, but any number should work just fine.
-     * 
-     * @param ledStepperFunction custom LED controller function <step number,
-     *                           LEDbuffer, LEDbuffer>
-     * @param period             time between each run of the function (recommended
-     *                           as 0.02)
-     */
-    public void startLEDStepHandlerNotifier(
-            BiFunction<Integer, AddressableLEDBuffer, AddressableLEDBuffer> ledStepperFunction, double period) {
-        stopLEDStepHandlerNotifier();
-
-        ledNotifier = new Notifier(() -> {
-            LEDStepHandler(ledStepperFunction);
-        });
-        ledNotifier.startPeriodic(period);
-    }
-
-    /**
-     * This is a uniform way to handle most simple custom functions (like a moving
-     * rainbow) to control the LEDs. Every time this is called, it raises the step
-     * counter by 1.
-     * 
-     * @param ledStepperFunction custom LED controller function <step number,
-     *                           LEDbuffer, LEDbuffer>
-     */
-    public void LEDStepHandler(BiFunction<Integer, AddressableLEDBuffer, AddressableLEDBuffer> ledStepperFunction) {
+    @Override
+    public void periodic() {
         ledBuffer = ledStepperFunction.apply(step, ledBuffer);
         updateLEDs();
 
         step++;
+    }
+
+    /**
+     * Sets the pattern that is run in periodic, it will update the LEDs on the next iteration of periodic()
+     * 
+     * @param ledPattern custom LED pattern object, use if you really need to
+     *                   preserve variables between runs, otherwise use the other
+     *                   version of this method to make things simpler
+     */
+    public void setPattern(CustomLEDPattern ledPattern) {
+        ledStepperFunction = ledPattern::step;
+    }
+
+    /**
+     * Sets the pattern that is run in periodic, it will update the LEDs on the next iteration of periodic()
+     * 
+     * @param ledStepperFunction custom LED controller function <step number,
+     *                           LEDbuffer, LEDbuffer>
+     */
+    public void setPattern(BiFunction<Integer, AddressableLEDBuffer, AddressableLEDBuffer> ledStepperFunction) {
+        this.ledStepperFunction = ledStepperFunction;
     }
 
     /**
