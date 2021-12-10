@@ -2,7 +2,6 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.pid.PID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.SpeedController;
@@ -12,8 +11,6 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     protected FPIDConstants constants;
     protected SpeedController[] motors;
     protected SpeedControllerGroup motorGroup;
-
-    private final DigitalInput limitSwitch;
 
     // what type of value we can get from an encoder
     public static enum EncoderValueType {
@@ -51,18 +48,14 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
 
     public static class FPIDConstants {
         public double speedMultiplier, gearing;
-        public int limitSwitchPort, encoderCPR;
-        public boolean limitSwitchInverted, invertThrottle;
+        public int encoderCPR;
         public PID pid;
         public FeedforwardModel ff;
 
-        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, boolean limitSwitchInverted, boolean invertThrottle, int limitSwitchPort, PID pid, FeedforwardModel ff) {
+        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, PID pid, FeedforwardModel ff) {
             this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
             this.encoderCPR = encoderCPR;
-            this.limitSwitchPort = limitSwitchPort;
-            this.limitSwitchInverted = limitSwitchInverted;
-            this.invertThrottle = invertThrottle;
             this.pid = pid;
             this.ff = ff;
         }
@@ -76,7 +69,6 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
 
         this.constants = constants;
 
-        limitSwitch = new DigitalInput(constants.limitSwitchPort);
         motorGroup = new SpeedControllerGroup(motors);
 
         configureMotors();
@@ -104,28 +96,23 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
 
     // move the mechanism based on a given throttle 
     public void moveByThrottle(double throttle) {
-        motorGroup.set((constants.invertThrottle ? -1 : 1) * throttle * constants.speedMultiplier); // negative throttle is on purpose!
+        motorGroup.set(throttle * constants.speedMultiplier);
     }
 
     // move the mechanism based on a constant multiplier (for operation with buttons)
-    public void moveByFixedSpeed(boolean inverted) {
-        motorGroup.set((inverted ? -1 : 1) * constants.speedMultiplier);
+    public void moveByFixedSpeed() {
+        motorGroup.set(constants.speedMultiplier);
+    }
+
+    public void moveFixedReversed() {
+        motorGroup.set(-constants.speedMultiplier);
     }
 
     // moves the mechanism based on voltage instead of speed
     public void moveByVolts(double voltage, boolean inverted) {
         motorGroup.setVoltage((inverted ? -1 : 1) * voltage);
     }
-    
-    public DigitalInput getLimitSwitch() {
-        return limitSwitch;
-    }
 
-    public boolean getLimitSwitchValue() {
-        // if constants tells us to invert the limit switch, return it as a negated version
-        return (constants.limitSwitchInverted ? !limitSwitch.get() : limitSwitch.get());
-    }
-    
     // uses PID output to move the mechanism
     @Override
     protected void useOutput(double output, double setpoint) {
