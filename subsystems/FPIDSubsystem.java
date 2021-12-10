@@ -53,16 +53,17 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     public static class FPIDConstants {
         public double speedMultiplier, gearing;
         public int limitSwitchPort, encoderCPR;
-        public boolean limitSwitchInverted;
+        public boolean limitSwitchInverted, invertThrottle;
         public PID pid;
         public FeedforwardModel ff;
 
-        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, boolean limitSwitchInverted, int limitSwitchPort, PID pid, FeedforwardModel ff) {
+        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, boolean limitSwitchInverted, boolean invertThrottle, int limitSwitchPort, PID pid, FeedforwardModel ff) {
             this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
             this.encoderCPR = encoderCPR;
             this.limitSwitchPort = limitSwitchPort;
             this.limitSwitchInverted = limitSwitchInverted;
+            this.invertThrottle = invertThrottle;
             this.pid = pid;
             this.ff = ff;
         }
@@ -94,7 +95,7 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
 
     // move the mechanism based on a given throttle 
     public void moveByThrottle(double throttle) {
-        motorGroup.set(-throttle * constants.speedMultiplier); // negative throttle is on purpose!
+        motorGroup.set((constants.invertThrottle ? -1 : 1) * throttle * constants.speedMultiplier); // negative throttle is on purpose!
     }
 
     // move the mechanism based on a constant multiplier (for operation with buttons)
