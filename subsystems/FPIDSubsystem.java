@@ -93,6 +93,19 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
 
     public abstract void setEncoderPosition(double position);
 
+    // the implementing class should calculate Feedforward because we don't know what model to use
+    public abstract double calcFeedForward(double position, double velocity);
+
+    public abstract double calcFeedForward();
+
+    // it should also do getMeasurement because we don't know what measurement to use
+    // (measurement could be an angle, height, etc)
+    @Override
+    public abstract double getMeasurement();
+
+    @Override
+    public abstract void periodic();
+
     // move the mechanism based on a given throttle 
     public void moveByThrottle(double throttle) {
         motorGroup.set((constants.invertThrottle ? -1 : 1) * throttle * constants.speedMultiplier); // negative throttle is on purpose!
@@ -108,40 +121,10 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         motorGroup.setVoltage((inverted ? -1 : 1) * voltage);
     }
 
-    // calculates Feedforward using given position and velocity values (using an ArmFeedforward)
-    // override this method if using a subsystem other than an arm.
-    public double calcFeedForward(double position, double velocity) {
-        return constants.ff.calculate(position, velocity);
-    }
-
-    // calculates the Feedforward with a default value (using an ArmFeedforward)
-    // override this method if using a subsystem other than an arm.
-    public double calcFeedForward() {
-        return constants.ff.calculate(Math.toRadians(SmartDashboard.getNumber("Goto Position", 0)), 0);
-    }
-
     public void startPID() {
         SmartDashboard.putNumber("Goto Position", 0);
     }
-
-    // displays various PID values on SmartDashboard
-    // defaults to values from an arm. override this method if using a subsystem other than an arm.
-    public void refreshPID() {
-        SmartDashboard.putNumber("Angle", getPositionDegrees());
-        SmartDashboard.putNumber("Encoder Val", getPositionRotation());
-        SmartDashboard.putNumber("FF", calcFeedForward());
-    }
     
-    // gets the encoder's position in full arm rotations. 
-    public double getPositionRotation() {
-        return getEncoderValue(EncoderValueType.Position) / constants.gearing / constants.encoderCPR;
-    }
-
-    // returns the encoder position in degrees (based on the rotation)
-    public double getPositionDegrees() {
-        return getPositionRotation() * 360;
-    }
-
     public DigitalInput getLimitSwitch() {
         return limitSwitch;
     }
@@ -167,22 +150,6 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     public void disable() {
         this.m_enabled = false;
         motorGroup.set(0);
-    }
-
-    @Override
-    protected double getMeasurement() {
-        return getPositionDegrees();
-    }
-
-    @Override
-    public void periodic() {
-        refreshPID();
-        // calculate a setpoint from the Feedforward model
-        double setpoint = constants.ff.calculate(Math.toRadians(getPositionDegrees()), getEncoderValue(EncoderValueType.Velocity));
-        // set the PIDController's setpoint to the above variable so it will automatically be used for output
-        setSetpoint(setpoint);
-        double output = getController().calculate(Math.toRadians(getPositionDegrees()));
-        useOutput(output, setpoint);
     }
 
     // sets encoders back to 0
