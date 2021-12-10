@@ -141,8 +141,8 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     /**
     * moves the mechanism based on voltage instead of speed
     */
-    public void moveByVolts(double voltage, boolean inverted) {
-        motorGroup.setVoltage((inverted ? -1 : 1) * voltage);
+    public void moveByVolts(double voltage) {
+        motorGroup.setVoltage(voltage);
     }
 
     /**
