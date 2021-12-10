@@ -23,7 +23,13 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         public final double kV;
         public final double kA;
 
-        // sets all given values for static, gravity, velocity, and acceleration gains.
+        /**
+        * sets all given values for:
+        * @param kS static gain
+        * @param kCos gravity
+        * @param kV velocity gain
+        * @param kA acceleration gain
+        */
         public FeedforwardModel(double kS, double kCos, double kV, double kA) {
             super(kS, kCos, kV, kA);
             this.kS = kS;
@@ -32,11 +38,19 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
             this.kA = kA;
         }
 
-        // use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
+        /**  
+        * use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
+        */
         public FeedforwardModel(double kS, double kV, double kA) {
             this(kS, 0, kV, kA);
         }
 
+        /**  
+        * use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
+        * @param velocityRadPerSec the subsystem velocity in radians per second 
+        * (account for encoder counts per revolution and gearing BEFORE passing this parameter) 
+        * @param accelRadPerSecSquared 
+        */
         public double calculateNoAngle(double velocityRadPerSec, double accelRadPerSecSquared) {
             return (
                 kS * Math.signum(velocityRadPerSec)
@@ -61,46 +75,62 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         }
     }
 
-    // pass motors as an array of SpeedControllers, eg. WPI_TalonFX[] or CANSparkMax[]
-    public FPIDSubsystem(FPIDConstants constants, SpeedController[] motors) {
+    /** 
+    * pass motors as a SpeedControllerGroup 
+    */
+    public FPIDSubsystem(FPIDConstants constants, SpeedControllerGroup motorGroup) {
         super(new PIDController(constants.pid.kP, constants.pid.kI, constants.pid.kD));
-        //enable PID control when starting
+        /**
+        * enable PID control when starting
+        */
         this.enable();
 
         this.constants = constants;
-
-        motorGroup = new SpeedControllerGroup(motors);
+        this.motorGroup = motorGroup;
 
         configureMotors();
     }
 
-    // have the implementing class configure the motors
+    /**
+    * have the implementing class configure the motors 
+    */
     public abstract void configureMotors();
 
-    // the implementing class also needs to get and set encoder values
-    // param type: what type of value we're getting from the encoder. values Position and Velocity as defined above in EncoderValueType
+    /**
+    * the implementing class also needs to get and set encoder values
+    * @param type what type of value we're getting from the encoder. values Position and Velocity as defined above in EncoderValueType
+    */
     public abstract double getEncoderValue(EncoderValueType type);
     public abstract void setEncoderPosition(double position);
 
-    // the implementing class should decide how to calculate Feedforward because we don't know what model to use
+    /**
+    * the implementing class should decide how to calculate Feedforward 
+    * because we don't know what model to use
+    */
     public abstract double calcFeedForward(double position, double velocity);
     public abstract double calcFeedForward();
 
-    // it should also do getMeasurement because we don't know what measurement to use
-    // (measurement could be an angle, height, etc)
+    /**
+    * it should also do getMeasurement because we don't know what measurement to use
+    * (measurement could be an angle, height, etc)
+    */
     @Override
     public abstract double getMeasurement();
 
     @Override
     public abstract void periodic();
 
-    // move the mechanism based on a given throttle 
+    /**
+    * move the mechanism based on a given throttle 
+    */
     public void moveByThrottle(double throttle) {
         motorGroup.set(throttle * constants.speedMultiplier);
     }
 
-    // move the mechanism based on a constant multiplier (for operation with buttons)
-    public void moveByFixedSpeed() {
+    /**
+    *  move the mechanism based on a constant multiplier (for operation with buttons)
+    */
+     public void moveByFixedSpeed() {
         motorGroup.set(constants.speedMultiplier);
     }
 
@@ -108,12 +138,16 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         motorGroup.set(-constants.speedMultiplier);
     }
 
-    // moves the mechanism based on voltage instead of speed
+    /**
+    * moves the mechanism based on voltage instead of speed
+    */
     public void moveByVolts(double voltage, boolean inverted) {
         motorGroup.setVoltage((inverted ? -1 : 1) * voltage);
     }
 
-    // uses PID output to move the mechanism
+    /**
+    * uses PID output to move the mechanism
+    */
     @Override
     protected void useOutput(double output, double setpoint) {
         try {
@@ -124,27 +158,26 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         }
     }
 
-    // disables the subsystem without using useOutput
+    /** 
+    * disables the subsystem without using useOutput
+    */
     @Override
     public void disable() {
         this.m_enabled = false;
         motorGroup.set(0);
     }
 
-    // sets encoders back to 0
+    /** 
+    * sets encoders back to 0
+    */
     public void resetEncoders() {
         setEncoderPosition(0);
     }
 
-    // stops the speedcontroller group
+    /**
+    * stops the speedcontroller group
+    */
     public void stop() {
         motorGroup.set(0);
-    }
-
-    // stops every motor without going through the speedcontroller group
-    public void stopMotors() {
-        for(SpeedController motor : motors) {
-            motor.set(0);
-        }
     }
 }
