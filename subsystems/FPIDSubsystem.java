@@ -1,8 +1,8 @@
 package org.frc5587.lib.subsystems;
 
+import org.frc5587.lib.controllers.FFPIDController;
 import org.frc5587.lib.pid.PID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
@@ -17,56 +17,13 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         Velocity, Position
     }
 
-    public static class FeedforwardModel extends ArmFeedforward {
-        public final double kS;
-        public final double kCos;
-        public final double kV;
-        public final double kA;
-
-        /**
-        * sets all given values for:
-        * @param kS static gain
-        * @param kCos gravity
-        * @param kV velocity gain
-        * @param kA acceleration gain
-        */
-        public FeedforwardModel(double kS, double kCos, double kV, double kA) {
-            super(kS, kCos, kV, kA);
-            this.kS = kS;
-            this.kCos = kCos;
-            this.kV = kV;
-            this.kA = kA;
-        }
-
-        /**  
-        * use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
-        */
-        public FeedforwardModel(double kS, double kV, double kA) {
-            this(kS, 0, kV, kA);
-        }
-
-        /**  
-        * use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
-        * @param velocityRadPerSec the subsystem velocity in radians per second 
-        * (account for encoder counts per revolution and gearing BEFORE passing this parameter) 
-        * @param accelRadPerSecSquared 
-        */
-        public double calculateNoAngle(double velocityRadPerSec, double accelRadPerSecSquared) {
-            return (
-                kS * Math.signum(velocityRadPerSec)
-                + kV * velocityRadPerSec
-                + kA * accelRadPerSecSquared
-            );
-        }
-    }
-
     public static class FPIDConstants {
         public double speedMultiplier, gearing;
         public int encoderCPR;
         public PID pid;
-        public FeedforwardModel ff;
+        public FFPIDController ff;
 
-        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, PID pid, FeedforwardModel ff) {
+        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, PID pid, FFPIDController ff) {
             this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
             this.encoderCPR = encoderCPR;
