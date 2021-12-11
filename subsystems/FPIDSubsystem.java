@@ -63,14 +63,7 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     */
     public abstract double calcFeedForward(double position, double velocity, double acceleration);
     public abstract double calcFeedForward();
-    public abstract double rotationsToMeasurement();
-
-    /**
-    * it should also do getMeasurement because we don't know what measurement to use
-    * (measurement could be an angle, height, etc)
-    */
-    @Override
-    public abstract double getMeasurement();
+    public abstract double rotationsToMeasurement(double rotations);
 
     @Override
     public abstract void periodic();
@@ -87,6 +80,11 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     */
     public void setVoltage(double voltage) {
         motorGroup.setVoltage(voltage);
+    }
+
+    @Override
+    public double getMeasurement() {
+        return rotationsToMeasurement(getRotations());
     }
 
     /**
@@ -106,18 +104,30 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         motorGroup.set(0);
     }
 
+    /**
+    * divides @param value by the gearing set in constants
+    */
     public double applyGearing(double value) {
         return value / constants.gearing;
     }
 
+    /**
+    * divides @param value by the encoder counts per revolution set in constants
+    */
     public double applyCPR(double value) {
         return value / constants.encoderCPR;
     }
 
+    /**
+    * gets the rotations of the subsystem, accounting for encoderCPR and gearing.
+    */
     public double getRotations() {
         return applyCPR(applyGearing(getEncoderPosition()));
     }
 
+    /**
+    * gets the velocity of the subsystem (in RPS), accounting for encoderCPR and gearing.
+    */
     public double getRotationsPerSecond() {
         return applyCPR(applyGearing(getEncoderVelocity()));
     }
