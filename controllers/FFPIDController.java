@@ -11,6 +11,7 @@ public class FFPIDController {
     * sets all given values for:
     * @param kS static gain
     * @param kCos gravity
+    * @param kG gravity
     * @param kV velocity gain
     * @param kA acceleration gain
     */
@@ -24,20 +25,27 @@ public class FFPIDController {
 
     /**  
     * use this for an elevator
-    * @param velocity the subsystem velocity in radians per second 
+    * all values should be in units that will be determined by how you caluclated them in characterization.
+    * @param velocity the subsystem's velocity in units per second 
     * (account for encoder counts per revolution and gearing BEFORE passing this parameter) 
-    * @param acceleration acceleration in radians per second squared 
+    * @param acceleration acceleration in units per second squared 
     */
     public double calculateElevator(double velocity, double acceleration) {
         return kS * Math.signum(velocity) + kG + kV * velocity + kA * acceleration;
     }
 
+    public double calculateElevator(double velocity) {
+        return calculateElevator(velocity, 0);
+    }
+
     /**  
-    * use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
-    * @param positionRadians the angle of the arm in radians
-    * @param velocity the subsystem velocity in radians per second 
+    * use this for an elevator, or any FPIDSubsystem that does not require an angle gain
+    * most values should be in units that will be determined by how you caluclated them in characterization.
+    * (unless specified otherwise)
+    * @param positionRadians the angle of the arm in RADIANS
+    * @param velocity the subsystem velocity in units per second 
     * (account for encoder counts per revolution and gearing BEFORE passing this parameter) 
-    * @param acceleration acceleration in radians per second squared 
+    * @param acceleration acceleration in units per second squared 
     */
     public double calculateArm(double positionRadians, double velocity, double acceleration) {
         return kS * Math.signum(velocity)
@@ -46,13 +54,26 @@ public class FFPIDController {
             + kA * acceleration;
     }
 
+    public double calculateArm(double positionRadians, double velocity) {
+        return calculateArm(positionRadians, velocity, 0);
+    }
+
+    public double calculateArm(double positionRadians) {
+        return calculateArm(positionRadians, 0, 0);
+    }
+
     /**  
     * use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
-    * @param velocity the subsystem velocity in radians per second 
+    * all values should be in units that will be determined by how you caluclated them in characterization.
+    * @param velocity the subsystem velocity in units per second 
     * (account for encoder counts per revolution and gearing BEFORE passing this parameter) 
-    * @param acceleration acceleration in radians per second squared 
+    * @param acceleration acceleration in units per second squared 
     */
     public double calculateSimpleMotor(double velocity, double acceleration) {
         return kS * Math.signum(velocity) + kV * velocity + kA * acceleration;
+    }
+
+    public double calculateSimpleMotor(double velocity) {
+        return calculateSimpleMotor(velocity, 0);
     }
 }

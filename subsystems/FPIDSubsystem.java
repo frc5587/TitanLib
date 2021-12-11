@@ -12,11 +12,6 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     protected SpeedController[] motors;
     protected SpeedControllerGroup motorGroup;
 
-    // what type of value we can get from an encoder
-    public static enum EncoderValueType {
-        Velocity, Position
-    }
-
     public static class FPIDConstants {
         public double speedMultiplier, gearing;
         public int encoderCPR;
@@ -33,9 +28,10 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     }
 
     /** 
-    * pass motors as a SpeedControllerGroup 
+    * pass motors as a SpeedController, so they can be passed as one motor,
+    * or made into a SpeedControllerGroup if there are multiple.
     */
-    public FPIDSubsystem(FPIDConstants constants, SpeedControllerGroup motorGroup) {
+    public FPIDSubsystem(FPIDConstants constants, SpeedController motorGroup) {
         super(new PIDController(constants.pid.kP, constants.pid.kI, constants.pid.kD));
         /**
         * enable PID control when starting
@@ -43,7 +39,7 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         this.enable();
 
         this.constants = constants;
-        this.motorGroup = motorGroup;
+        this.motorGroup = new SpeedControllerGroup(motorGroup);
 
         configureMotors();
     }
@@ -57,14 +53,15 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     * the implementing class also needs to get and set encoder values
     * @param type what type of value we're getting from the encoder. values Position and Velocity as defined above in EncoderValueType
     */
-    public abstract double getEncoderValue(EncoderValueType type);
+    public abstract double getEncoderPosition();
+    public abstract double getEncoderVelocity();
     public abstract void setEncoderPosition(double position);
 
     /**
     * the implementing class should decide how to calculate Feedforward 
     * because we don't know what model to use
     */
-    public abstract double calcFeedForward(double position, double velocity);
+    public abstract double calcFeedForward(double position, double velocity, double acceleration);
     public abstract double calcFeedForward();
 
     /**
@@ -78,27 +75,16 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     public abstract void periodic();
 
     /**
-    * move the mechanism based on a given throttle 
+    * move the mechanism based on a given percent output (-1 to 1)
     */
-    public void moveByThrottle(double throttle) {
+    public void set(double throttle) {
         motorGroup.set(throttle * constants.speedMultiplier);
-    }
-
-    /**
-    *  move the mechanism based on a constant multiplier (for operation with buttons)
-    */
-     public void moveByFixedSpeed() {
-        motorGroup.set(constants.speedMultiplier);
-    }
-
-    public void moveFixedReversed() {
-        motorGroup.set(-constants.speedMultiplier);
     }
 
     /**
     * moves the mechanism based on voltage instead of speed
     */
-    public void moveByVolts(double voltage) {
+    public void setVoltage(double voltage) {
         motorGroup.setVoltage(voltage);
     }
 
@@ -107,12 +93,7 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     */
     @Override
     protected void useOutput(double output, double setpoint) {
-        try {
-            moveByThrottle(output);
-        }
-        catch(NullPointerException e) {
-            System.out.println("NullPointerException " + e + " from useOutput. \n A constant was likely not given by DriveConstants object");
-        }
+        set(output);
     }
 
     /** 
