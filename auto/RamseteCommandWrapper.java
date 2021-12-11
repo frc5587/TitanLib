@@ -125,6 +125,8 @@ public class RamseteCommandWrapper extends CommandBase {
             System.out.println(trajectory.getInitialPose());
         }
 
+        // TODO: try transformting the whole path if nothing else works
+
         pathFollowCommand = ramsete;
 
         pathFollowCommand.schedule();
