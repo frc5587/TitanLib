@@ -34,8 +34,8 @@ public class RainbowLEDPattern implements CustomLEDPattern {
         for (int i = 0; i < allLeds.length; i++) {
             ledBuffer.setHSV(i, allLeds[(i + (int) idx) % allLeds.length], maxSaturation, brightness);
         }
-
-        idx += stepTime / speed;
+        System.out.println(idx);
+        idx += stepTime * speed;
 
         return ledBuffer;
     }
