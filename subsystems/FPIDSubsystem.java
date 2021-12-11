@@ -63,6 +63,7 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     */
     public abstract double calcFeedForward(double position, double velocity, double acceleration);
     public abstract double calcFeedForward();
+    public abstract double rotationsToMeasurement();
 
     /**
     * it should also do getMeasurement because we don't know what measurement to use
@@ -103,6 +104,22 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     public void disable() {
         this.m_enabled = false;
         motorGroup.set(0);
+    }
+
+    public double applyGearing(double value) {
+        return value / constants.gearing;
+    }
+
+    public double applyCPR(double value) {
+        return value / constants.encoderCPR;
+    }
+
+    public double getRotations() {
+        return applyCPR(applyGearing(getEncoderPosition()));
+    }
+
+    public double getRotationsPerSecond() {
+        return applyCPR(applyGearing(getEncoderVelocity()));
     }
 
     /** 
