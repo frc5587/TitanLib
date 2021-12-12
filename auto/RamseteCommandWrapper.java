@@ -2,12 +2,15 @@ package org.frc5587.lib.auto;
 
 import java.util.List;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
@@ -81,13 +84,39 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     private void makeRamsete() {
-        ramsete = new RamseteCommand(trajectory, drivetrain::getPose, new RamseteController(),
+        // var table = NetworkTableInstance.getDefault().getTable("troubleshooting");
+        var leftReference = SmartDashboard.getEntry("left_reference");
+        var leftMeasurement = SmartDashboard.getEntry("left_measurement");
+        var rightReference = SmartDashboard.getEntry("right_reference");
+        var rightMeasurement = SmartDashboard.getEntry("right_measurement");
+        RamseteController disabledRamsete = new RamseteController();/* new RamseteController() {
+            @Override
+            public ChassisSpeeds calculate(Pose2d currentPose, Pose2d poseRef, double linearVelocityRefMeters,
+                    double angularVelocityRefRadiansPerSecond) {
+                return new ChassisSpeeds(linearVelocityRefMeters, 0.0, angularVelocityRefRadiansPerSecond);
+            }
+        }; */
+
+        var left = new PIDController(constants.kP, 0, 0);
+        var right =new PIDController(constants.kP, 0, 0);
+
+        ramsete = new RamseteCommand(trajectory, drivetrain::getPose, disabledRamsete,
                 new SimpleMotorFeedforward(constants.kS, constants.kV,
                         constants.kA),
                 constants.drivetrainKinematics, drivetrain::getWheelSpeeds,
-                new PIDController(constants.kP, 0, 0),
-                new PIDController(constants.kP, 0, 0),
-                drivetrain::tankDriveVolts, drivetrain);
+                left,
+                right,
+                // drivetrain::tankDriveVolts
+                (leftVolts, rightVolts) -> {
+                    drivetrain.tankDriveVolts(leftVolts, rightVolts);
+            
+                    leftMeasurement.setNumber(drivetrain.getWheelSpeeds().leftMetersPerSecond);
+                    leftReference.setNumber(left.getSetpoint());
+            
+                    rightMeasurement.setNumber(drivetrain.getWheelSpeeds().rightMetersPerSecond);
+                    rightReference.setNumber(right.getSetpoint());
+                },
+                 drivetrain);
     }
 
     /**
@@ -113,7 +142,7 @@ public class RamseteCommandWrapper extends CommandBase {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        
+        System.out.println("starting...");
         // Start the pathFollowCommand
         
         if (willZeroOdometry) {
@@ -122,7 +151,7 @@ public class RamseteCommandWrapper extends CommandBase {
 
         if (willResetOdometry) {
             drivetrain.resetOdometry(trajectory.getInitialPose());
-            System.out.println(trajectory.getInitialPose());
+            // System.out.println(trajectory.getInitialPose());
         }
 
         // TODO: try transformting the whole path if nothing else works
@@ -147,5 +176,10 @@ public class RamseteCommandWrapper extends CommandBase {
             pathFollowCommand.cancel();
         }
         drivetrain.stop();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return pathFollowCommand.isFinished();
     }
 }

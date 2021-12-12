@@ -144,8 +144,8 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     // a tank drive that sets the voltages of the motors
     public void tankDriveVolts(double leftVolts, double rightVolts) {
-        leftGroup.setVoltage(leftVolts);
-        rightGroup.setVoltage(-rightVolts);
+        leftGroup.setVoltage(-leftVolts);
+        rightGroup.setVoltage(rightVolts);
         differentialDrive.feed();
     }
 
@@ -167,7 +167,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     }
 
     public double getRightPositionRotation() {
-        return ticksToRotations(rightLeader.getSelectedSensorPosition());
+        return ticksToRotations(-rightLeader.getSelectedSensorPosition());
     }
 
     private double ticksToRotations(double ticks) {
@@ -263,7 +263,9 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     // resets the heading of the robot
     public void resetHeading() {
+        System.out.println("1:  " + ahrs.getAngle());
         ahrs.reset();
+        System.out.println("2:  " + ahrs.getAngle());
     }
 
     // resets both the heading and the encoders, as well as the odometry of the robot
@@ -318,8 +320,8 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
         // Update the pose
         Rotation2d gyroAngle = Rotation2d.fromDegrees(getHeading360());
-        System.out.println(gyroAngle.getDegrees());
         odometry.update(gyroAngle, getLeftPositionMeters(), getRightPositionMeters());
+        // System.out.println(""+getLeftPositionMeters() +"  "+ getRightPositionMeters());
 
         // Log the pose
         poseHistory.put(Timer.getFPGATimestamp(), getPose());
