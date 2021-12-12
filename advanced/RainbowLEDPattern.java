@@ -5,24 +5,37 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 public class RainbowLEDPattern implements CustomLEDPattern {
     private static final int maxHue = 180;
     private static final int maxSaturation = 255;
-    private static final int maxValue = 255;
-    private int lastHue = 0;
-    private int stepPeriod, wavelength, length, hsvValue;
+    private static final double stepTime = 0.02;
+    private double idx = 0;
+    private int speed, wavelength, brightness;
+    private int[] allLeds;
 
-    public RainbowLEDPattern(int stepPeriod, int wavelength, int length, int hsvValue) {
-        this.stepPeriod = stepPeriod;
+    /**
+     * Creates the rainbow pattern LED controller. You can set `waveLength` and `length` to the same value if you want to "stretch" the rainbow across the entire strip (it looks kinda fire)
+     * 
+     * @param speed how fast the pattern travels across the strip, in pixels per second
+     * @param wavelength length of the wave, so distance (in pixels) from red to red
+     * @param length length of LED strip, in pixels
+     * @param brightness from 0 to 255, its the brightness of the LED strip
+     */
+    public RainbowLEDPattern(int speed, int wavelength, int length, int brightness) {
+        this.speed = speed;
         this.wavelength = wavelength;
-        this.length = length;
-        this.hsvValue = hsvValue;
+        this.brightness = brightness;
+
+        allLeds = new int[length];
+        for (int i = 0; i < allLeds.length; i++) {
+            allLeds[i] = (i * maxHue / this.wavelength) % maxHue;
+        }
     }
 
     @Override
     public AddressableLEDBuffer step(int stepNumber, AddressableLEDBuffer ledBuffer) {
-        lastHue += (maxHue / stepPeriod) % maxHue;
-        for (int i = 0; i < length; i++) {
-            int hue = (lastHue + (maxHue / wavelength)) % maxHue;
-            ledBuffer.setHSV(i, hue, maxSaturation, hsvValue);
+        for (int i = 0; i < allLeds.length; i++) {
+            ledBuffer.setHSV(i, allLeds[(i + (int) idx) % allLeds.length], maxSaturation, brightness);
         }
+        System.out.println(idx);
+        idx += stepTime * speed;
 
         return ledBuffer;
     }
