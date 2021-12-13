@@ -1,6 +1,6 @@
 package org.frc5587.lib.controllers;
 
-public class FFPIDController {
+public class FFController {
     public final double kS;
     public final double kCos;
     public final double kG;
@@ -15,7 +15,7 @@ public class FFPIDController {
     * @param kV velocity gain
     * @param kA acceleration gain
     */
-    public FFPIDController(double kS, double kCos, double kG, double kV, double kA) {
+    public FFController(double kS, double kCos, double kG, double kV, double kA) {
         this.kS = kS;
         this.kCos = kCos;
         this.kG = kG;
