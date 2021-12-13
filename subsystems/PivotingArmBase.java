@@ -26,6 +26,7 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
         return controller.calculateArm(position);
     }
 
+    @Override
     public double rotationsToMeasurement(double rotations) {
         return getPositionDegrees();
     }
