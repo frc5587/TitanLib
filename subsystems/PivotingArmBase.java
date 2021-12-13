@@ -28,7 +28,7 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
 
     @Override
     public double rotationsToMeasurement(double rotations) {
-        return getPositionDegrees();
+        return Math.toRadians(getPositionDegrees());
     }
 
     public double getPositionDegrees() {
