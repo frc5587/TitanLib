@@ -1,6 +1,6 @@
 package org.frc5587.lib.subsystems;
 
-import org.frc5587.lib.controllers.FFPIDController;
+import org.frc5587.lib.controllers.FFController;
 import org.frc5587.lib.pid.PID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.PIDController;
@@ -17,9 +17,9 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
         public double speedMultiplier, gearing;
         public int encoderCPR;
         public PID pid;
-        public FFPIDController ff;
+        public FFController ff;
 
-        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, PID pid, FFPIDController ff) {
+        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, PID pid, FFController ff) {
             this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
             this.encoderCPR = encoderCPR;

@@ -1,6 +1,6 @@
 package org.frc5587.lib.subsystems;
 
-import org.frc5587.lib.controllers.FFPIDController;
+import org.frc5587.lib.controllers.FFController;
 import org.frc5587.lib.pid.FPID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.ArmFeedforward;
@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.SpeedController;
 
 public abstract class PivotingArmBase extends FPIDSubsystem {
-    protected FFPIDController controller;
+    protected FFController controller;
     
     public PivotingArmBase(FPIDConstants constants, SpeedController motorGroup) {
         super(constants, motorGroup);
