@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConst
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.subsystems.SuperSimpleDrivetrain;
 
 import org.frc5587.lib.subsystems.DrivetrainBase;
@@ -88,8 +89,8 @@ public class RamseteCommandWrapper extends CommandBase {
         var leftReference = SmartDashboard.getEntry("left_reference");
         var leftMeasurement = SmartDashboard.getEntry("left_measurement");
         var rightReference = SmartDashboard.getEntry("right_reference");
-        var rightMeasurement = SmartDashboard.getEntry("right_measurement");
-        RamseteController disabledRamsete = new RamseteController();/* new RamseteController() {
+        var rightMeasurement = SmartDashboard.getEntry("right_measurement");    
+        RamseteController disabledRamsete = new RamseteController(); /* {
             @Override
             public ChassisSpeeds calculate(Pose2d currentPose, Pose2d poseRef, double linearVelocityRefMeters,
                     double angularVelocityRefRadiansPerSecond) {
@@ -97,8 +98,8 @@ public class RamseteCommandWrapper extends CommandBase {
             }
         }; */
 
-        var left = new PIDController(constants.kP, 0, 0);
-        var right =new PIDController(constants.kP, 0, 0);
+        var left = new PIDController(AutoConstants.KP, 0, 0);
+        var right =new PIDController(AutoConstants.KP, 0, 0);
 
         ramsete = new RamseteCommand(trajectory, drivetrain::getPose, disabledRamsete,
                 new SimpleMotorFeedforward(constants.kS, constants.kV,
