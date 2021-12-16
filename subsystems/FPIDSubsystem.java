@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     protected FPIDConstants constants;
     protected SpeedController[] motors;
-    protected SpeedControllerGroup motorGroup;
+    protected SpeedController motorGroup;
 
     public static class FPIDConstants {
         public double speedMultiplier, gearing;
@@ -62,9 +62,9 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
             )
         );
         
-        this.enable();
+        // this.enable();
         this.constants = constants;
-        this.motorGroup = new SpeedControllerGroup(motorGroup);
+        this.motorGroup = motorGroup;
 
         configureMotors();
     }
