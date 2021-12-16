@@ -3,28 +3,45 @@ package org.frc5587.lib.subsystems;
 import org.frc5587.lib.controllers.FFController;
 import org.frc5587.lib.pid.PID;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.controller.PIDController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
+import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.SpeedController;
-import edu.wpi.first.wpilibj2.command.PIDSubsystem;
+import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
-public abstract class FPIDSubsystem extends PIDSubsystem {
+public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     protected FPIDConstants constants;
     protected SpeedController[] motors;
     protected SpeedControllerGroup motorGroup;
 
     public static class FPIDConstants {
         public double speedMultiplier, gearing;
-        public int encoderCPR;
+        public int encoderCPR, zeroOffset, switchPort;
+        public boolean switchInverted;
         public PID pid;
         public FFController ff;
+        public TrapezoidProfile.Constraints constraints;
 
-        public FPIDConstants(double speedMultiplier, double gearing, int encoderCPR, PID pid, FFController ff) {
+        public FPIDConstants(
+        double speedMultiplier, 
+        double gearing, 
+        int zeroOffset, 
+        int encoderCPR, 
+        int switchPort, 
+        boolean switchInverted, 
+        PID pid, 
+        FFController ff, 
+        TrapezoidProfile.Constraints constraints
+        ) 
+        {
             this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
+            this.zeroOffset = zeroOffset;
             this.encoderCPR = encoderCPR;
+            this.switchPort = switchPort;
+            this.switchInverted = switchInverted;
             this.pid = pid;
             this.ff = ff;
+            this.constraints = constraints;
         }
     }
 
@@ -33,10 +50,15 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     * or made into a SpeedControllerGroup if there are multiple.
     */
     public FPIDSubsystem(FPIDConstants constants, SpeedController motorGroup) {
-        super(new PIDController(constants.pid.kP, constants.pid.kI, constants.pid.kD));
-        /**
-        * enable PID control when starting
-        */
+        super(
+            new ProfiledPIDController(
+                constants.pid.kP, 
+                constants.pid.kI, 
+                constants.pid.kD,
+                constants.constraints
+            )
+        );
+        
         this.enable();
 
         this.constants = constants;
@@ -57,13 +79,6 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     public abstract double getEncoderPosition();
     public abstract double getEncoderVelocity();
     public abstract void setEncoderPosition(double position);
-
-    /**
-    * the implementing class should decide how to calculate Feedforward 
-    * because we don't know what model to use
-    */
-    public abstract double calcFeedForward(double position, double velocity, double acceleration);
-    public abstract double calcFeedForward(double position);
     public abstract double rotationsToMeasurement(double rotations);
 
     @Override
@@ -93,14 +108,10 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     * uses PID output to move the mechanism
     */
     @Override
-    protected abstract void useOutput(double output, double setpoint);
-    //  {
-    //     System.out.println(output);
-    //     set(output + calcFeedForward(getRotations() * 360));
-    // }
+    protected abstract void useOutput(double output, TrapezoidProfile.State profileState);
 
     /** 
-    * disables the subsystem without using useOutput
+    * disables PID without using useOutput
     */
     @Override
     public void disable() {
@@ -145,7 +156,7 @@ public abstract class FPIDSubsystem extends PIDSubsystem {
     * sets encoders back to 0
     */
     public void resetEncoders() {
-        setEncoderPosition(0);
+        setEncoderPosition(constants.zeroOffset);
     }
 
     /**
