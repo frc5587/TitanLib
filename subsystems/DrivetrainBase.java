@@ -1,20 +1,20 @@
 package org.frc5587.lib.subsystems;
 
-import org.frc5587.lib.advanced.LimitedPoseMap;
 import org.frc5587.lib.pid.FPID;
+import org.frc5587.lib.advanced.LimitedPoseMap;
 import com.kauailabs.navx.frc.AHRS;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
+import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 
 public abstract class DrivetrainBase extends PIDSubsystem {
     // create leader and follower motors for the drivetrain
@@ -60,11 +60,27 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     // set all of the variables from the subclass to this abstract class
     // MotorIDs: a arrays of integer CAN IDs used to make motors. index 0 should ALWAYS be the leader motor, and anything else is a follower.
     public DrivetrainBase(DriveConstants constants, int[] leftMotorIDs, int[] rightMotorIDs) {
+        /* PID SETUP */
         super(new PIDController(constants.turnFPID.kP, constants.turnFPID.kI, constants.turnFPID.kD));        
         // disable PID control on start
         this.disable();
+
+        /* VARIABLE DECLARATION */
+        // set all variables declared at the top to those given in the constructor (mostly constants)
         this.constants = constants;
-        // make arrays to put each type of follower motor in
+        Rotation2d currentAngle = Rotation2d.fromDegrees(getHeading360());
+        this.odometry = new DifferentialDriveOdometry(currentAngle);
+        this.poseHistory =  new LimitedPoseMap(constants.historyLimit);
+        this.turnFPID = constants.turnFPID;
+        this.turnFPIDThrottle = constants.turnPIDThrottle;
+        this.invertGyro = constants.invertGyro;
+        turnController = getController();
+        turnController.enableContinuousInput(-180, 180);
+        turnController.setIntegratorRange(-1, 1);
+        turnController.setTolerance(constants.turnPIDToleranceDeg);
+
+        /* MOTOR SETUP */
+        // use arrays to contain each follower motor
         leftFollowers = new WPI_TalonFX[leftMotorIDs.length-1];
         rightFollowers = new WPI_TalonFX[rightMotorIDs.length-1];
         // put each motor in an array corresponding to its type (leader or follower)
@@ -88,17 +104,6 @@ public abstract class DrivetrainBase extends PIDSubsystem {
                 rightFollowers[i-1] = new WPI_TalonFX(rightMotorIDs[i]);
             }
         }
-        // set all variables declared at the top to those given in the constructor (mostly constants)
-        var currentAngle = Rotation2d.fromDegrees(getHeading360());
-        this.odometry = new DifferentialDriveOdometry(currentAngle);
-        this.poseHistory =  new LimitedPoseMap(constants.historyLimit);
-        this.turnFPID = constants.turnFPID;
-        this.turnFPIDThrottle = constants.turnPIDThrottle;
-        this.invertGyro = constants.invertGyro;
-        turnController = getController();
-        turnController.enableContinuousInput(-180, 180);
-        turnController.setIntegratorRange(-1, 1);
-        turnController.setTolerance(constants.turnPIDToleranceDeg);
         // make speedcontroller groups with the leader and follower motors we got earlier
         // if there are no followers, do not include the followers in the speedcontrollergroups.
         if(leftFollowers.length != 0) {
@@ -122,6 +127,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     // create a required method for subclasses
     public abstract void configureMotors();
 
+    /* CONTROL METHODS */
     // drive with a given throttle and curve (arcade drive)
     public void arcadeDrive(double throttle, double curve) {
         differentialDrive.arcadeDrive(throttle, curve, false);
@@ -144,6 +150,13 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         this.tankDriveVolts(-leftVolts, -rightVolts);
     }
 
+    // sets the speeds of the speedcontrollergroups rather than the differentrialdrive
+    public void setDrive(double speed) {
+        leftGroup.set(speed);
+        rightGroup.set(speed);
+    }
+
+    /* PID AND ODOMETRY */
     // NOTE: many of the following methods are self-explanatory. Only the neccesary documentation will be made.
     public double getLeftPositionRotation() {
         return leftLeader.getSelectedSensorPosition();
@@ -200,7 +213,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
             return ahrs.getAngle() * (invertGyro ? -1 : 1);
         }
         catch(NullPointerException e) {
-            System.out.println("Ur mom is a nullpointerexception");
+            System.out.println("NullPointerException" + e + "from getHeading. \n A constant was likely not given by DriveConstants object");
             return 0;
         }
     }
@@ -265,7 +278,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     }
 
     public double getTurnRate() {
-        return -ahrs.getRate(); // TODO: check if negative sign can be removed
+        return ahrs.getRate(); // TODO: negative sign removed, check if correct
     }
 
     // sets the idle modes of all motors
@@ -290,6 +303,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         return lastAngleSetpoint;
     }
     
+    /* PIDSUBSYSTEMS OVERRIDES */
     // the next few methods override PIDSubsystem. 
     @Override
     public void periodic() {
@@ -317,7 +331,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
             arcadeDrive(turnFPIDThrottle, (output + Math.copySign(turnFPID.kF, output)));
         }
         catch(NullPointerException e) {
-            System.out.println("Ur mom is a nullpointerexception");
+            System.out.println("NullPointerException" + e + "from useOutput. \n A constant was likely not given by DriveConstants object");
         }
     }
 
@@ -330,12 +344,6 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     public void stopDrivetrain() {
         leftGroup.set(0);
         rightGroup.set(0);
-    }
-
-    // sets the speeds of the speedcontrollergroups rather than the differentrialdrive
-    public void setDrive(double speed) {
-        leftGroup.set(speed);
-        rightGroup.set(speed);
     }
 
     // stops all motors
