@@ -17,25 +17,33 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
         super(constants, motorGroup);
         ffController = constants.ff;
         pidController = getController();
-        if((Integer) constants.switchPort != null) {
-            limitSwitch = new DigitalInput(constants.switchPort);
-        }
+        limitSwitch = new DigitalInput(constants.switchPort);
     }
 
     /**
-     * @return the limit switch's state, inverted if necessary.
-     */
+    * @return the limit switch's state, inverted if necessary.
+    */
     public boolean getLimitSwitchValue() {
         return (constants.switchInverted ? !limitSwitch.get() : limitSwitch.get());
     }
 
     @Override
     public double rotationsToMeasurement(double rotations) {
-        return Math.toRadians(rotations * 2 * Math.PI);
+        return rotations * 2 * Math.PI;
     }
 
+    /**
+    * @return the angle of the arm in degrees
+    */
     public double getAngleDegrees() {
-        return getRotations() * 360;
+        return getRotations()* 360;
+    }
+
+    /**
+    * @return the angle of the arm in radians
+    */
+    public double getAngleRadians() {
+        return getRotations() * 2 * Math.PI;
     }
 
     @Override
@@ -70,11 +78,14 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
         SmartDashboard.putNumber("GOAL USED", pidController.getGoal().position);
         SmartDashboard.putBoolean("AT SETPOINT", pidController.atGoal());
 
+        /** SOFT LIMITS */
+        /** if the limit switch is pressed and the arm is powered to move downward, set the voltage to 0 */
         if(getLimitSwitchValue() && output < 0) {
             setVoltage(0);
         }
 
-        else if(!getLimitSwitchValue() && getMeasurement() > Math.toRadians(65) && output > 0) {
+        /** if the arm is above the limit and is powered to move upward, set the voltage to 0 */
+        else if(!getLimitSwitchValue() && getMeasurement() > constants.softLimits[1] && output > 0) {
             setVoltage(0);
         }
 

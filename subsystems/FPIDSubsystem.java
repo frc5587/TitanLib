@@ -15,6 +15,7 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
 
     public static class FPIDConstants {
         public double speedMultiplier, gearing;
+        public double[] softLimits;
         public int encoderCPR, zeroOffset, switchPort;
         public boolean switchInverted;
         public PID pid;
@@ -24,6 +25,7 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
         public FPIDConstants(
         double speedMultiplier, 
         double gearing, 
+        double[] softLimits,
         int zeroOffset, 
         int encoderCPR, 
         int switchPort, 
@@ -35,6 +37,7 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
         {
             this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
+            this.softLimits = softLimits;
             this.zeroOffset = zeroOffset;
             this.encoderCPR = encoderCPR;
             this.switchPort = switchPort;
@@ -46,7 +49,7 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     }
 
     /** 
-    * pass motors as a SpeedController, so they can be passed as one motor,
+    * Pass motors as a SpeedController, so they can be passed as one motor,
     * or made into a SpeedControllerGroup if there are multiple.
     */
     public FPIDSubsystem(FPIDConstants constants, SpeedController motorGroup) {
@@ -60,7 +63,6 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
         );
         
         this.enable();
-
         this.constants = constants;
         this.motorGroup = new SpeedControllerGroup(motorGroup);
 
@@ -68,24 +70,31 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     }
 
     /**
-    * have the implementing class configure the motors 
+    * Have the implementing class configure the motors 
     */
     public abstract void configureMotors();
 
     /**
-    * the implementing class also needs to get and set encoder values
-    * @param type what type of value we're getting from the encoder. values Position and Velocity as defined above in EncoderValueType
+    * the implementing class also needs to get and set encoder values, as we don't know the encoder type
     */
+    /** @return the encoder's position */
     public abstract double getEncoderPosition();
+    /** @return the encoder's velocity */
     public abstract double getEncoderVelocity();
+    /** @param position the position to set the encoder to */
     public abstract void setEncoderPosition(double position);
+    /**
+     * @param rotations
+     * @return the measurement used by the subsystem, converted from rotations
+     */
     public abstract double rotationsToMeasurement(double rotations);
 
     @Override
     public abstract void periodic();
 
     /**
-    * move the mechanism based on a given percent output (-1 to 1)
+    * Sets the motors to a percent output
+    * @param value the percent output to set the motors to (a double -1 to 1)
     */
     public void set(double throttle) {
         motorGroup.set(throttle);
@@ -93,25 +102,31 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     }
 
     /**
-    * moves the mechanism based on voltage instead of speed
+    * Moves the motors by voltage instead of percent output
+    * @param voltage the voltage to set the motors to (a double -12 to 12)
     */
     public void setVoltage(double voltage) {
         motorGroup.setVoltage(voltage);
     }
 
+    /**
+     * @return the subsystem's measurement in the units used by the implementing subsystem.
+     */
     @Override
     public double getMeasurement() {
         return rotationsToMeasurement(getRotations());
     }
 
     /**
-    * uses PID output to move the mechanism
+    * Uses PID output to move the mechanism
+    * <p> Make sure that the implementing class overrides this, because all
+    * FPIDSubsystems will use output differently.
     */
     @Override
     protected abstract void useOutput(double output, TrapezoidProfile.State profileState);
 
     /** 
-    * disables PID without using useOutput
+    * Disables PID without using useOutput
     */
     @Override
     public void disable() {
@@ -120,47 +135,49 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
             motorGroup.set(0);
         }
         catch(NullPointerException e) {
-            System.out.println(e);
+            System.out.println(e + " Could not get motor group.");
         }
     }
 
     /**
-    * divides @param value by the gearing set in constants
+    * @param value value to divide by the gearing set in constants
     */
     public double applyGearing(double value) {
         return value / constants.gearing;
     }
 
     /**
-    * divides @param value by the encoder counts per revolution set in constants
+    * @param value value to divide by the encoder counts per revolution set in constants
     */
     public double applyCPR(double value) {
         return value / constants.encoderCPR;
     }
 
     /**
-    * gets the rotations of the subsystem, accounting for encoderCPR and gearing.
+    * @return the position of the subsystem in rotations,
+    * accounting for gearing and encoder counts per revolution.
     */
     public double getRotations() {
         return applyCPR(applyGearing(getEncoderPosition()));
     }
 
     /**
-    * gets the velocity of the subsystem (in RPS), accounting for encoderCPR and gearing.
+    * @return the velocity of the subsystem (in RPS),
+    * accounting for encoderCPR and gearing.
     */
     public double getRotationsPerSecond() {
         return applyCPR(applyGearing(getEncoderVelocity()));
     }
 
     /** 
-    * sets encoders back to 0
+    * Sets encoders back to the zero offset of the subsystem.
     */
     public void resetEncoders() {
         setEncoderPosition(constants.zeroOffset);
     }
 
     /**
-    * stops the speedcontroller group
+    * Stops the SpeedControllerGroup
     */
     public void stop() {
         motorGroup.set(0);
