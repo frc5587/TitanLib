@@ -32,7 +32,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     protected DriveConstants constants;
 
     // create variables needed for odometry.
-    protected AHRS ahrs;
+    protected AHRS ahrs = new AHRS();
     protected FPID turnFPID;
     protected double turnFPIDThrottle;
     protected boolean invertGyro;
