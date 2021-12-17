@@ -2,7 +2,6 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.controllers.FFController;
 import org.frc5587.lib.pid.PID;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.SpeedController;
