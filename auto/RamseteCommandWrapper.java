@@ -33,6 +33,9 @@ public class RamseteCommandWrapper extends CommandBase {
     private boolean willZeroOdometry = false;
     private boolean willResetOdometry = false;
 
+    private Pose2d startPos;
+    private Pose2d endPos;
+
     public static class RamseteConstants {
         public final double kS; // volts
         public final double kV; // volts * seconds / meters
@@ -159,6 +162,7 @@ public class RamseteCommandWrapper extends CommandBase {
 
         pathFollowCommand = ramsete;
 
+        this.startPos = drivetrain.getPose();
         pathFollowCommand.schedule();
     }
 
@@ -176,6 +180,8 @@ public class RamseteCommandWrapper extends CommandBase {
         if (pathFollowCommand != null) {
             pathFollowCommand.cancel();
         }
+        this.endPos = drivetrain.getPose();
+        System.out.println(""+startPos + "    " + endPos);
         drivetrain.stop();
     }
 
