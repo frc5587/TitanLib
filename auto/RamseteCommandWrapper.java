@@ -19,12 +19,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import frc.robot.Constants.AutoConstants;
-import frc.robot.subsystems.SuperSimpleDrivetrain;
 
 import org.frc5587.lib.subsystems.DrivetrainBase;
 
 public class RamseteCommandWrapper extends CommandBase {
-    private final SuperSimpleDrivetrain drivetrain; // TODO remember to change this back
+    private final DrivetrainBase drivetrain; // TODO remember to change this back
     private final Trajectory trajectory;
     private final RamseteConstants constants;
 
@@ -32,7 +31,7 @@ public class RamseteCommandWrapper extends CommandBase {
     private RamseteCommand ramsete;
 
     private boolean willZeroOdometry = false;
-    private boolean willResetOdometry = false;
+    private boolean willSetOdometryToFirstPose = false;
 
     private boolean debuggingMode = false;
 
@@ -60,11 +59,11 @@ public class RamseteCommandWrapper extends CommandBase {
     /**
      * Creates a new RamseteCommandWrapper.
      */
-    public RamseteCommandWrapper(SuperSimpleDrivetrain drivetrain, AutoPath path, RamseteConstants constants) {
+    public RamseteCommandWrapper(DrivetrainBase drivetrain, AutoPath path, RamseteConstants constants) {
         this(drivetrain, path.trajectory, constants);
     }
 
-    public RamseteCommandWrapper(SuperSimpleDrivetrain drivetrain, Trajectory trajectory, RamseteConstants constants) {
+    public RamseteCommandWrapper(DrivetrainBase drivetrain, Trajectory trajectory, RamseteConstants constants) {
         addRequirements(drivetrain);
 
         this.drivetrain = drivetrain;
@@ -74,7 +73,7 @@ public class RamseteCommandWrapper extends CommandBase {
         makeRamsete();
     }
 
-    public RamseteCommandWrapper(SuperSimpleDrivetrain drivetrain, Pose2d start, List<Translation2d> path, Pose2d end,
+    public RamseteCommandWrapper(DrivetrainBase drivetrain, Pose2d start, List<Translation2d> path, Pose2d end,
             RamseteConstants constants) {
         this(drivetrain,
                 TrajectoryGenerator.generateTrajectory(start, path, end,
@@ -150,8 +149,8 @@ public class RamseteCommandWrapper extends CommandBase {
      * 
      * @return the command
      */
-    public RamseteCommandWrapper resetOdometryOnStart() {
-        willResetOdometry = true;
+    public RamseteCommandWrapper setOdometryToFirstPoseOnStart() {
+        willSetOdometryToFirstPose = true;
         return this;
     }
 
@@ -162,8 +161,8 @@ public class RamseteCommandWrapper extends CommandBase {
             drivetrain.zeroOdometry();
         }
 
-        if (willResetOdometry) {
-            drivetrain.resetOdometry(trajectory.getInitialPose());
+        if (willSetOdometryToFirstPose) {
+            drivetrain.setOdometry(trajectory.getInitialPose());
         }
 
         pathFollowCommand = ramsete;
