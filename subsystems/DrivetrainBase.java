@@ -46,14 +46,18 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         public final double turnPIDThrottle, turnPIDToleranceDeg, wheelDiameterMeters;
         public final int historyLimit;
         public final boolean invertGyro;
+        public final int epr;
+        public final double gearing;
 
-        public DriveConstants(FPID turnFPID, double turnPIDThrottle, double turnPIDToleranceDeg, double wheelDiameterMeters, int historyLimit, boolean invertGyro) {
+        public DriveConstants(FPID turnFPID, double turnPIDThrottle, double turnPIDToleranceDeg, double wheelDiameterMeters, int historyLimit, boolean invertGyro, int epr, double gearing) {
             this.turnFPID = turnFPID;
             this.turnPIDThrottle = turnPIDThrottle;
             this.turnPIDToleranceDeg = turnPIDToleranceDeg;
             this.wheelDiameterMeters = wheelDiameterMeters;
             this.historyLimit = historyLimit;
             this.invertGyro = invertGyro;
+            this.epr = epr;
+            this.gearing = gearing;
         }
     }
 
@@ -140,7 +144,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     // a tank drive that sets the voltages of the motors
     public void tankDriveVolts(double leftVolts, double rightVolts) {
-        leftGroup.setVoltage(leftVolts);
+        leftGroup.setVoltage(-leftVolts);
         rightGroup.setVoltage(rightVolts);
         differentialDrive.feed();
     }
@@ -159,11 +163,15 @@ public abstract class DrivetrainBase extends PIDSubsystem {
     /* PID AND ODOMETRY */
     // NOTE: many of the following methods are self-explanatory. Only the neccesary documentation will be made.
     public double getLeftPositionRotation() {
-        return leftLeader.getSelectedSensorPosition();
+        return ticksToRotations(leftLeader.getSelectedSensorPosition());
     }
 
     public double getRightPositionRotation() {
-        return rightLeader.getSelectedSensorPosition();
+        return ticksToRotations(-rightLeader.getSelectedSensorPosition());
+    }
+
+    private double ticksToRotations(double ticks) {
+        return ticks / constants.epr / constants.gearing;
     }
 
     private double rotationsToMeters(double rotations) {
@@ -179,27 +187,25 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         return rotationsToMeters(getRightPositionRotation());
     }
 
-    public double getLeftVelocityRPM() {
-        return leftLeader.getSelectedSensorVelocity(); // TODO: Removed / 2. Check if correct.
+    public double getLeftVelocityRPS() {
+        return ticksToRotations(leftLeader.getSelectedSensorVelocity()); // TODO: Removed / 2. Check if correct.
     }
 
-    public double getRightVelocityRPM() {
-        return rightLeader.getSelectedSensorVelocity(); // TODO: Removed / 2. Check if correct.
+    public double getRightVelocityRPS() {
+        return ticksToRotations(rightLeader.getSelectedSensorVelocity()) ; // TODO: Removed / 2. Check if correct.
     }
 
-    // converts rotations per minute (RPM) to meters per second (MPS)
-    private double rpmToMPS(double rotationsPerMinute) {
-        double radiansPerSecond = Units.rotationsPerMinuteToRadiansPerSecond(rotationsPerMinute);
-        double linearMetersPerSecond = radiansPerSecond * (constants.wheelDiameterMeters / 2);
-        return linearMetersPerSecond;
+    // converts rotations per second (RPS) to meters per second (MPS)
+    private double rpsToMPS(double rotationsPerSecond) {
+        return rotationsPerSecond * constants.wheelDiameterMeters * Math.PI;
     }
 
     public double getLeftVelocityMPS() {
-        return rpmToMPS(getLeftVelocityRPM());
+        return rpsToMPS(getLeftVelocityRPS());
     }
 
     public double getRightVelocityMPS() {
-        return rpmToMPS(getRightVelocityRPM());
+        return rpsToMPS(getRightVelocityRPS());
     }
 
     // gets the average velocity of the robot by taking the mean of both sides
@@ -257,7 +263,9 @@ public abstract class DrivetrainBase extends PIDSubsystem {
 
     // resets the heading of the robot
     public void resetHeading() {
+        // System.out.println("1:  " + ahrs.getAngle());
         ahrs.reset();
+        // System.out.println("2:  " + ahrs.getAngle());
     }
 
     // resets both the heading and the encoders, as well as the odometry of the robot
@@ -313,6 +321,7 @@ public abstract class DrivetrainBase extends PIDSubsystem {
         // Update the pose
         Rotation2d gyroAngle = Rotation2d.fromDegrees(getHeading360());
         odometry.update(gyroAngle, getLeftPositionMeters(), getRightPositionMeters());
+        // System.out.println(""+getLeftPositionMeters() +"  "+ getRightPositionMeters());
 
         // Log the pose
         poseHistory.put(Timer.getFPGATimestamp(), getPose());
