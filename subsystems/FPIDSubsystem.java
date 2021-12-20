@@ -11,36 +11,27 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     protected FPIDConstants constants;
     protected SpeedController[] motors;
     protected SpeedController motorGroup;
+    public ProfiledPIDController pidController = getController();
 
     public static class FPIDConstants {
-        public double speedMultiplier, gearing;
-        public double[] softLimits;
-        public int encoderCPR, zeroOffset, switchPort;
-        public boolean switchInverted;
+        public double gearing;
+        public int zeroOffset, encoderCPR;
         public PID pid;
         public FFController ff;
         public TrapezoidProfile.Constraints constraints;
 
         public FPIDConstants(
-        double speedMultiplier, 
-        double gearing, 
-        double[] softLimits,
-        int zeroOffset, 
-        int encoderCPR, 
-        int switchPort, 
-        boolean switchInverted, 
-        PID pid, 
-        FFController ff, 
+        double gearing,
+        int zeroOffset,
+        int encoderCPR,
+        PID pid,
+        FFController ff,
         TrapezoidProfile.Constraints constraints
         ) 
         {
-            this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
-            this.softLimits = softLimits;
             this.zeroOffset = zeroOffset;
             this.encoderCPR = encoderCPR;
-            this.switchPort = switchPort;
-            this.switchInverted = switchInverted;
             this.pid = pid;
             this.ff = ff;
             this.constraints = constraints;
@@ -74,6 +65,23 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     public abstract void configureMotors();
 
     /**
+    * use abstract methods to calculate Output and Feedforward 
+    * as we don't know which/how many parameters to apply (position, velocity, acceleration, etc.)
+    */
+
+    /**
+    * @param state the TrapezoidProfile State containing the position and velocity to use in calculation
+    * @return the calculated PID Output used by the subsystem
+    */
+    public abstract double calcOutput(TrapezoidProfile.State state);
+
+    /**
+    * @param state the TrapezoidProfile State containing the position and velocity to use in calculation
+    * @return the calculated Feedforward used by the subsystem
+    */
+    public abstract double calcFF(TrapezoidProfile.State state);
+
+    /**
     * the implementing class also needs to get and set encoder values, as we don't know the encoder type
     */
     /** @return the encoder's position */
@@ -87,9 +95,6 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
      * @return the measurement used by the subsystem, converted from rotations
      */
     public abstract double rotationsToMeasurement(double rotations);
-
-    @Override
-    public abstract void periodic();
 
     /**
     * Sets the motors to a percent output
@@ -123,6 +128,17 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     */
     @Override
     protected abstract void useOutput(double output, TrapezoidProfile.State profileState);
+
+    @Override
+    public void periodic() {
+        TrapezoidProfile.State state = pidController.getGoal();
+        double pid = calcOutput(state);
+        double ff = calcFF(state);
+
+        if(isEnabled()) {
+            useOutput(pid + ff, state);
+        }
+    }
 
     /** 
     * Disables PID without using useOutput

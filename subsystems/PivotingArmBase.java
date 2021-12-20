@@ -9,22 +9,36 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.SpeedController;
 
 public abstract class PivotingArmBase extends FPIDSubsystem {
-    protected FFController ffController;
     protected ProfiledPIDController pidController;
+    protected FFController ffController;
     protected DigitalInput limitSwitch;
+    protected PivotingArmConstants armConstants;
+
+    public static class PivotingArmConstants {
+        public double[] softLimits;
+        public int switchPort;
+        public boolean switchInverted;
+
+        public PivotingArmConstants(double[] softLimits, int switchPort, boolean switchInverted) {
+            this.softLimits = softLimits;
+            this.switchPort = switchPort;
+            this.switchInverted = switchInverted;
+        }
+    }
     
-    public PivotingArmBase(FPIDConstants constants, SpeedController motorGroup) {
-        super(constants, motorGroup);
-        ffController = constants.ff;
+    public PivotingArmBase(PivotingArmConstants armConstants, FPIDConstants fpidConstants, SpeedController motorGroup) {
+        super(fpidConstants, motorGroup);
+        this.armConstants = armConstants;
+        ffController = fpidConstants.ff;
         pidController = getController();
-        limitSwitch = new DigitalInput(constants.switchPort);
+        limitSwitch = new DigitalInput(armConstants.switchPort);
     }
 
     /**
     * @return the limit switch's state, inverted if necessary.
     */
     public boolean getLimitSwitchValue() {
-        return (constants.switchInverted ? !limitSwitch.get() : limitSwitch.get());
+        return (armConstants.switchInverted ? !limitSwitch.get() : limitSwitch.get());
     }
 
     @Override
@@ -36,7 +50,7 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
     * @return the angle of the arm in degrees
     */
     public double getAngleDegrees() {
-        return getRotations()* 360;
+        return getRotations() * 360;
     }
 
     /**
@@ -47,28 +61,13 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
     }
 
     @Override
-    public void periodic() {
-        TrapezoidProfile.State goalState = pidController.getGoal();
-        /** calculate Feedforward and PID with position and velocity from the pidController */
-        double ff = ffController.calculateArm(goalState.position, goalState.velocity);
-        double output = pidController.calculate(getMeasurement(), goalState.position);
-        /** print various values to SmartDashboard */
-        SmartDashboard.putNumber("Angle in Radians", getMeasurement());
-        SmartDashboard.putNumber("Angle in Degrees", getAngleDegrees());
-        SmartDashboard.putNumber("FeedForward", ff);
-        SmartDashboard.putNumber("Output calculated", output);
-        SmartDashboard.putNumber("Output passed", output + ff);
-        SmartDashboard.putNumber("Goal", goalState.position);
-        Shuffleboard.update();
-        /** if the driver has set output on, useOutput. */
-        if(SmartDashboard.getBoolean("OUTPUT ON?", true)) {
-            /** output should be feedforward + calculated PID. */
-            useOutput(ff + output, pidController.getGoal());
-        }
-        /** otherwise, set output to 0 */
-        else {
-            useOutput(0, new TrapezoidProfile.State());
-        }
+    public double calcOutput(TrapezoidProfile.State state) {
+        return pidController.calculate(getMeasurement(), state.position);
+    }
+
+    @Override
+    public double calcFF(TrapezoidProfile.State state) {
+        return ffController.calculateArm(getMeasurement(), state.velocity);
     }
 
     @Override
@@ -85,7 +84,7 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
         }
 
         /** if the arm is above the limit and is powered to move upward, set the voltage to 0 */
-        else if(!getLimitSwitchValue() && getMeasurement() > constants.softLimits[1] && output > 0) {
+        else if(!getLimitSwitchValue() && getMeasurement() > armConstants.softLimits[1] && output > 0) {
             setVoltage(0);
         }
 
