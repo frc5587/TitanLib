@@ -2,6 +2,7 @@ package org.frc5587.lib.auto;
 
 import java.util.List;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
@@ -33,8 +34,7 @@ public class RamseteCommandWrapper extends CommandBase {
     private boolean willZeroOdometry = false;
     private boolean willResetOdometry = false;
 
-    private Pose2d startPos;
-    private Pose2d endPos;
+    private boolean debuggingMode = false;
 
     public static class RamseteConstants {
         public final double kS; // volts
@@ -88,39 +88,50 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     private void makeRamsete() {
-        // var table = NetworkTableInstance.getDefault().getTable("troubleshooting");
-        var leftReference = SmartDashboard.getEntry("left_reference");
-        var leftMeasurement = SmartDashboard.getEntry("left_measurement");
-        var rightReference = SmartDashboard.getEntry("right_reference");
-        var rightMeasurement = SmartDashboard.getEntry("right_measurement");    
-        RamseteController disabledRamsete = new RamseteController(); /* {
-            @Override
-            public ChassisSpeeds calculate(Pose2d currentPose, Pose2d poseRef, double linearVelocityRefMeters,
-                    double angularVelocityRefRadiansPerSecond) {
-                return new ChassisSpeeds(linearVelocityRefMeters, 0.0, angularVelocityRefRadiansPerSecond);
-            }
-        }; */
+        NetworkTableEntry leftReference = SmartDashboard.getEntry("left_reference");
+        NetworkTableEntry leftMeasurement = SmartDashboard.getEntry("left_measurement");
+        NetworkTableEntry rightReference = SmartDashboard.getEntry("right_reference");
+        NetworkTableEntry rightMeasurement = SmartDashboard.getEntry("right_measurement");
 
-        var left = new PIDController(AutoConstants.KP, 0, 0);
-        var right =new PIDController(AutoConstants.KP, 0, 0);
+        RamseteController ramseteController = new RamseteController();
 
-        ramsete = new RamseteCommand(trajectory, drivetrain::getPose, disabledRamsete,
+        PIDController left = new PIDController(AutoConstants.KP, 0, 0);
+        PIDController right = new PIDController(AutoConstants.KP, 0, 0);
+
+        if (debuggingMode) {
+            // This "disables" the fancy control from the ramsete controller, allow you to
+            // verify the feedforward and PID gains. It is the same as doing what is
+            // suggested here:
+            // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/trajectories/troubleshooting.html#verify-feedforward
+            // * you can also comment this line out if you don't want to disable the controller
+            ramseteController.setEnabled(false);
+
+            // * To test feedforward gains, uncomment these following lines (and make sure
+            // debugging mode is on)
+            // right.close();
+            // left.close();
+            // left = new PIDController(0, 0, 0);
+            // right = new PIDController(0, 0, 0);
+        }
+
+        ramsete = new RamseteCommand(trajectory, drivetrain::getPose, ramseteController,
                 new SimpleMotorFeedforward(constants.kS, constants.kV,
                         constants.kA),
                 constants.drivetrainKinematics, drivetrain::getWheelSpeeds,
                 left,
                 right,
-                // drivetrain::tankDriveVolts
                 (leftVolts, rightVolts) -> {
                     drivetrain.tankDriveVolts(leftVolts, rightVolts);
-            
-                    leftMeasurement.setNumber(drivetrain.getWheelSpeeds().leftMetersPerSecond);
-                    leftReference.setNumber(left.getSetpoint());
-            
-                    rightMeasurement.setNumber(drivetrain.getWheelSpeeds().rightMetersPerSecond);
-                    rightReference.setNumber(right.getSetpoint());
+
+                    if (debuggingMode) {
+                        leftMeasurement.setNumber(drivetrain.getWheelSpeeds().leftMetersPerSecond);
+                        leftReference.setNumber(left.getSetpoint());
+
+                        rightMeasurement.setNumber(drivetrain.getWheelSpeeds().rightMetersPerSecond);
+                        rightReference.setNumber(right.getSetpoint());
+                    }
                 },
-                 drivetrain);
+                drivetrain);
     }
 
     /**
@@ -134,7 +145,8 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     /**
-     * Resets the odometry to the first position of the path, right before running the path
+     * Resets the odometry to the first position of the path, right before running
+     * the path
      * 
      * @return the command
      */
@@ -146,31 +158,17 @@ public class RamseteCommandWrapper extends CommandBase {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        System.out.println("starting...");
-        // Start the pathFollowCommand
-        
         if (willZeroOdometry) {
             drivetrain.zeroOdometry();
         }
 
         if (willResetOdometry) {
             drivetrain.resetOdometry(trajectory.getInitialPose());
-            // System.out.println(trajectory.getInitialPose());
         }
-
-        // TODO: try transformting the whole path if nothing else works
 
         pathFollowCommand = ramsete;
 
-        this.startPos = drivetrain.getPose();
         pathFollowCommand.schedule();
-    }
-
-    // Called every time the scheduler runs while the command is scheduled.
-    @Override
-    public void execute() {
-        super.execute();
-        // ramsete.
     }
 
     // Called once the command ends or is interrupted.
@@ -180,13 +178,24 @@ public class RamseteCommandWrapper extends CommandBase {
         if (pathFollowCommand != null) {
             pathFollowCommand.cancel();
         }
-        this.endPos = drivetrain.getPose();
-        System.out.println(""+startPos + "    " + endPos);
         drivetrain.stop();
     }
 
     @Override
     public boolean isFinished() {
         return pathFollowCommand.isFinished();
+    }
+
+    /**
+     * Turns on debugging mode, this will add the actual and reference values of the
+     * velocities to {@link SmartDashboard} and it will "disable" the ramsete
+     * controller, allowing you to verified the various gains
+     * 
+     * @param debuggingMode true for on
+     * @return the controller so you can chain this
+     */
+    public RamseteCommandWrapper setDebuggingMode(boolean debuggingMode) {
+        this.debuggingMode = debuggingMode;
+        return this;
     }
 }
