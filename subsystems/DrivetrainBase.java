@@ -128,19 +128,19 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     public double getRightPositionMeters() {
-        return getDistance(getRightPositionTicks());
+        return getDistance(getRightPositionTicks()) * constants.flipRight;
     }
 
     public double getLeftPositionMeters() {
-        return getDistance(getLeftPositionTicks());
+        return getDistance(getLeftPositionTicks()) * constants.flipLeft;
     }
 
     public double getRightVelocityMetersPerSecond() {
-        return getDistance(getRightVelocityTicksPerSecond());
+        return getDistance(getRightVelocityTicksPerSecond()) * constants.flipRight;
     }
 
     public double getLeftVelocityMetersPerSecond() {
-        return getDistance(getLeftVelocityTicksPerSecond());
+        return getDistance(getLeftVelocityTicksPerSecond()) * constants.flipLeft;
     }
 
     // * ODOMETRY METHODS
