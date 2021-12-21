@@ -23,7 +23,7 @@ import frc.robot.Constants.AutoConstants;
 import org.frc5587.lib.subsystems.DrivetrainBase;
 
 public class RamseteCommandWrapper extends CommandBase {
-    private final DrivetrainBase drivetrain; // TODO remember to change this back
+    private final DrivetrainBase drivetrain; 
     private final Trajectory trajectory;
     private final RamseteConstants constants;
 
@@ -57,12 +57,19 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     /**
-     * Creates a new RamseteCommandWrapper.
+     * Creates a new RamseteCommandWrapper from an {@link AutoPath}.
      */
     public RamseteCommandWrapper(DrivetrainBase drivetrain, AutoPath path, RamseteConstants constants) {
         this(drivetrain, path.trajectory, constants);
     }
 
+    /**
+     * With the {@link Trajectory} instead of a start/end and waypoints, it creates the command. 
+     * 
+     * @param drivetrain drivetrain instance
+     * @param trajectory traject of path
+     * @param constants constants object
+     */
     public RamseteCommandWrapper(DrivetrainBase drivetrain, Trajectory trajectory, RamseteConstants constants) {
         addRequirements(drivetrain);
 
@@ -73,6 +80,16 @@ public class RamseteCommandWrapper extends CommandBase {
         makeRamsete();
     }
 
+    /**
+     * Generates a trajectory based on a start and end positions, and a list of waypoints. This should really only be used for testing and debugging, for more complex paths, PLEASE use Pathweaver.
+     * Note: you cannot specify angle for waypoint
+     * 
+     * @param drivetrain drivetrain instance
+     * @param start start position
+     * @param path list of waypoints
+     * @param end end position
+     * @param constants constants object
+     */
     public RamseteCommandWrapper(DrivetrainBase drivetrain, Pose2d start, List<Translation2d> path, Pose2d end,
             RamseteConstants constants) {
         this(drivetrain,
@@ -86,6 +103,9 @@ public class RamseteCommandWrapper extends CommandBase {
                 constants);
     }
 
+    /**
+     * Creates the actual {@link RamseteCommand}. If this isn't called in the constructor, it means your robot will be sitting around for ~5ish second in the beginning of auto while it calculates the path.
+     */
     private void makeRamsete() {
         NetworkTableEntry leftReference = SmartDashboard.getEntry("left_reference");
         NetworkTableEntry leftMeasurement = SmartDashboard.getEntry("left_measurement");
