@@ -9,7 +9,7 @@ public abstract class SimpleMotorBase extends SubsystemBase {
     protected double forwardThrottle;
     protected double backwardThrottle;
 
-    public SimpleMotorBase(SpeedController[] motors, double forwardThrottle, double backwardThrottle) {
+    public SimpleMotorBase(SpeedController motors, double forwardThrottle, double backwardThrottle) {
         // Create SpeedControllerGroup with the motors passed in as a parameter
         motorGroup = new SpeedControllerGroup(motors);
         this.forwardThrottle = forwardThrottle;
