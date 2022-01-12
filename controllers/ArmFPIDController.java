@@ -30,43 +30,72 @@ public class ArmFPIDController extends PIDController {
         this.armFF = armFF;
     }
 
-    // returns true if Feedforward is enabled
+    /**
+     * @return Returns true if FeedForward is enabled
+     */
     public boolean isFEnabled() {
         return !fDisabled;
     }
 
-    // disables Feedforward control/integration
+    /**
+     * Disables FeedForward control/integration
+     */
     public void disableFeedForward() {
         fDisabled = true;
     }
 
-    // enables Feedforward control/integration
+    /**
+     * Enables FeedForward control/integration
+     */
     public void enableFeedForward() {
         fDisabled = false;
     }
 
-    // returns the Feedforward gain
+    /**
+     * @return Returns FeedForward gain
+    */
     public double getF() {
         return f;
     }
 
-    // sets the Feedforward gain
+    /**
+     * Sets the FeedForward gain
+     * @param f - The FeedForward gain
+     */
     public void setF(double f) {
         this.f = f;
     }
 
-    // sets the Feedfoward and PID gains
+    /*
+    TODO param & return descriptions for the methods below that don't have them
+    TODO also documentation for the calculate() method
+    */
+
+    /**
+     * Sets the Feedfoward and PID gains
+     * @param f
+     * @param p
+     * @param i
+     * @param d
+     */
     public void setFPID(double f, double p, double i, double d) {
         this.setPID(p, i, d);
         this.f = f;
     }
 
-    // calculates the Feedforward value based on position and velocity
+    /**
+     * Calculates the Feedforward value based on position and velocity
+     * @param position
+     * @param velocity
+     * @return
+     */
     public double calculateF(double position, double velocity) {
         return armFF.calculate(position, velocity);
     }
 
-    // returns the ArmFeedforward armFF of this type in case it is needed
+    /**
+     * @return Returns the ArmFeedforward armFF of this type in case it is needed
+     */
     public ArmFeedforward getArmFeedforward() {
         return armFF;
     }
@@ -83,8 +112,11 @@ public class ArmFPIDController extends PIDController {
         }
     }
 
-    // initializes this as a Sendable Object; using all of the f, p, i and d values.
-    // this can't just use PIDController's initSendable method, because we need f as well.
+    /**
+     * Initializes this as a Sendable Object; using all of the f, p, i and d values.
+     * This can't just use PIDController's initSendable method, because we need f as well.
+     * @param builder - A sendable builder
+     */
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.setSmartDashboardType("PIDController");
