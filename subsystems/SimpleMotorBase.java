@@ -28,6 +28,6 @@ public abstract class SimpleMotorBase extends SubsystemBase {
     }
 
     public void stop() {
-        motorController.set(0);
+        motorGroup.set(0);
     }
 }

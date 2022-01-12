@@ -24,7 +24,7 @@ public class FFController {
     }
 
     /**  
-    * use this for an elevator
+    * Use this for an elevator
     * all values should be in units that will be determined by how you caluclated them in characterization.
     * @param velocity the subsystem's velocity in units per second 
     * (account for encoder counts per revolution and gearing BEFORE passing this parameter) 
@@ -39,7 +39,7 @@ public class FFController {
     }
 
     /**  
-    * use this for an elevator, or any FPIDSubsystem that does not require an angle gain
+    * Use this for an arm, or any FPIDSubsystem that does not require an angle gain
     * most values should be in units that will be determined by how you caluclated them in characterization.
     * (unless specified otherwise)
     * @param positionRadians the angle of the arm in RADIANS
@@ -63,7 +63,7 @@ public class FFController {
     }
 
     /**  
-    * use this for an elevator, or any FPIDSubsystem that does not require an angle gain.
+    * Use this for a simple motor
     * all values should be in units that will be determined by how you caluclated them in characterization.
     * @param velocity the subsystem velocity in units per second 
     * (account for encoder counts per revolution and gearing BEFORE passing this parameter) 

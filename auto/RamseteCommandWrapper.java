@@ -118,15 +118,18 @@ public class RamseteCommandWrapper extends CommandBase {
         PIDController right = new PIDController(AutoConstants.KP, 0, 0);
 
         if (debuggingMode) {
-            // This "disables" the fancy control from the ramsete controller, allow you to
-            // verify the feedforward and PID gains. It is the same as doing what is
-            // suggested here:
-            // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/trajectories/troubleshooting.html#verify-feedforward
-            // * you can also comment this line out if you don't want to disable the controller
+            /* 
+            This "disables" the fancy control from the ramsete controller, allow you to
+            verify the feedforward and PID gains. It is the same as doing what is
+            suggested here:
+            https://docs.wpilib.org/en/stable/docs/software/advanced-controls/trajectories/troubleshooting.html#verify-feedforward 
+            */
+           
+            // * Comment this line out to keep the controller enabled
             ramseteController.setEnabled(false);
 
-            // * To test feedforward gains, uncomment these following lines (and make sure
-            // debugging mode is on)
+            // * To test feedforward gains, uncomment these following lines (and make sure debugging mode is on
+            
             // right.close();
             // left.close();
             // left = new PIDController(0, 0, 0);
