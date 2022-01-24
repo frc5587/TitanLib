@@ -5,12 +5,13 @@ import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public abstract class SimpleMotorBase extends SubsystemBase {
-    protected SpeedController motorController;
+    protected SpeedControllerGroup motorGroup;
     protected double forwardThrottle;
     protected double backwardThrottle;
 
-    public SimpleMotorBase(SpeedController motor, double forwardThrottle, double backwardThrottle) {
-        motorController = motor;
+    public SimpleMotorBase(SpeedController motors, double forwardThrottle, double backwardThrottle) {
+        // Create SpeedControllerGroup with the motors passed in as a parameter
+        motorGroup = new SpeedControllerGroup(motors);
         this.forwardThrottle = forwardThrottle;
         this.backwardThrottle = backwardThrottle;
         configureMotors();
@@ -19,14 +20,14 @@ public abstract class SimpleMotorBase extends SubsystemBase {
     public abstract void configureMotors();
 
     public void forward() {
-        motorController.set(forwardThrottle);
+        motorGroup.set(forwardThrottle);
     }
 
     public void backward() {
-        motorController.set(-backwardThrottle);
+        motorGroup.set(-backwardThrottle);
     }
 
     public void stop() {
-        motorController.set(0);
+        motorGroup.set(0);
     }
 }
