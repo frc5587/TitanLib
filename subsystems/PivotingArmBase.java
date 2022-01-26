@@ -36,7 +36,7 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
     * @return the angle of the arm in degrees
     */
     public double getAngleDegrees() {
-        return getRotations()* 360;
+        return getRotations() * 360;
     }
 
     /**

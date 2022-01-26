@@ -34,15 +34,16 @@ public abstract class DrivetrainBase extends SubsystemBase {
         public final int historyLimit, flipLeft, flipRight;
         public final boolean invertGyro;
 
-        public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double epr, double gearing, boolean flipLeft, boolean flipRight) {
+        public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double epr,
+                double gearing, boolean flipLeft, boolean flipRight) {
             this.wheelDiameterMeters = wheelDiameterMeters;
             this.historyLimit = historyLimit;
             this.invertGyro = invertGyro;
             this.epr = epr;
             this.gearing = gearing;
-            this.flipLeft = flipLeft? -1 : 1;
-            this.flipRight = flipRight? -1 : 1;
-            this.distancePerTick = ((1.0 / epr) / gearing) * (Math.PI * wheelDiameterMeters); 
+            this.flipLeft = flipLeft ? -1 : 1;
+            this.flipRight = flipRight ? -1 : 1;
+            this.distancePerTick = ((1.0 / epr) / gearing) * (Math.PI * wheelDiameterMeters);
         }
     }
 
@@ -54,16 +55,17 @@ public abstract class DrivetrainBase extends SubsystemBase {
         this.right = right;
 
         /* VARIABLE DECLARATION */
-        // set all variables declared at the top to those given in the constructor (mostly constants)
+        // set all variables declared at the top to those given in the constructor
+        // (mostly constants)
         Rotation2d currentAngle = getRotation2d();
         this.odometry = new DifferentialDriveOdometry(currentAngle);
-        this.poseHistory =  new LimitedPoseMap(constants.historyLimit);
+        this.poseHistory = new LimitedPoseMap(constants.historyLimit);
         this.invertGyro = constants.invertGyro;
 
         differentialDrive = new DifferentialDrive(left, right);
         configureMotors();
     }
-    
+
     // create a required method for subclasses
     public abstract void configureMotors();
 
@@ -97,7 +99,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
         right.set(constants.flipRight * speed);
         differentialDrive.feed();
     }
-    
+
     // stops all motors
     public void stop() {
         setThrottle(0);
@@ -106,12 +108,14 @@ public abstract class DrivetrainBase extends SubsystemBase {
     // * SENSOR methods
 
     // Raw encoder ticks from motors for position
-    protected abstract double getRightPositionTicks(); 
-    protected abstract double getLeftPositionTicks(); 
-    
+    protected abstract double getRightPositionTicks();
+
+    protected abstract double getLeftPositionTicks();
+
     // Raw encoder ticks from motors for velocity
-    protected abstract double getRightVelocityTicksPerSecond(); 
-    protected abstract double getLeftVelocityTicksPerSecond(); 
+    protected abstract double getRightVelocityTicksPerSecond();
+
+    protected abstract double getLeftVelocityTicksPerSecond();
 
     /**
      * Converts any fundamental tick value into meters:
@@ -145,9 +149,10 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     // * ODOMETRY METHODS
-    
+
     /**
-     * Sets odometry to {@link Pose2d} specified. Notes: the rotation remains as read from the AHRS.
+     * Sets odometry to {@link Pose2d} specified. Notes: the rotation remains as
+     * read from the AHRS.
      * 
      * @param pose position to set to
      */
@@ -164,7 +169,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
-     * Resets the AHRS. 
+     * Resets the AHRS.
      * 
      * ! Warning, this takes up to 10 seconds to complete (it recalibrates some stuff), use sparingly
      */
@@ -190,7 +195,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
     // resets the positions of the encoders to 0
     protected abstract void resetEncoders();
-    
+
     // * SUBSYSTEMBASE OVERRIDES
 
     @Override
