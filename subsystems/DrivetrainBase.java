@@ -30,33 +30,51 @@ public abstract class DrivetrainBase extends SubsystemBase {
     private final LimitedPoseMap poseHistory;
 
     public static class DriveConstants {
-        public final double wheelDiameterMeters, gearing, epr, distancePerTick;
+        public final double wheelDiameterMeters, gearing, cpr, distancePerTick;
         public final int historyLimit, flipLeft, flipRight;
         public final boolean invertGyro;
 
-        public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double epr,
+        /**
+        * A constants object that provides everything needed by {@link DrivetrainBase}
+        * @param wheelDiameterMeters the wheel diameter in meters
+        * @param historyLimit   the limit of inputs for LimitedPoseMap
+        * @param invertGyro     inverts values given by the gyroscope
+        * @param cpr            the motor encoders' counts per revolution
+        * @param gearing        the gearing from the motor output to the wheels
+        * @param flipLeft       flips the encoders of the left side of the drivetrain if set to true
+        * @param flipRight      flips the encoders of the right side of the drivetrain if set to true
+        */
+        public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double cpr,
                 double gearing, boolean flipLeft, boolean flipRight) {
             this.wheelDiameterMeters = wheelDiameterMeters;
             this.historyLimit = historyLimit;
             this.invertGyro = invertGyro;
-            this.epr = epr;
+            this.cpr = cpr;
             this.gearing = gearing;
             this.flipLeft = flipLeft ? -1 : 1;
             this.flipRight = flipRight ? -1 : 1;
-            this.distancePerTick = ((1.0 / epr) / gearing) * (Math.PI * wheelDiameterMeters);
+            this.distancePerTick = ((1.0 / cpr) / gearing) * (Math.PI * wheelDiameterMeters);
         }
     }
 
-    // set all of the variables from the subclass to this abstract class
-    // MotorIDs: a arrays of integer CAN IDs used to make motors. index 0 should ALWAYS be the leader motor, and anything else is a follower.
+    /**
+    * A drivetrain that uses:
+    * @param left   a MotorController for the left side of the drivetrain 
+    *               (can be passed as a MotorController Group)
+    * @param right  a MotorController for the right side of the drivetrain 
+    *               (can be passed as a MotorController Group)
+    * @param constants a {@link DriveConstants} object containing all constants used by the class
+    */
     public DrivetrainBase(MotorController left, MotorController right, DriveConstants constants) {       
         this.constants = constants;
         this.left = left;
         this.right = right;
 
-        /* VARIABLE DECLARATION */
-        // set all variables declared at the top to those given in the constructor
-        // (mostly constants)
+        /** 
+        * VARIABLE DECLARATION 
+        * set all variables declared at the top to those given in the constructor
+        * (mostly constants)
+        */
         Rotation2d currentAngle = getRotation2d();
         this.odometry = new DifferentialDriveOdometry(currentAngle);
         this.poseHistory = new LimitedPoseMap(constants.historyLimit);
@@ -66,34 +84,49 @@ public abstract class DrivetrainBase extends SubsystemBase {
         configureMotors();
     }
 
-    // create a required method for subclasses
+    /**
+    * The implementing class must configure the motors <p>
+    * This should do things like invert the motors, set their neutral mode, etc.
+    */
     public abstract void configureMotors();
 
-    // * CONTROL METHODS
-
-    // drive with a given throttle and curve (arcade drive)
+    /** 
+    * drive with a given throttle and curve (arcade drive)
+    */
     public void arcadeDrive(double throttle, double curve) {
         differentialDrive.arcadeDrive(throttle, curve, false);
     }
 
-    // drive with a given throttle for each side of the robot (tank drive)
+    /**
+    * drive with a given throttle for each side of the robot (tank drive)
+    */ 
     public void tankDrive(double leftThrottle, double rightThrottle) {
-        differentialDrive.tankDrive(constants.flipLeft * leftThrottle, constants.flipRight * rightThrottle, false);
+        differentialDrive.tankDrive(
+            constants.flipLeft * leftThrottle,
+            constants.flipRight * rightThrottle,
+            false
+        );
     }
 
-    // a tank drive that sets the voltages of the motors
+    /**
+    * a tank drive that sets the voltages of the motors instead of throttle
+    */
     public void tankDriveVolts(double leftVolts, double rightVolts) {
         left.setVoltage(constants.flipLeft * leftVolts);
         right.setVoltage(constants.flipRight * rightVolts);
         differentialDrive.feed();
     }
 
-    // a reversed version of tankdrivevolts
+    /**
+    *  an inverted version of tankdrivevolts
+    */
     public void tankDriveVoltsReverse(double leftVolts, double rightVolts) {
         this.tankDriveVolts(-leftVolts, -rightVolts);
     }
 
-    // sets the speeds of the MotorControllers rather than the differentrialdrive
+    /** 
+    * sets the speeds of the MotorControllers rather than using the DifferentrialDrive
+    */
     public void setThrottle(double speed) {
         left.set(constants.flipLeft * speed);
         right.set(constants.flipRight * speed);
@@ -107,27 +140,37 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
     // * SENSOR methods
 
-    // Raw encoder ticks from motors for position
+    /** 
+    * @return Raw encoder ticks from motors for position
+    */
     protected abstract double getRightPositionTicks();
 
+    /** 
+    * @return Raw encoder ticks from motors for position
+    */
     protected abstract double getLeftPositionTicks();
 
-    // Raw encoder ticks from motors for velocity
+    /** 
+    * @return Raw encoder ticks per second from motors for velocity
+    */
     protected abstract double getRightVelocityTicksPerSecond();
 
+    /** 
+    * @return Raw encoder ticks per second from motors for velocity
+    */
     protected abstract double getLeftVelocityTicksPerSecond();
 
     /**
-     * Converts any fundamental tick value into meters:
-     * 
-     * tick -> meters
-     * ticks per second -> meters per second
-     * ticks per second^2 -> meters per second
-     * etc
-     * 
-     * @param rawTicks raw value read from encoders
-     * @return value in meters
-     */
+    * Converts any fundamental tick value into meters:
+    * 
+    * tick -> meters
+    * ticks per second -> meters per second
+    * ticks per second^2 -> meters per second
+    * etc
+    * 
+    * @param rawTicks raw value read from encoders
+    * @return value in meters
+    */
     protected double getDistance(double rawTicks) {
         return rawTicks * constants.distancePerTick;
     }
