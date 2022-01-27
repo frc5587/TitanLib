@@ -2,15 +2,14 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.controllers.FFController;
 import org.frc5587.lib.pid.PID;
-import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
-import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
 public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     protected FPIDConstants constants;
-    protected SpeedController[] motors;
-    protected SpeedController motorGroup;
+    protected MotorController motorGroup;
 
     public static class FPIDConstants {
         public double speedMultiplier, gearing;
@@ -45,11 +44,11 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
         }
     }
 
-    /**
-     * Pass motors as a SpeedController, so they can be passed as one motor,
-     * or made into a SpeedControllerGroup if there are multiple.
-     */
-    public FPIDSubsystem(FPIDConstants constants, SpeedController motorGroup) {
+    /** 
+    * Pass motors as a MotorController, so they can be passed as one motor,
+    * or made into a MotorControllerGroup if there are multiple.
+    */
+    public FPIDSubsystem(FPIDConstants constants, MotorController motorGroup) {
         super(
                 new ProfiledPIDController(
                         constants.pid.kP,
@@ -176,8 +175,8 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     }
 
     /**
-     * Stops the SpeedControllerGroup
-     */
+    * Stops the MotorControllerGroup
+    */
     public void stop() {
         motorGroup.set(0);
     }

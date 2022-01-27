@@ -2,18 +2,18 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.controllers.FFController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 
 public abstract class PivotingArmBase extends FPIDSubsystem {
     protected FFController ffController;
     protected ProfiledPIDController pidController;
     protected DigitalInput limitSwitch;
     
-    public PivotingArmBase(FPIDConstants constants, SpeedController motorGroup) {
+    public PivotingArmBase(FPIDConstants constants, MotorController motorGroup) {
         super(constants, motorGroup);
         ffController = constants.ff;
         pidController = getController();

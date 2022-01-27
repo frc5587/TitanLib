@@ -3,7 +3,7 @@ package org.frc5587.lib.advanced;
 import java.util.Map;
 import java.util.TreeMap;
 
-import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose2d;
 
 /**
  * A modified {@link TreeMap} for storing a limited number of timestamps and th

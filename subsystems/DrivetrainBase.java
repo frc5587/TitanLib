@@ -2,19 +2,20 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.advanced.LimitedPoseMap;
 import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 
 public abstract class DrivetrainBase extends SubsystemBase {
-    // create each motors side for the drivetrain
-    protected SpeedController left;
-    protected SpeedController right;
+    // create leader and follower motors for the drivetrain
+    protected MotorController left;
+    protected MotorController right;
 
     // make the speed controller groups into one drivetrain object
     protected DifferentialDrive differentialDrive;
@@ -47,9 +48,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     // set all of the variables from the subclass to this abstract class
-    // MotorIDs: a arrays of integer CAN IDs used to make motors. index 0 should
-    // ALWAYS be the leader motor, and anything else is a follower.
-    public DrivetrainBase(SpeedController left, SpeedController right, DriveConstants constants) {
+    // MotorIDs: a arrays of integer CAN IDs used to make motors. index 0 should ALWAYS be the leader motor, and anything else is a follower.
+    public DrivetrainBase(MotorController left, MotorController right, DriveConstants constants) {       
         this.constants = constants;
         this.left = left;
         this.right = right;
@@ -93,7 +93,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
         this.tankDriveVolts(-leftVolts, -rightVolts);
     }
 
-    // sets the speeds of the speedcontrollers rather than the differentrialdrive
+    // sets the speeds of the MotorControllers rather than the differentrialdrive
     public void setThrottle(double speed) {
         left.set(constants.flipLeft * speed);
         right.set(constants.flipRight * speed);

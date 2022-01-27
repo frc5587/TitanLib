@@ -1,6 +1,6 @@
 package org.frc5587.lib;
 
-import edu.wpi.first.wpiutil.math.MathUtil;
+import edu.wpi.first.math.MathUtil;
 
 /**
  * This Code contains modified code that is part of WPILIB, accessible at

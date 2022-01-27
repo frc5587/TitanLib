@@ -1,6 +1,7 @@
 package org.frc5587.lib.subsystems;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
 import static edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -16,7 +17,7 @@ public PistonControl(int[][] pistonIDS) {
     doubleSolenoidPistons = new DoubleSolenoid[pistonIDS.length];
 
     for (int i = 0; i < pistonIDS.length; i++) {
-        doubleSolenoidPistons[i] = new DoubleSolenoid(pistonIDS[i][0], pistonIDS[i][1]);
+        doubleSolenoidPistons[i] = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, pistonIDS[i][0], pistonIDS[i][1]);
     }
 }
 
