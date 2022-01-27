@@ -13,17 +13,17 @@ import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 
 public abstract class DrivetrainBase extends SubsystemBase {
-    // create leader and follower motors for the drivetrain
+    /** create leader and follower motors for the drivetrain */
     protected MotorController left;
     protected MotorController right;
 
-    // make the speed controller groups into one drivetrain object
+    /** make the speed controller groups into one drivetrain object */
     protected DifferentialDrive differentialDrive;
 
-    // create a hashtable to look up constants
+    /** create a hashtable to look up constants */
     protected DriveConstants constants;
 
-    // create variables needed for odometry.
+    /** create variables needed for odometry. */
     protected AHRS ahrs = new AHRS();
     protected boolean invertGyro;
     protected DifferentialDriveOdometry odometry;
@@ -71,7 +71,6 @@ public abstract class DrivetrainBase extends SubsystemBase {
         this.right = right;
 
         /** 
-        * VARIABLE DECLARATION 
         * set all variables declared at the top to those given in the constructor
         * (mostly constants)
         */
@@ -138,8 +137,6 @@ public abstract class DrivetrainBase extends SubsystemBase {
         setThrottle(0);
     }
 
-    // * SENSOR methods
-
     /** 
     * @return Raw encoder ticks from motors for position
     */
@@ -162,12 +159,13 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
     /**
     * Converts any fundamental tick value into meters:
-    * 
-    * tick -> meters
-    * ticks per second -> meters per second
-    * ticks per second^2 -> meters per second
+    * <p>
+    * ticks -> meters, 
+    * ticks per second -> meters per second,
+    * ticks per second^2 -> meters per second, 
     * etc
-    * 
+    * </p>
+    *
     * @param rawTicks raw value read from encoders
     * @return value in meters
     */
@@ -175,71 +173,93 @@ public abstract class DrivetrainBase extends SubsystemBase {
         return rawTicks * constants.distancePerTick;
     }
 
+    /**
+    * @return The position in meters, converted from encoder ticks
+    */
     public double getRightPositionMeters() {
         return getDistance(getRightPositionTicks()) * constants.flipRight;
     }
 
+    /**
+    * @return The position in meters, converted from encoder ticks
+    */
     public double getLeftPositionMeters() {
         return getDistance(getLeftPositionTicks()) * constants.flipLeft;
     }
 
+    /**
+    * @return The position in velocity in meters per second, converted from encoder ticks
+    */
     public double getRightVelocityMetersPerSecond() {
         return getDistance(getRightVelocityTicksPerSecond()) * constants.flipRight;
     }
 
+    /**
+    * @return The position in velocity in meters per second, converted from encoder ticks
+    */
     public double getLeftVelocityMetersPerSecond() {
         return getDistance(getLeftVelocityTicksPerSecond()) * constants.flipLeft;
     }
 
-    // * ODOMETRY METHODS
-
     /**
-     * Sets odometry to {@link Pose2d} specified. Notes: the rotation remains as
-     * read from the AHRS.
-     * 
-     * @param pose position to set to
-     */
+    * Sets odometry to {@link Pose2d} specified. Notes: the rotation remains as
+    * read from the AHRS.
+    * 
+    * @param pose position to set to
+    */
     public void setOdometry(Pose2d pose) {
         resetEncoders();
         odometry.resetPosition(pose, ahrs.getRotation2d());
     }
 
     /**
-     * Sets odometry to (0, 0)
-     */
+    * Sets odometry to (0, 0)
+    */
     public void zeroOdometry() {
         setOdometry(new Pose2d());
     }
 
     /**
-     * Resets the AHRS.
-     * 
-     * ! Warning, this takes up to 10 seconds to complete (it recalibrates some stuff), use sparingly
-     */
+    * Resets the AHRS.
+    * <p>
+    * !Warning! this takes up to 10 seconds to complete (it recalibrates some stuff), use sparingly
+    */
     public void resetAHRS() {
         ahrs.reset();
     }
 
+    /**
+    * @return the AHRS' position
+    */
     public Rotation2d getRotation2d() {
         return ahrs.getRotation2d();
     }
 
+    /**
+     * @return the AHRS' position as a heading in degrees
+     */
     public double getHeading() {
         return getRotation2d().getDegrees();
     }
 
+    /**
+    * @return the velocity of both sides of the drivetrain.
+    */
     public DifferentialDriveWheelSpeeds getWheelSpeeds() {
         return new DifferentialDriveWheelSpeeds(getLeftVelocityMetersPerSecond(), getRightVelocityMetersPerSecond());
     }
 
+    /**
+    * @return The position of the robot on the field (meters)
+    */
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
 
-    // resets the positions of the encoders to 0
+    /**
+    * resets the positions of the encoders to 0
+    */
     protected abstract void resetEncoders();
-
-    // * SUBSYSTEMBASE OVERRIDES
 
     @Override
     public void periodic() {
