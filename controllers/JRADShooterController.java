@@ -1,4 +1,3 @@
-
 package org.frc5587.lib.controllers;
 
 import java.util.function.DoubleSupplier;

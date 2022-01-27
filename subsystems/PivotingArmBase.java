@@ -2,10 +2,10 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.controllers.FFController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
-import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 
 public abstract class PivotingArmBase extends FPIDSubsystem {
     protected ProfiledPIDController pidController;
@@ -25,10 +25,9 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
         }
     }
     
-    public PivotingArmBase(PivotingArmConstants armConstants, FPIDConstants fpidConstants, SpeedController motorGroup) {
-        super(fpidConstants, motorGroup);
-        this.armConstants = armConstants;
-        ffController = fpidConstants.ff;
+    public PivotingArmBase(FPIDConstants constants, MotorController motor) {
+        super(constants, motor);
+        ffController = constants.ff;
         pidController = getController();
         limitSwitch = new DigitalInput(armConstants.switchPort);
     }
@@ -59,12 +58,10 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
         return getRotations() * 2 * Math.PI;
     }
 
-    @Override
     public double calcOutput(TrapezoidProfile.State state) {
         return pidController.calculate(getMeasurement(), state.position);
     }
 
-    @Override
     public double calcFF(TrapezoidProfile.State state) {
         return ffController.calculateArm(getMeasurement(), state.velocity);
     }

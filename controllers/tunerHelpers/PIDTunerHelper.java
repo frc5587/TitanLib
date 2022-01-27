@@ -1,6 +1,6 @@
 package org.frc5587.lib.controllers.tunerHelpers;
 
-import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class PIDTunerHelper extends PIDController implements ControllerTunerHelper {

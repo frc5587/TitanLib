@@ -1,6 +1,6 @@
 package org.frc5587.lib.subsystems;
 
-import com.revrobotics.CANEncoder;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public abstract class FixedHoodedShooterBase extends SubsystemBase {
     protected CANSparkMax leadMotor;
     protected CANSparkMax followerMotor;
-    protected CANEncoder encoder;
+    protected RelativeEncoder encoder;
     protected boolean hasTwoMotors; // false for one, true for two motors
     protected UnifiedShooterController shooterController;
     protected boolean setpointEnabled = false;

@@ -2,28 +2,26 @@ package org.frc5587.lib.auto;
 
 import java.util.List;
 
-import edu.wpi.first.wpilibj.controller.PIDController;
-import edu.wpi.first.wpilibj.controller.RamseteController;
-import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
-import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.subsystems.SuperSimpleDrivetrain;
 
 import org.frc5587.lib.subsystems.DrivetrainBase;
 
 public class RamseteCommandWrapper extends CommandBase {
-    private final SuperSimpleDrivetrain drivetrain; // TODO remember to change this back
+    private final DrivetrainBase drivetrain; 
     private final Trajectory trajectory;
     private final RamseteConstants constants;
 
@@ -31,10 +29,9 @@ public class RamseteCommandWrapper extends CommandBase {
     private RamseteCommand ramsete;
 
     private boolean willZeroOdometry = false;
-    private boolean willResetOdometry = false;
+    private boolean willSetOdometryToFirstPose = false;
 
-    private Pose2d startPos;
-    private Pose2d endPos;
+    private boolean debuggingMode = false;
 
     public static class RamseteConstants {
         public final double kS; // volts
@@ -58,13 +55,20 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     /**
-     * Creates a new RamseteCommandWrapper.
+     * Creates a new RamseteCommandWrapper from an {@link AutoPath}.
      */
-    public RamseteCommandWrapper(SuperSimpleDrivetrain drivetrain, AutoPath path, RamseteConstants constants) {
+    public RamseteCommandWrapper(DrivetrainBase drivetrain, AutoPath path, RamseteConstants constants) {
         this(drivetrain, path.trajectory, constants);
     }
 
-    public RamseteCommandWrapper(SuperSimpleDrivetrain drivetrain, Trajectory trajectory, RamseteConstants constants) {
+    /**
+     * With the {@link Trajectory} instead of a start/end and waypoints, it creates the command. 
+     * 
+     * @param drivetrain drivetrain instance
+     * @param trajectory traject of path
+     * @param constants constants object
+     */
+    public RamseteCommandWrapper(DrivetrainBase drivetrain, Trajectory trajectory, RamseteConstants constants) {
         addRequirements(drivetrain);
 
         this.drivetrain = drivetrain;
@@ -74,7 +78,17 @@ public class RamseteCommandWrapper extends CommandBase {
         makeRamsete();
     }
 
-    public RamseteCommandWrapper(SuperSimpleDrivetrain drivetrain, Pose2d start, List<Translation2d> path, Pose2d end,
+    /**
+     * Generates a trajectory based on a start and end positions, and a list of waypoints. This should really only be used for testing and debugging, for more complex paths, PLEASE use Pathweaver.
+     * Note: you cannot specify angle for waypoint
+     * 
+     * @param drivetrain drivetrain instance
+     * @param start start position
+     * @param path list of waypoints
+     * @param end end position
+     * @param constants constants object
+     */
+    public RamseteCommandWrapper(DrivetrainBase drivetrain, Pose2d start, List<Translation2d> path, Pose2d end,
             RamseteConstants constants) {
         this(drivetrain,
                 TrajectoryGenerator.generateTrajectory(start, path, end,
@@ -87,40 +101,57 @@ public class RamseteCommandWrapper extends CommandBase {
                 constants);
     }
 
+    /**
+     * Creates the actual {@link RamseteCommand}. If this isn't called in the constructor, it means your robot will be sitting around for ~5ish second in the beginning of auto while it calculates the path.
+     */
     private void makeRamsete() {
-        // var table = NetworkTableInstance.getDefault().getTable("troubleshooting");
-        var leftReference = SmartDashboard.getEntry("left_reference");
-        var leftMeasurement = SmartDashboard.getEntry("left_measurement");
-        var rightReference = SmartDashboard.getEntry("right_reference");
-        var rightMeasurement = SmartDashboard.getEntry("right_measurement");    
-        RamseteController disabledRamsete = new RamseteController(); /* {
-            @Override
-            public ChassisSpeeds calculate(Pose2d currentPose, Pose2d poseRef, double linearVelocityRefMeters,
-                    double angularVelocityRefRadiansPerSecond) {
-                return new ChassisSpeeds(linearVelocityRefMeters, 0.0, angularVelocityRefRadiansPerSecond);
-            }
-        }; */
+        NetworkTableEntry leftReference = SmartDashboard.getEntry("left_reference");
+        NetworkTableEntry leftMeasurement = SmartDashboard.getEntry("left_measurement");
+        NetworkTableEntry rightReference = SmartDashboard.getEntry("right_reference");
+        NetworkTableEntry rightMeasurement = SmartDashboard.getEntry("right_measurement");
 
-        var left = new PIDController(AutoConstants.KP, 0, 0);
-        var right =new PIDController(AutoConstants.KP, 0, 0);
+        RamseteController ramseteController = new RamseteController();
 
-        ramsete = new RamseteCommand(trajectory, drivetrain::getPose, disabledRamsete,
+        PIDController left = new PIDController(constants.kP, 0, 0);
+        PIDController right = new PIDController(constants.kP, 0, 0);
+
+        if (debuggingMode) {
+            /* 
+            This "disables" the fancy control from the ramsete controller, allow you to
+            verify the feedforward and PID gains. It is the same as doing what is
+            suggested here:
+            https://docs.wpilib.org/en/stable/docs/software/advanced-controls/trajectories/troubleshooting.html#verify-feedforward 
+            */
+           
+            // * Comment this line out to keep the controller enabled
+            ramseteController.setEnabled(false);
+
+            // * To test feedforward gains, uncomment these following lines (and make sure debugging mode is on
+            
+            // right.close();
+            // left.close();
+            // left = new PIDController(0, 0, 0);
+            // right = new PIDController(0, 0, 0);
+        }
+
+        ramsete = new RamseteCommand(trajectory, drivetrain::getPose, ramseteController,
                 new SimpleMotorFeedforward(constants.kS, constants.kV,
                         constants.kA),
                 constants.drivetrainKinematics, drivetrain::getWheelSpeeds,
                 left,
                 right,
-                // drivetrain::tankDriveVolts
                 (leftVolts, rightVolts) -> {
                     drivetrain.tankDriveVolts(leftVolts, rightVolts);
-            
-                    leftMeasurement.setNumber(drivetrain.getWheelSpeeds().leftMetersPerSecond);
-                    leftReference.setNumber(left.getSetpoint());
-            
-                    rightMeasurement.setNumber(drivetrain.getWheelSpeeds().rightMetersPerSecond);
-                    rightReference.setNumber(right.getSetpoint());
+
+                    if (debuggingMode) {
+                        leftMeasurement.setNumber(drivetrain.getWheelSpeeds().leftMetersPerSecond);
+                        leftReference.setNumber(left.getSetpoint());
+
+                        rightMeasurement.setNumber(drivetrain.getWheelSpeeds().rightMetersPerSecond);
+                        rightReference.setNumber(right.getSetpoint());
+                    }
                 },
-                 drivetrain);
+                drivetrain);
     }
 
     /**
@@ -134,43 +165,30 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     /**
-     * Resets the odometry to the first position of the path, right before running the path
+     * Resets the odometry to the first position of the path, right before running
+     * the path
      * 
      * @return the command
      */
-    public RamseteCommandWrapper resetOdometryOnStart() {
-        willResetOdometry = true;
+    public RamseteCommandWrapper setOdometryToFirstPoseOnStart() {
+        willSetOdometryToFirstPose = true;
         return this;
     }
 
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        System.out.println("starting...");
-        // Start the pathFollowCommand
-        
         if (willZeroOdometry) {
             drivetrain.zeroOdometry();
         }
 
-        if (willResetOdometry) {
-            drivetrain.resetOdometry(trajectory.getInitialPose());
-            // System.out.println(trajectory.getInitialPose());
+        if (willSetOdometryToFirstPose) {
+            drivetrain.setOdometry(trajectory.getInitialPose());
         }
-
-        // TODO: try transformting the whole path if nothing else works
 
         pathFollowCommand = ramsete;
 
-        this.startPos = drivetrain.getPose();
         pathFollowCommand.schedule();
-    }
-
-    // Called every time the scheduler runs while the command is scheduled.
-    @Override
-    public void execute() {
-        super.execute();
-        // ramsete.
     }
 
     // Called once the command ends or is interrupted.
@@ -180,13 +198,24 @@ public class RamseteCommandWrapper extends CommandBase {
         if (pathFollowCommand != null) {
             pathFollowCommand.cancel();
         }
-        this.endPos = drivetrain.getPose();
-        System.out.println(""+startPos + "    " + endPos);
         drivetrain.stop();
     }
 
     @Override
     public boolean isFinished() {
         return pathFollowCommand.isFinished();
+    }
+
+    /**
+     * Turns on debugging mode, this will add the actual and reference values of the
+     * velocities to {@link SmartDashboard} and it will "disable" the ramsete
+     * controller, allowing you to verified the various gains
+     * 
+     * @param debuggingMode true for on
+     * @return the controller so you can chain this
+     */
+    public RamseteCommandWrapper setDebuggingMode(boolean debuggingMode) {
+        this.debuggingMode = debuggingMode;
+        return this;
     }
 }
