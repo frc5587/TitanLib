@@ -41,8 +41,6 @@ public abstract class DrivetrainBase extends SubsystemBase {
         * @param invertGyro     inverts values given by the gyroscope
         * @param cpr            the motor encoders' counts per revolution
         * @param gearing        the gearing from the motor output to the wheels
-        * @param flipLeft       flips the encoders of the left side of the drivetrain if set to true
-        * @param flipRight      flips the encoders of the right side of the drivetrain if set to true
         */
         public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double cpr,
                 double gearing) {
