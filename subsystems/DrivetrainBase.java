@@ -24,7 +24,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     /** make the speed controller groups into one drivetrain object */
     protected DifferentialDrive differentialDrive;
 
-    /** create a hashtable to look up constants */
+    /** create a DriveConstants object to look up constants */
     protected DriveConstants constants;
 
     /** create variables needed for odometry. */
