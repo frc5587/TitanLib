@@ -12,6 +12,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 
+/**
+* A base drivetrain that includes support for arcade drive, tank drive,
+* and autonomous odometry.
+*/
 public abstract class DrivetrainBase extends SubsystemBase {
     /** create leader and follower motors for the drivetrain */
     protected MotorController left;
@@ -29,6 +33,9 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected DifferentialDriveOdometry odometry;
     private final LimitedPoseMap poseHistory;
 
+    /**
+    * A constants object that provides everything needed by {@link DrivetrainBase}
+    */
     public static class DriveConstants {
         public final double wheelDiameterMeters, gearing, cpr, distancePerTick;
         public final int historyLimit;
@@ -128,7 +135,9 @@ public abstract class DrivetrainBase extends SubsystemBase {
         differentialDrive.feed();
     }
 
-    // stops all motors
+    /**
+    * stops all motors
+    */
     public void stop() {
         setThrottle(0);
     }
@@ -232,8 +241,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
-     * @return the AHRS' position as a heading in degrees
-     */
+    * @return the AHRS' position as a heading in degrees
+    */
     public double getHeading() {
         return getRotation2d().getDegrees();
     }
