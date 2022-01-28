@@ -31,7 +31,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
     public static class DriveConstants {
         public final double wheelDiameterMeters, gearing, cpr, distancePerTick;
-        public final int historyLimit, flipLeft, flipRight;
+        public final int historyLimit;
         public final boolean invertGyro;
 
         /**
@@ -45,25 +45,23 @@ public abstract class DrivetrainBase extends SubsystemBase {
         * @param flipRight      flips the encoders of the right side of the drivetrain if set to true
         */
         public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double cpr,
-                double gearing, boolean flipLeft, boolean flipRight) {
+                double gearing) {
             this.wheelDiameterMeters = wheelDiameterMeters;
             this.historyLimit = historyLimit;
             this.invertGyro = invertGyro;
             this.cpr = cpr;
             this.gearing = gearing;
-            this.flipLeft = flipLeft ? -1 : 1;
-            this.flipRight = flipRight ? -1 : 1;
             this.distancePerTick = ((1.0 / cpr) / gearing) * (Math.PI * wheelDiameterMeters);
         }
     }
 
     /**
     * A drivetrain that uses:
-    * @param left   a MotorController for the left side of the drivetrain 
-    *               (can be passed as a MotorController Group)
-    * @param right  a MotorController for the right side of the drivetrain 
-    *               (can be passed as a MotorController Group)
-    * @param constants a {@link DriveConstants} object containing all constants used by the class
+    * @param left        a MotorController for the left side of the drivetrain 
+    *                       (can be passed as a MotorController Group)
+    * @param right      a MotorController for the right side of the drivetrain 
+    *                       (can be passed as a MotorController Group)
+    * @param constants  a {@link DriveConstants} object containing all constants used by the class
     */
     public DrivetrainBase(MotorController left, MotorController right, DriveConstants constants) {       
         this.constants = constants;
@@ -101,8 +99,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
     */ 
     public void tankDrive(double leftThrottle, double rightThrottle) {
         differentialDrive.tankDrive(
-            constants.flipLeft * leftThrottle,
-            constants.flipRight * rightThrottle,
+            leftThrottle,
+            rightThrottle,
             false
         );
     }
@@ -111,8 +109,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
     * a tank drive that sets the voltages of the motors instead of throttle
     */
     public void tankDriveVolts(double leftVolts, double rightVolts) {
-        left.setVoltage(constants.flipLeft * leftVolts);
-        right.setVoltage(constants.flipRight * rightVolts);
+        left.setVoltage(leftVolts);
+        right.setVoltage(rightVolts);
         differentialDrive.feed();
     }
 
@@ -127,8 +125,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
     * sets the speeds of the MotorControllers rather than using the DifferentrialDrive
     */
     public void setThrottle(double speed) {
-        left.set(constants.flipLeft * speed);
-        right.set(constants.flipRight * speed);
+        left.set(speed);
+        right.set(speed);
         differentialDrive.feed();
     }
 
@@ -177,28 +175,28 @@ public abstract class DrivetrainBase extends SubsystemBase {
     * @return The position in meters, converted from encoder ticks
     */
     public double getRightPositionMeters() {
-        return getDistance(getRightPositionTicks()) * constants.flipRight;
+        return getDistance(getRightPositionTicks());
     }
 
     /**
     * @return The position in meters, converted from encoder ticks
     */
     public double getLeftPositionMeters() {
-        return getDistance(getLeftPositionTicks()) * constants.flipLeft;
+        return getDistance(getLeftPositionTicks());
     }
 
     /**
     * @return The position in velocity in meters per second, converted from encoder ticks
     */
     public double getRightVelocityMetersPerSecond() {
-        return getDistance(getRightVelocityTicksPerSecond()) * constants.flipRight;
+        return getDistance(getRightVelocityTicksPerSecond());
     }
 
     /**
     * @return The position in velocity in meters per second, converted from encoder ticks
     */
     public double getLeftVelocityMetersPerSecond() {
-        return getDistance(getLeftVelocityTicksPerSecond()) * constants.flipLeft;
+        return getDistance(getLeftVelocityTicksPerSecond());
     }
 
     /**
