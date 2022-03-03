@@ -12,19 +12,21 @@ public abstract class PivotingArmBase extends FPIDSubsystem {
     protected FFController ffController;
     protected ProfiledPIDController pidController;
     protected DigitalInput limitSwitch;
+    protected boolean switchInverted;
     
-    public PivotingArmBase(FPIDConstants constants, MotorController motorGroup) {
+    public PivotingArmBase(FPIDConstants constants, MotorController motorGroup, DigitalInput limitSwitch, boolean switchInverted) {
         super(constants, motorGroup);
         ffController = constants.ff;
         pidController = getController();
-        limitSwitch = new DigitalInput(constants.switchPort);
+        this.limitSwitch = limitSwitch;
+        this.switchInverted = switchInverted;
     }
 
     /**
     * @return the limit switch's state, inverted if necessary.
     */
     public boolean getLimitSwitchValue() {
-        return (constants.switchInverted ? !limitSwitch.get() : limitSwitch.get());
+        return (switchInverted ? !limitSwitch.get() : limitSwitch.get());
     }
 
     @Override

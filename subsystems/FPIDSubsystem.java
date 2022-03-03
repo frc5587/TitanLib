@@ -12,35 +12,32 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     protected MotorController motorGroup;
 
     public static class FPIDConstants {
-        public double speedMultiplier, gearing;
+        public double gearing;
+        public double universalConversionFactor;
         public double[] softLimits;
-        public int encoderCPR, zeroOffset, switchPort;
-        public boolean switchInverted;
+        public int encoderCPR, zeroOffset;
         public PID pid;
         public FFController ff;
         public TrapezoidProfile.Constraints constraints;
 
         public FPIDConstants(
-                double speedMultiplier,
                 double gearing,
+                double universalConversionFactor,
                 double[] softLimits,
                 int zeroOffset,
                 int encoderCPR,
-                int switchPort,
-                boolean switchInverted,
                 PID pid,
                 FFController ff,
                 TrapezoidProfile.Constraints constraints) {
-            this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
+            this.universalConversionFactor = universalConversionFactor;
             this.softLimits = softLimits;
             this.zeroOffset = zeroOffset;
             this.encoderCPR = encoderCPR;
-            this.switchPort = switchPort;
-            this.switchInverted = switchInverted;
             this.pid = pid;
             this.ff = ff;
             this.constraints = constraints;
+
         }
     }
 
