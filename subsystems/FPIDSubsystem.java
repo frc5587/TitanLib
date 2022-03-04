@@ -149,6 +149,21 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     }
 
     /**
+     * @param value value to multiply by the gearing set in constants
+     */
+    public double multiplyGearing(double value) {
+        return value * constants.gearing;
+    }
+
+    /**
+     * @param value value to multiply by the encoder counts per revolution set in
+     *              constants
+     */
+    public double multiplyCPR(double value) {
+        return value * constants.encoderCPR;
+    }
+
+    /**
      * @return the position of the subsystem in rotations,
      *         accounting for gearing and encoder counts per revolution.
      */
