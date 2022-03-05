@@ -31,7 +31,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected AHRS ahrs = new AHRS();
     protected boolean invertGyro;
     protected DifferentialDriveOdometry odometry;
-    public final LimitedPoseMap poseHistory;
+    private final LimitedPoseMap poseHistory;
 
     /**
     * A constants object that provides everything needed by {@link DrivetrainBase}
