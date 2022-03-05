@@ -141,7 +141,7 @@ public class RamseteCommandWrapper extends CommandBase {
                 left,
                 right,
                 (leftVolts, rightVolts) -> {
-                    drivetrain.tankDriveVolts(-leftVolts, -rightVolts);
+                    drivetrain.tankDriveVolts(leftVolts, rightVolts);
 
                     if (debuggingMode) {
                         leftMeasurement.setNumber(drivetrain.getWheelSpeeds().leftMetersPerSecond);

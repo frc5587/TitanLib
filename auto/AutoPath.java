@@ -1,8 +1,6 @@
 package org.frc5587.lib.auto;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
 import edu.wpi.first.wpilibj.Filesystem;
