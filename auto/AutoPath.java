@@ -1,6 +1,8 @@
 package org.frc5587.lib.auto;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
 import edu.wpi.first.wpilibj.Filesystem;
@@ -26,7 +28,7 @@ public class AutoPath {
             this.trajectory = TrajectoryUtil.fromPathweaverJson(path);
         } catch (IOException e) {
             // Fail hard so people know quickly when something is wrong instead of a NullPointerException down the road
-            throw new RuntimeException("Could not find trajectory file:   " + filePath);
+            throw new RuntimeException("Could not find trajectory file:   " + path);
         }
     }
 }
