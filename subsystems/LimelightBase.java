@@ -19,8 +19,8 @@ public abstract class LimelightBase extends SubsystemBase {
      * <p>
      * If the goal is roughly the same height as the Limelight, this equation is not useful.
      * @param mountAngle The degrees of difference from being perfectly perpendicular with the ground
-     * @param lensHeight The distance from the ground to the center of the Limelight in inches
-     * @param goalHeight The distance from the goal/target to the floor in inches
+     * @param lensHeight The distance from the ground to the center of the Limelight in meters
+     * @param goalHeight The distance from the goal/target to the floor in meters
      * @see https://docs.limelightvision.io/en/latest/networktables_api.html
      */
     public LimelightBase(double mountAngle, double lensHeight, double goalHeight) {
@@ -42,7 +42,7 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return The angle to the goal in radians
      */
     public double angleToGoalRadians() {
-        return angleToGoalDegrees() * (Math.PI / 180.0);
+        return Units.degreesToRadians(angleToGoalDegrees());
     }
 
     /**
@@ -50,6 +50,6 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return The distance from the Limelight to goal in meters
      */
     public double calculateDistance() {
-        return Units.inchesToMeters((goalHeight - lensHeight) / Math.tan(angleToGoalRadians()));
+        return (goalHeight - lensHeight) / Math.tan(angleToGoalRadians());
     }
 }
