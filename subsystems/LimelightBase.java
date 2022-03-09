@@ -9,11 +9,11 @@ public abstract class LimelightBase extends SubsystemBase {
     protected NetworkTable limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
     protected NetworkTableEntry ty = limelightTable.getEntry("ty");
     protected NetworkTableEntry ledMode = limelightTable.getEntry("ledMode");
-    protected double verticalOffset_Target = ty.getDouble(0.0);
 
     protected double mountAngle;
     protected double lensHeight;
     protected double goalHeight;
+    protected double distanceOffset;
 
     /**
      * <a href="https://docs.limelightvision.io/en/latest/cs_estimating_distance.html#using-a-fixed-angle-camera">This</a> allows us to estimate distance from the Limelight to a target.
@@ -24,10 +24,11 @@ public abstract class LimelightBase extends SubsystemBase {
      * @param goalHeight The distance from the goal/target to the floor in meters
      * @see https://docs.limelightvision.io/en/latest/networktables_api.html
      */
-    public LimelightBase(double mountAngle, double lensHeight, double goalHeight) {
+    public LimelightBase(double mountAngle, double lensHeight, double goalHeight, double distanceOffset) {
         this.mountAngle = mountAngle;
         this.lensHeight = lensHeight;
         this.goalHeight = goalHeight;
+        this.distanceOffset = distanceOffset;
     }
 
     /**
@@ -35,7 +36,7 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return The angle to the goal in degrees
      */
     public double angleToGoalDegrees() {
-        return mountAngle + verticalOffset_Target;
+        return mountAngle + limelightTable.getEntry("ty").getDouble(0.0);
     }
 
     /**
@@ -59,7 +60,7 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return The distance from the Limelight to goal in meters
      */
     public double calculateDistance() {
-        return (goalHeight - lensHeight) / Math.tan(angleToGoalRadians());
+        return (goalHeight - lensHeight) / Math.tan(angleToGoalRadians()) + distanceOffset;
     }
 
     /**
