@@ -8,6 +8,7 @@ import edu.wpi.first.networktables.*;
 public abstract class LimelightBase extends SubsystemBase {
     protected NetworkTable limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
     protected NetworkTableEntry ty = limelightTable.getEntry("ty");
+    protected NetworkTableEntry ledMode = limelightTable.getEntry("ledMode");
     protected double verticalOffset_Target = ty.getDouble(0.0);
 
     protected double mountAngle;
@@ -46,10 +47,80 @@ public abstract class LimelightBase extends SubsystemBase {
     }
 
     /**
+     * Get the horizontal angle
+     * @return 
+     */
+    public double getHorizontalAngle() {
+        return limelightTable.getEntry("tx").getDouble(0.0);
+    }
+
+    /**
      * Calculate the distance from the Limelight to the goal
      * @return The distance from the Limelight to goal in meters
      */
     public double calculateDistance() {
         return (goalHeight - lensHeight) / Math.tan(angleToGoalRadians());
+    }
+
+    /**
+     * @return A boolean value Whether the Limelight detects a target
+     */
+    public boolean hasTarget() {
+        return limelightTable.getEntry("tv").getBoolean(false);
+    }
+
+    /**
+     * 
+     */
+    protected enum LedValues {
+        DEFAULT,
+        OFF,
+        BLINK,
+        ON
+    }
+
+    /**
+     * Set the Limelight LEDs to a specific mode
+     * @param value - DEFAULT, OFF, BLINK, ON
+     */
+    public void setLEDs(LedValues value) {
+        switch(value) {
+            case DEFAULT:
+                ledMode.setNumber(0);
+                break;
+            case OFF:
+                ledMode.setNumber(1);
+                break;
+            case BLINK:
+                ledMode.setNumber(2);
+                break;
+            case ON:
+                ledMode.setNumber(3);
+                break;
+            default:
+                throw new RuntimeException("Invalid value (DEFAULT, OFF, BLINK, ON)");
+        }
+    }
+
+    /**
+     * Turn on Limelight LEDs
+     */
+    public void on() {
+        setLEDs(LedValues.ON);
+    }
+
+    /**
+     * Turn off Limelight LEDs
+     */
+    public void off() {
+        setLEDs(LedValues.OFF);
+    }
+
+    /**
+     * Check if the Limelight LEDs are on
+     * @return A truthy value if the Limelight LEDs are on
+     */
+    public boolean isOn() {
+        return ledMode.getNumber(0.0).doubleValue() >= 1;
     }
 }
