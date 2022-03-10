@@ -52,7 +52,7 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return 
      */
     public double getHorizontalAngle() {
-        return limelightTable.getEntry("tx").getDouble(0.0);
+        return Math.toRadians(limelightTable.getEntry("tx").getDouble(0.0));
     }
 
     /**
@@ -64,10 +64,10 @@ public abstract class LimelightBase extends SubsystemBase {
     }
 
     /**
-     * @return A boolean value Whether the Limelight detects a target
+     * @return A value Whether the Limelight detects a target
      */
     public boolean hasTarget() {
-        return limelightTable.getEntry("tv").getBoolean(false);
+        return limelightTable.getEntry("tv").getNumber(0).intValue() == 1;
     }
 
     /**
