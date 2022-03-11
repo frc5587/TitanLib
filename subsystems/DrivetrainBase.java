@@ -12,51 +12,71 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 
+/**
+* A base drivetrain that includes support for arcade drive, tank drive,
+* and autonomous odometry.
+*/
 public abstract class DrivetrainBase extends SubsystemBase {
-    // create leader and follower motors for the drivetrain
+    /** create leader and follower motors for the drivetrain */
     protected MotorController left;
     protected MotorController right;
 
-    // make the speed controller groups into one drivetrain object
+    /** make the speed controller groups into one drivetrain object */
     protected DifferentialDrive differentialDrive;
 
-    // create a hashtable to look up constants
+    /** create a DriveConstants object to look up constants */
     protected DriveConstants constants;
 
-    // create variables needed for odometry.
+    /** create variables needed for odometry. */
     protected AHRS ahrs = new AHRS();
     protected boolean invertGyro;
     protected DifferentialDriveOdometry odometry;
-    private final LimitedPoseMap poseHistory;
+    protected final LimitedPoseMap poseHistory;
 
+    /**
+    * A constants object that provides everything needed by {@link DrivetrainBase}
+    */
     public static class DriveConstants {
-        public final double wheelDiameterMeters, gearing, epr, distancePerTick;
-        public final int historyLimit, flipLeft, flipRight;
+        public final double wheelDiameterMeters, gearing, cpr, distancePerTick;
+        public final int historyLimit;
         public final boolean invertGyro;
 
-        public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double epr,
-                double gearing, boolean flipLeft, boolean flipRight) {
+        /**
+        * A constants object that provides everything needed by {@link DrivetrainBase}
+        * @param wheelDiameterMeters the wheel diameter in meters
+        * @param historyLimit   the limit of inputs for LimitedPoseMap
+        * @param invertGyro     inverts values given by the gyroscope
+        * @param cpr            the motor encoders' counts per revolution
+        * @param gearing        the gearing from the motor output to the wheels
+        */
+        public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double cpr,
+                double gearing) {
             this.wheelDiameterMeters = wheelDiameterMeters;
             this.historyLimit = historyLimit;
             this.invertGyro = invertGyro;
-            this.epr = epr;
+            this.cpr = cpr;
             this.gearing = gearing;
-            this.flipLeft = flipLeft ? -1 : 1;
-            this.flipRight = flipRight ? -1 : 1;
-            this.distancePerTick = ((1.0 / epr) / gearing) * (Math.PI * wheelDiameterMeters);
+            this.distancePerTick = ((1.0 / cpr) / gearing) * (Math.PI * wheelDiameterMeters);
         }
     }
 
-    // set all of the variables from the subclass to this abstract class
-    // MotorIDs: a arrays of integer CAN IDs used to make motors. index 0 should ALWAYS be the leader motor, and anything else is a follower.
+    /**
+    * A drivetrain that uses:
+    * @param left        a MotorController for the left side of the drivetrain 
+    *                       (can be passed as a MotorController Group)
+    * @param right      a MotorController for the right side of the drivetrain 
+    *                       (can be passed as a MotorController Group)
+    * @param constants  a {@link DriveConstants} object containing all constants used by the class
+    */
     public DrivetrainBase(MotorController left, MotorController right, DriveConstants constants) {       
         this.constants = constants;
         this.left = left;
         this.right = right;
 
-        /* VARIABLE DECLARATION */
-        // set all variables declared at the top to those given in the constructor
-        // (mostly constants)
+        /** 
+        * set all variables declared at the top to those given in the constructor
+        * (mostly constants)
+        */
         Rotation2d currentAngle = getRotation2d();
         this.odometry = new DifferentialDriveOdometry(currentAngle);
         this.poseHistory = new LimitedPoseMap(constants.historyLimit);
@@ -66,137 +86,185 @@ public abstract class DrivetrainBase extends SubsystemBase {
         configureMotors();
     }
 
-    // create a required method for subclasses
+    /**
+    * The implementing class must configure the motors <p>
+    * This should do things like invert the motors, set their neutral mode, etc.
+    */
     public abstract void configureMotors();
 
-    // * CONTROL METHODS
-
-    // drive with a given throttle and curve (arcade drive)
+    /** 
+    * drive with a given throttle and curve (arcade drive)
+    */
     public void arcadeDrive(double throttle, double curve) {
         differentialDrive.arcadeDrive(throttle, curve, false);
     }
 
-    // drive with a given throttle for each side of the robot (tank drive)
+    /**
+    * drive with a given throttle for each side of the robot (tank drive)
+    */ 
     public void tankDrive(double leftThrottle, double rightThrottle) {
-        differentialDrive.tankDrive(constants.flipLeft * leftThrottle, constants.flipRight * rightThrottle, false);
+        differentialDrive.tankDrive(
+            leftThrottle,
+            rightThrottle,
+            false
+        );
     }
 
-    // a tank drive that sets the voltages of the motors
+    /**
+    * a tank drive that sets the voltages of the motors instead of throttle
+    */
     public void tankDriveVolts(double leftVolts, double rightVolts) {
-        left.setVoltage(constants.flipLeft * leftVolts);
-        right.setVoltage(constants.flipRight * rightVolts);
+        left.setVoltage(leftVolts);
+        right.setVoltage(rightVolts);
         differentialDrive.feed();
     }
 
-    // a reversed version of tankdrivevolts
+    /**
+    *  an inverted version of tankdrivevolts
+    */
     public void tankDriveVoltsReverse(double leftVolts, double rightVolts) {
         this.tankDriveVolts(-leftVolts, -rightVolts);
     }
 
-    // sets the speeds of the MotorControllers rather than the differentrialdrive
+    /** 
+    * sets the speeds of the MotorControllers rather than using the DifferentrialDrive
+    */
     public void setThrottle(double speed) {
-        left.set(constants.flipLeft * speed);
-        right.set(constants.flipRight * speed);
+        left.set(speed);
+        right.set(speed);
         differentialDrive.feed();
     }
 
-    // stops all motors
+    /**
+    * stops all motors
+    */
     public void stop() {
         setThrottle(0);
     }
 
-    // * SENSOR methods
-
-    // Raw encoder ticks from motors for position
+    /** 
+    * @return Raw encoder ticks from motors for position
+    */
     protected abstract double getRightPositionTicks();
 
+    /** 
+    * @return Raw encoder ticks from motors for position
+    */
     protected abstract double getLeftPositionTicks();
 
-    // Raw encoder ticks from motors for velocity
+    /** 
+    * @return Raw encoder ticks per second from motors for velocity
+    */
     protected abstract double getRightVelocityTicksPerSecond();
 
+    /** 
+    * @return Raw encoder ticks per second from motors for velocity
+    */
     protected abstract double getLeftVelocityTicksPerSecond();
 
     /**
-     * Converts any fundamental tick value into meters:
-     * 
-     * tick -> meters
-     * ticks per second -> meters per second
-     * ticks per second^2 -> meters per second
-     * etc
-     * 
-     * @param rawTicks raw value read from encoders
-     * @return value in meters
-     */
+    * Converts any fundamental tick value into meters:
+    * <p>
+    * ticks -> meters, 
+    * ticks per second -> meters per second,
+    * ticks per second^2 -> meters per second, 
+    * etc
+    * </p>
+    *
+    * @param rawTicks raw value read from encoders
+    * @return value in meters
+    */
     protected double getDistance(double rawTicks) {
         return rawTicks * constants.distancePerTick;
     }
 
+    /**
+    * @return The position in meters, converted from encoder ticks
+    */
     public double getRightPositionMeters() {
-        return getDistance(getRightPositionTicks()) * constants.flipRight;
+        return getDistance(getRightPositionTicks());
     }
-
-    public double getLeftPositionMeters() {
-        return getDistance(getLeftPositionTicks()) * constants.flipLeft;
-    }
-
-    public double getRightVelocityMetersPerSecond() {
-        return getDistance(getRightVelocityTicksPerSecond()) * constants.flipRight;
-    }
-
-    public double getLeftVelocityMetersPerSecond() {
-        return getDistance(getLeftVelocityTicksPerSecond()) * constants.flipLeft;
-    }
-
-    // * ODOMETRY METHODS
 
     /**
-     * Sets odometry to {@link Pose2d} specified. Notes: the rotation remains as
-     * read from the AHRS.
-     * 
-     * @param pose position to set to
-     */
+    * @return The position in meters, converted from encoder ticks
+    */
+    public double getLeftPositionMeters() {
+        return getDistance(getLeftPositionTicks());
+    }
+
+    /**
+    * @return The position in velocity in meters per second, converted from encoder ticks
+    */
+    public double getRightVelocityMetersPerSecond() {
+        return getDistance(getRightVelocityTicksPerSecond());
+    }
+
+    /**
+    * @return The position in velocity in meters per second, converted from encoder ticks
+    */
+    public double getLeftVelocityMetersPerSecond() {
+        return getDistance(getLeftVelocityTicksPerSecond());
+    }
+
+    /**
+    * Sets odometry to {@link Pose2d} specified. Notes: the rotation remains as
+    * read from the AHRS.
+    * 
+    * @param pose position to set to
+    */
     public void setOdometry(Pose2d pose) {
         resetEncoders();
         odometry.resetPosition(pose, ahrs.getRotation2d());
     }
 
     /**
-     * Sets odometry to (0, 0)
-     */
+    * Sets odometry to (0, 0)
+    */
     public void zeroOdometry() {
         setOdometry(new Pose2d());
     }
 
     /**
-     * Resets the AHRS.
-     * 
-     * ! Warning, this takes up to 10 seconds to complete (it recalibrates some stuff), use sparingly
-     */
+    * Resets the AHRS.
+    * <p>
+    * !Warning! this takes up to 10 seconds to complete (it recalibrates some stuff), use sparingly
+    */
     public void resetAHRS() {
         ahrs.reset();
     }
 
+    /**
+    * @return the AHRS' position
+    */
     public Rotation2d getRotation2d() {
         return ahrs.getRotation2d();
     }
 
+    /**
+    * @return the AHRS' position as a heading in degrees
+    */
     public double getHeading() {
         return getRotation2d().getDegrees();
     }
 
+    /**
+    * @return the velocity of both sides of the drivetrain.
+    */
     public DifferentialDriveWheelSpeeds getWheelSpeeds() {
         return new DifferentialDriveWheelSpeeds(getLeftVelocityMetersPerSecond(), getRightVelocityMetersPerSecond());
     }
 
+    /**
+    * @return The position of the robot on the field (meters)
+    */
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
 
-    // resets the positions of the encoders to 0
+    /**
+    * resets the positions of the encoders to 0
+    */
     protected abstract void resetEncoders();
-
-    // * SUBSYSTEMBASE OVERRIDES
 
     @Override
     public void periodic() {

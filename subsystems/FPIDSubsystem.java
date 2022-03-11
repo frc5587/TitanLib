@@ -12,16 +12,13 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     protected MotorController motorGroup;
 
     public static class FPIDConstants {
-        public double speedMultiplier, gearing;
-        public double[] softLimits;
-        public int encoderCPR, zeroOffset, switchPort;
-        public boolean switchInverted;
+        public double gearing;
+        public int zeroOffset, encoderCPR;
         public PID pid;
         public FFController ff;
         public TrapezoidProfile.Constraints constraints;
 
         public FPIDConstants(
-                double speedMultiplier,
                 double gearing,
                 double[] softLimits,
                 int zeroOffset,
@@ -31,13 +28,9 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
                 PID pid,
                 FFController ff,
                 TrapezoidProfile.Constraints constraints) {
-            this.speedMultiplier = speedMultiplier;
             this.gearing = gearing;
-            this.softLimits = softLimits;
             this.zeroOffset = zeroOffset;
             this.encoderCPR = encoderCPR;
-            this.switchPort = switchPort;
-            this.switchInverted = switchInverted;
             this.pid = pid;
             this.ff = ff;
             this.constraints = constraints;
@@ -82,9 +75,6 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
      * @return the measurement used by the subsystem, converted from rotations
      */
     public abstract double rotationsToMeasurement(double rotations);
-
-    @Override
-    public abstract void periodic();
 
     /**
      * Sets the motors to a percent output

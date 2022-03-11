@@ -26,7 +26,7 @@ public class AutoPath {
             this.trajectory = TrajectoryUtil.fromPathweaverJson(path);
         } catch (IOException e) {
             // Fail hard so people know quickly when something is wrong instead of a NullPointerException down the road
-            throw new RuntimeException("Could not find trajectory file:   " + filePath);
+            throw new RuntimeException("Could not find trajectory file:   " + path);
         }
     }
 }
