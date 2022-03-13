@@ -11,22 +11,22 @@ public class DeadbandXboxController extends XboxController {
     private static double DEFAULT_DEADBAND = 0.1;
     private final double deadbandCutoff;
 
-    public JoystickButton aButton;
-    public JoystickButton bButton;
-    public JoystickButton xButton;
-    public JoystickButton yButton;
-    public JoystickButton leftBumper;
-    public JoystickButton rightBumper;
-    public POVButton dPadUp;
-    public POVButton dPadDown;
-    public POVButton dPadLeft;
-    public POVButton dPadRight;
-    public Trigger leftXTrigger;
-    public Trigger leftYTrigger;
-    public Trigger rightXTrigger;
-    public Trigger rightYTrigger;
-    public Trigger leftTrigger;
-    public Trigger rightTrigger;
+    public final JoystickButton aButton;
+    public final JoystickButton bButton;
+    public final JoystickButton xButton;
+    public final JoystickButton yButton;
+    public final JoystickButton leftBumper;
+    public final JoystickButton rightBumper;
+    public final POVButton dPadUp;
+    public final POVButton dPadDown;
+    public final POVButton dPadLeft;
+    public final POVButton dPadRight;
+    public final Trigger leftXTrigger;
+    public final Trigger leftYTrigger;
+    public final Trigger rightXTrigger;
+    public final Trigger rightYTrigger;
+    public final Trigger leftTrigger;
+    public final Trigger rightTrigger;
 
     /**
      * Construct an instance of an Xbox controller which ignores axis inputs that
@@ -39,7 +39,23 @@ public class DeadbandXboxController extends XboxController {
     public DeadbandXboxController(int port, double deadbandCutoff) {
         super(port);
         this.deadbandCutoff = deadbandCutoff;
-        instantiateButtons();
+
+        aButton = new JoystickButton(this, DeadbandXboxController.Button.kA.value);
+        bButton = new JoystickButton(this, DeadbandXboxController.Button.kB.value);
+        xButton = new JoystickButton(this, DeadbandXboxController.Button.kX.value);
+        yButton = new JoystickButton(this, DeadbandXboxController.Button.kY.value);
+        leftBumper = new JoystickButton(this, DeadbandXboxController.Button.kLeftBumper.value);
+        rightBumper = new JoystickButton(this, DeadbandXboxController.Button.kRightBumper.value);
+        dPadUp = new POVButton(this, 0);
+        dPadDown = new POVButton(this, 180);
+        dPadLeft = new POVButton(this, 270);
+        dPadRight = new POVButton(this, 90);
+        leftXTrigger = new Trigger(() -> {return this.getLeftX() != 0;});
+        leftYTrigger = new Trigger(() -> {return this.getLeftY() != 0;});
+        rightXTrigger = new Trigger(() -> {return this.getLeftX() != 0;});
+        rightYTrigger = new Trigger(() -> {return this.getLeftY() != 0;});
+        leftTrigger = new Trigger(this::getLeftTrigger);
+        rightTrigger = new Trigger(this::getLeftTrigger);
     }
 
     /**
@@ -69,24 +85,5 @@ public class DeadbandXboxController extends XboxController {
 
     public boolean getRightTrigger() {
         return super.getRightTriggerAxis() > deadbandCutoff;
-    }
-
-    public void instantiateButtons() {
-        aButton = new JoystickButton(this, DeadbandXboxController.Button.kA.value);
-        bButton = new JoystickButton(this, DeadbandXboxController.Button.kB.value);
-        xButton = new JoystickButton(this, DeadbandXboxController.Button.kX.value);
-        yButton = new JoystickButton(this, DeadbandXboxController.Button.kY.value);
-        leftBumper = new JoystickButton(this, DeadbandXboxController.Button.kLeftBumper.value);
-        rightBumper = new JoystickButton(this, DeadbandXboxController.Button.kRightBumper.value);
-        dPadUp = new POVButton(this, 0);
-        dPadDown = new POVButton(this, 180);
-        dPadLeft = new POVButton(this, 270);
-        dPadRight = new POVButton(this, 90);
-        leftXTrigger = new Trigger(() -> {return this.getLeftX() != 0;});
-        leftYTrigger = new Trigger(() -> {return this.getLeftY() != 0;});
-        rightXTrigger = new Trigger(() -> {return this.getLeftX() != 0;});
-        rightYTrigger = new Trigger(() -> {return this.getLeftY() != 0;});
-        leftTrigger = new Trigger(this::getLeftTrigger);
-        rightTrigger = new Trigger(this::getLeftTrigger);
     }
 }
