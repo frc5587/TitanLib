@@ -21,10 +21,10 @@ public class DeadbandXboxController extends XboxController {
     public final POVButton dPadDown;
     public final POVButton dPadLeft;
     public final POVButton dPadRight;
-    public final Trigger leftXTrigger;
-    public final Trigger leftYTrigger;
-    public final Trigger rightXTrigger;
-    public final Trigger rightYTrigger;
+    public final Trigger leftStickX;
+    public final Trigger leftStickY;
+    public final Trigger rightStickX;
+    public final Trigger rightStickY;
     public final Trigger leftTrigger;
     public final Trigger rightTrigger;
 
@@ -58,10 +58,10 @@ public class DeadbandXboxController extends XboxController {
          * add joysticks and triggers to Trigger objects that are active 
          * when the axis is not 0.
          */
-        leftXTrigger = new Trigger(() -> {return this.getLeftX() != 0;});
-        leftYTrigger = new Trigger(() -> {return this.getLeftY() != 0;});
-        rightXTrigger = new Trigger(() -> {return this.getLeftX() != 0;});
-        rightYTrigger = new Trigger(() -> {return this.getLeftY() != 0;});
+        leftStickX = new Trigger(() -> {return this.getLeftX() != 0;});
+        leftStickY = new Trigger(() -> {return this.getLeftY() != 0;});
+        rightStickX = new Trigger(() -> {return this.getLeftX() != 0;});
+        rightStickY = new Trigger(() -> {return this.getLeftY() != 0;});
         leftTrigger = new Trigger(this::getLeftTrigger);
         rightTrigger = new Trigger(this::getLeftTrigger);
     }
