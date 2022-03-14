@@ -32,6 +32,10 @@ public class DeadbandXboxController extends XboxController {
      * Construct an instance of an Xbox controller which ignores axis inputs that
      * are below the specified deadband cutoff.
      *
+     * <p>
+     * This class also creates button objects assigned to their respective 
+     * values from {@link XboxController}.
+     * 
      * @param port           The port on the Driver Station that the joystick is
      *                       plugged into.
      * @param deadbandCutoff amount of deadband to apply to each axis
@@ -40,16 +44,20 @@ public class DeadbandXboxController extends XboxController {
         super(port);
         this.deadbandCutoff = deadbandCutoff;
 
-        aButton = new JoystickButton(this, DeadbandXboxController.Button.kA.value);
-        bButton = new JoystickButton(this, DeadbandXboxController.Button.kB.value);
-        xButton = new JoystickButton(this, DeadbandXboxController.Button.kX.value);
-        yButton = new JoystickButton(this, DeadbandXboxController.Button.kY.value);
-        leftBumper = new JoystickButton(this, DeadbandXboxController.Button.kLeftBumper.value);
-        rightBumper = new JoystickButton(this, DeadbandXboxController.Button.kRightBumper.value);
+        aButton = new JoystickButton(this, Button.kA.value);
+        bButton = new JoystickButton(this, Button.kB.value);
+        xButton = new JoystickButton(this, Button.kX.value);
+        yButton = new JoystickButton(this, Button.kY.value);
+        leftBumper = new JoystickButton(this, Button.kLeftBumper.value);
+        rightBumper = new JoystickButton(this, Button.kRightBumper.value);
         dPadUp = new POVButton(this, 0);
         dPadDown = new POVButton(this, 180);
         dPadLeft = new POVButton(this, 270);
         dPadRight = new POVButton(this, 90);
+        /* 
+         * add joysticks and triggers to Trigger objects that are active 
+         * when the axis is not 0.
+         */
         leftXTrigger = new Trigger(() -> {return this.getLeftX() != 0;});
         leftYTrigger = new Trigger(() -> {return this.getLeftY() != 0;});
         rightXTrigger = new Trigger(() -> {return this.getLeftX() != 0;});
@@ -74,7 +82,7 @@ public class DeadbandXboxController extends XboxController {
         return MathHelper.deadband(super.getRawAxis(axis), deadbandCutoff, 1);
     }
 
-        /**
+    /**
      * Whether the trigger is currently depressed.
      * 
      * @return the state of the trigger.
