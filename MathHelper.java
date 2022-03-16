@@ -114,4 +114,15 @@ public class MathHelper {
     public static int map(int x, int inMin, int inMax, int outMin, int outMax) {
         return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
     }
+    
+    /**
+     * Clamp a double value between a range
+     * @param val the double value to clamp
+     * @param min the minimum extrema of the range
+     * @param max the maximum extrema of the range
+     * @return the clamped value
+     */
+    public static double clamp(double val, double min, double max) {
+        return Math.max(min, Math.min(max, val));
+    }
 }
