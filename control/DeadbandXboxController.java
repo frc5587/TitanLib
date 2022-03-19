@@ -60,10 +60,10 @@ public class DeadbandXboxController extends XboxController {
          */
         leftStickX = new Trigger(() -> {return this.getLeftX() != 0;});
         leftStickY = new Trigger(() -> {return this.getLeftY() != 0;});
-        rightStickX = new Trigger(() -> {return this.getLeftX() != 0;});
-        rightStickY = new Trigger(() -> {return this.getLeftY() != 0;});
+        rightStickX = new Trigger(() -> {return this.getRightX() != 0;});
+        rightStickY = new Trigger(() -> {return this.getRightY() != 0;});
         leftTrigger = new Trigger(this::getLeftTrigger);
-        rightTrigger = new Trigger(this::getLeftTrigger);
+        rightTrigger = new Trigger(this::getRightTrigger);
     }
 
     /**
