@@ -1,4 +1,4 @@
-package org.frc5587.lib;
+package org.frc5587.lib.math;
 
 /**
  * Collection of useful math functions not already provided by WPILib in

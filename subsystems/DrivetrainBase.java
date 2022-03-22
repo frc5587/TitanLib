@@ -1,11 +1,15 @@
 package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.advanced.LimitedPoseMap;
+import org.frc5587.lib.math.DriveSignal;
+import org.frc5587.lib.math.Kinematics;
+
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -37,7 +41,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     * A constants object that provides everything needed by {@link DrivetrainBase}
     */
     public static class DriveConstants {
-        public final double wheelDiameterMeters, gearing, cpr, distancePerTick;
+        public final double wheelDiameterMeters, gearing, cpr, distancePerTick, trackWidth;
         public final int historyLimit;
         public final boolean invertGyro;
 
@@ -48,14 +52,16 @@ public abstract class DrivetrainBase extends SubsystemBase {
         * @param invertGyro     inverts values given by the gyroscope
         * @param cpr            the motor encoders' counts per revolution
         * @param gearing        the gearing from the motor output to the wheels
+        * @param trackWidth     the width the wheel are apart in meters
         */
         public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double cpr,
-                double gearing) {
+                double gearing, double trackWidth) {
             this.wheelDiameterMeters = wheelDiameterMeters;
             this.historyLimit = historyLimit;
             this.invertGyro = invertGyro;
             this.cpr = cpr;
             this.gearing = gearing;
+            this.trackWidth = trackWidth;
             this.distancePerTick = ((1.0 / cpr) / gearing) * (Math.PI * wheelDiameterMeters);
         }
     }
@@ -83,6 +89,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
         this.invertGyro = constants.invertGyro;
 
         differentialDrive = new DifferentialDrive(left, right);
+        differentialDrive.setDeadband(0);// Deadbanding is done in joystick
         configureMotors();
     }
 
@@ -97,6 +104,30 @@ public abstract class DrivetrainBase extends SubsystemBase {
     */
     public void arcadeDrive(double throttle, double curve) {
         differentialDrive.arcadeDrive(throttle, curve, false);
+    }
+
+    /**
+     * Based on 254's cheesyish drive from 2019.
+     * 
+     * @param throttle amount of power [-1, 1]
+     * @param curve amount to turn [-1, 1]
+     * @param quickTurn wether not to control the amount of curve with the throttle (slows curve down at low throttles)
+     */
+    public void titeDrive(double throttle, double curve, boolean quickTurn) {
+        if (!quickTurn) {
+            curve *= throttle;
+        }
+
+        // ! I'm 90% sure the math here won't work bc the units won't scale properly
+        DriveSignal signal = Kinematics.inverseKinematics(new Twist2d(throttle, 0.0, curve), constants.trackWidth);
+        double scaling_factor = Math.max(1.0, Math.max(Math.abs(signal.getLeft()), Math.abs(signal.getRight())));
+
+
+        tankDrive(signal.getLeft() / scaling_factor, signal.getRight() / scaling_factor);
+    }
+
+    public void curvatureDrive(double throttle, double curve, boolean quickTurn) {
+        differentialDrive.curvatureDrive(throttle, curve, quickTurn);
     }
 
     /**

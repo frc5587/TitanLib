@@ -1,6 +1,6 @@
 package org.frc5587.lib.control;
 
-import org.frc5587.lib.MathHelper;
+import org.frc5587.lib.math.MathHelper;
 
 import edu.wpi.first.wpilibj.Joystick;
 

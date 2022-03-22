@@ -34,20 +34,25 @@ public class RamseteCommandWrapper extends CommandBase {
     private boolean debuggingMode = false;
 
     public static class RamseteConstants {
-        public final double kS; // volts
-        public final double kV; // volts * seconds / meters
-        public final double kA; // volts * seconds / meters^2
-        public final double kP;
+        public final SimpleMotorFeedforward ff;
+        public final PIDController pid;
         public final double maxVelocity; // meters / s
         public final double maxAcceleration; // meters / s^2
         public final DifferentialDriveKinematics drivetrainKinematics;
 
         public RamseteConstants(double kS, double kV, double kA, double kP, double maxVelocity, double maxAcceleration,
                 DifferentialDriveKinematics drivetrainKinematics) {
-            this.kS = kS;
-            this.kV = kV;
-            this.kA = kA;
-            this.kP = kP;
+            this.ff = new SimpleMotorFeedforward(kS, kV, kA);
+            this.pid = new PIDController(kP, 0, 0);
+            this.maxVelocity = maxVelocity;
+            this.maxAcceleration = maxAcceleration;
+            this.drivetrainKinematics = drivetrainKinematics;
+        }
+
+        public RamseteConstants(SimpleMotorFeedforward ff, PIDController pid, double maxVelocity, double maxAcceleration,
+                DifferentialDriveKinematics drivetrainKinematics) {
+            this.ff = ff;
+            this.pid = pid;
             this.maxVelocity = maxVelocity;
             this.maxAcceleration = maxAcceleration;
             this.drivetrainKinematics = drivetrainKinematics;
@@ -94,9 +99,7 @@ public class RamseteCommandWrapper extends CommandBase {
                 TrajectoryGenerator.generateTrajectory(start, path, end,
                         new TrajectoryConfig(constants.maxVelocity, constants.maxAcceleration)
                                 .setKinematics(constants.drivetrainKinematics)
-                                .addConstraint(new DifferentialDriveVoltageConstraint(
-                                        new SimpleMotorFeedforward(constants.kS, constants.kV,
-                                                constants.kA),
+                                .addConstraint(new DifferentialDriveVoltageConstraint(constants.ff,
                                         constants.drivetrainKinematics, 10))),
                 constants);
     }
@@ -112,8 +115,8 @@ public class RamseteCommandWrapper extends CommandBase {
 
         RamseteController ramseteController = new RamseteController();
 
-        PIDController left = new PIDController(constants.kP, 0, 0);
-        PIDController right = new PIDController(constants.kP, 0, 0);
+        PIDController left = constants.pid;
+        PIDController right = constants.pid;
 
         if (debuggingMode) {
             /* 
@@ -135,8 +138,7 @@ public class RamseteCommandWrapper extends CommandBase {
         }
 
         ramsete = new RamseteCommand(trajectory, drivetrain::getPose, ramseteController,
-                new SimpleMotorFeedforward(constants.kS, constants.kV,
-                        constants.kA),
+                constants.ff,
                 constants.drivetrainKinematics, drivetrain::getWheelSpeeds,
                 left,
                 right,
