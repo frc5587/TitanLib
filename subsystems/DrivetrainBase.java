@@ -256,12 +256,19 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
-    * Resets the AHRS.
+    * Recalibrates the AHRS.
     * <p>
     * !Warning! this takes up to 10 seconds to complete (it recalibrates some stuff), use sparingly
     */
     public void resetAHRS() {
         ahrs.reset();
+    }
+    
+    /**
+     * Adds an offset to the yaw (Z axis rotation) to zero it
+     */
+    public void zeroHeading() {
+        ahrs.zeroYaw();
     }
 
     /**
