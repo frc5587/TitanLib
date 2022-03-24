@@ -180,13 +180,14 @@ public class RamseteCommandWrapper extends CommandBase {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        drivetrain.zeroHeading();
         
         if (willZeroOdometry) {
+            drivetrain.zeroHeading();
             drivetrain.zeroOdometry();
         }
 
         if (willSetOdometryToFirstPose) {
+            drivetrain.zeroHeading();
             drivetrain.setOdometry(trajectory.getInitialPose());
         }
 
