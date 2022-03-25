@@ -13,8 +13,11 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.util.Units;
 
 /**
 * A base drivetrain that includes support for arcade drive, tank drive,
@@ -36,6 +39,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected boolean invertGyro;
     protected DifferentialDriveOdometry odometry;
     protected final LimitedPoseMap poseHistory;
+    protected final DifferentialDriveKinematics kinematics;
 
     /**
     * A constants object that provides everything needed by {@link DrivetrainBase}
@@ -52,7 +56,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
         * @param invertGyro     inverts values given by the gyroscope
         * @param cpr            the motor encoders' counts per revolution
         * @param gearing        the gearing from the motor output to the wheels
-        * @param trackWidth     the width the wheel are apart in meters
+        * @param trackWidth     the distance between the left and right wheels in meters
+        *                       (measured from the center of the width of the wheel)
         */
         public DriveConstants(double wheelDiameterMeters, int historyLimit, boolean invertGyro, double cpr,
                 double gearing, double trackWidth) {
@@ -87,6 +92,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
         this.odometry = new DifferentialDriveOdometry(currentAngle);
         this.poseHistory = new LimitedPoseMap(constants.historyLimit);
         this.invertGyro = constants.invertGyro;
+        this.kinematics = new DifferentialDriveKinematics(constants.trackWidth);
 
         differentialDrive = new DifferentialDrive(left, right);
         differentialDrive.setDeadband(0);// Deadbanding is done in joystick
@@ -286,10 +292,32 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
+     * @return the angular velocity in radians
+     */
+    public double getAngularVelocity() {
+        return Units.degreesToRadians(ahrs.getRate());
+    }
+
+    /**
     * @return the velocity of both sides of the drivetrain.
     */
     public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-        return new DifferentialDriveWheelSpeeds(getLeftVelocityMetersPerSecond(), getRightVelocityMetersPerSecond());
+        return new DifferentialDriveWheelSpeeds(getLeftVelocityMetersPerSecond(),
+                getRightVelocityMetersPerSecond());
+    }
+
+    /**
+     * @return the X and Y velocities as a {@link ChassisSpeeds} object
+     */
+    public ChassisSpeeds getChassisSpeeds() {
+        return kinematics.toChassisSpeeds(getWheelSpeeds());
+    }
+
+    /**
+     * @return the linear velocity (x velocity) of the drivetrain in m/s
+     */
+    public double getLinearVelocity() {
+        return getChassisSpeeds().vxMetersPerSecond;
     }
 
     /**
