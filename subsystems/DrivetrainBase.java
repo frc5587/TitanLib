@@ -251,6 +251,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
     */
     public void setOdometry(Pose2d pose) {
         resetEncoders();
+        zeroHeading(); // ! I'm not sure if this is necessary, we'll see
+        ahrs.setAngleAdjustment(pose.getRotation().getDegrees());
         odometry.resetPosition(pose, ahrs.getRotation2d());
     }
 
