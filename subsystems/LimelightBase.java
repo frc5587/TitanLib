@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.*;
+import edu.wpi.first.util.net.PortForwarder;
 
 public abstract class LimelightBase extends SubsystemBase {
     protected NetworkTable limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
@@ -29,6 +30,14 @@ public abstract class LimelightBase extends SubsystemBase {
         this.lensHeight = lensHeight;
         this.goalHeight = goalHeight;
         this.distanceOffset = distanceOffset;
+
+        // Allow access to limelight when connected over USB
+        PortForwarder.add(5800, "limelight.local", 5800);
+        PortForwarder.add(5801, "limelight.local", 5801);
+        PortForwarder.add(5802, "limelight.local", 5802);
+        PortForwarder.add(5803, "limelight.local", 5803);
+        PortForwarder.add(5804, "limelight.local", 5804);
+        PortForwarder.add(5805, "limelight.local", 5805);
     }
 
     /**
