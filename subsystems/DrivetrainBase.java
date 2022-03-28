@@ -157,14 +157,14 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
-    *  an inverted version of tankdrivevolts
+    *  an inverted version of tankDriveVolts
     */
     public void tankDriveVoltsReverse(double leftVolts, double rightVolts) {
         this.tankDriveVolts(-leftVolts, -rightVolts);
     }
 
     /** 
-    * sets the speeds of the MotorControllers rather than using the DifferentrialDrive
+    * sets the speeds of the MotorControllers rather than using the DifferentialDrive
     */
     public void setThrottle(double speed) {
         left.set(speed);
