@@ -138,6 +138,14 @@ public class RamseteCommandWrapper extends CommandBase {
      * @param drivetrain drietrain instance
      * @param originalTrajectory the trajectory to constrain
      * @param constants constants object
+     * 
+     * @return a new trajectory with the following constraints applied:
+     * <ul>
+     * <li>Maximum velocity</li>
+     * <li>Maximum acceleration</li>
+     * <li>Maximum voltage (hard set to 10 volts)</li>
+     * <li>Maximum centripetal acceleration</li>
+     * </ul>
      */
     public Trajectory makeConstrainedTrajectory(DrivetrainBase drivetrain, Trajectory originalTrajectory, RamseteConstants constants) {
         List<State> allStates = originalTrajectory.getStates();
