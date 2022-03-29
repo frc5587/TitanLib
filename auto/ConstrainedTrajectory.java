@@ -15,7 +15,7 @@ public class ConstrainedTrajectory extends Trajectory {
     public final Trajectory trajectory;
     public final TrajectoryConstraints constraints;
 
-    public class TrajectoryConstraints {
+    public static class TrajectoryConstraints {
         public final double maxVelocity; // meters / s
         public final double maxAcceleration; // meters / s^2
         public final double maxRotationalAcceleration; // meters / s^2
@@ -61,7 +61,7 @@ public class ConstrainedTrajectory extends Trajectory {
     }
 
     public ConstrainedTrajectory(Trajectory originalTrajectory, TrajectoryConstraints constraints) {
-        this.trajectory = generate(originalTrajectory, constraints);
+        this.trajectory = constrain(originalTrajectory, constraints);
         this.constraints = constraints;
 
         super.getStates().clear();
@@ -83,7 +83,7 @@ public class ConstrainedTrajectory extends Trajectory {
      * <li>Maximum centripetal acceleration</li>
      * </ul>
      */
-    public Trajectory generate(Trajectory originalTrajectory, TrajectoryConstraints constraints) {
+    public static Trajectory constrain(Trajectory originalTrajectory, TrajectoryConstraints constraints) {
         List<State> allStates = originalTrajectory.getStates();
         List<Pose2d> allPoses = new ArrayList<Pose2d>(); 
 
@@ -108,5 +108,9 @@ public class ConstrainedTrajectory extends Trajectory {
                                 constraints.maxRotationalAcceleration)));
 
         return constrainedTrajectory;
+    }
+
+    public void constrain(TrajectoryConstraints constraints) {
+        constrain(this.trajectory, constraints);
     }
 }
