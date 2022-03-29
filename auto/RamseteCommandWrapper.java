@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -38,6 +39,7 @@ public class RamseteCommandWrapper extends CommandBase {
         public final PIDController pid;
         public final double maxVelocity; // meters / s
         public final double maxAcceleration; // meters / s^2
+        public final double maxRotationalAcceleration; // meters / s^2
         public final DifferentialDriveKinematics drivetrainKinematics;
 
         public RamseteConstants(double kS, double kV, double kA, double kP, double maxVelocity, double maxAcceleration,
@@ -46,6 +48,7 @@ public class RamseteCommandWrapper extends CommandBase {
             this.pid = new PIDController(kP, 0, 0);
             this.maxVelocity = maxVelocity;
             this.maxAcceleration = maxAcceleration;
+            this.maxRotationalAcceleration = 1;
             this.drivetrainKinematics = drivetrainKinematics;
         }
 
@@ -55,6 +58,27 @@ public class RamseteCommandWrapper extends CommandBase {
             this.pid = pid;
             this.maxVelocity = maxVelocity;
             this.maxAcceleration = maxAcceleration;
+            this.maxRotationalAcceleration = 1;
+            this.drivetrainKinematics = drivetrainKinematics;
+        }
+
+        public RamseteConstants(double kS, double kV, double kA, double kP, double maxVelocity, double maxAcceleration,
+                double maxRotationalAcceleration, DifferentialDriveKinematics drivetrainKinematics) {
+            this.ff = new SimpleMotorFeedforward(kS, kV, kA);
+            this.pid = new PIDController(kP, 0, 0);
+            this.maxVelocity = maxVelocity;
+            this.maxAcceleration = maxAcceleration;
+            this.maxRotationalAcceleration = maxRotationalAcceleration;
+            this.drivetrainKinematics = drivetrainKinematics;
+        }
+
+        public RamseteConstants(SimpleMotorFeedforward ff, PIDController pid, double maxVelocity, double maxAcceleration,
+                double maxRotationalAcceleration, DifferentialDriveKinematics drivetrainKinematics) {
+            this.ff = ff;
+            this.pid = pid;
+            this.maxVelocity = maxVelocity;
+            this.maxAcceleration = maxAcceleration;
+            this.maxRotationalAcceleration = maxRotationalAcceleration;
             this.drivetrainKinematics = drivetrainKinematics;
         }
     }
@@ -100,7 +124,9 @@ public class RamseteCommandWrapper extends CommandBase {
                         new TrajectoryConfig(constants.maxVelocity, constants.maxAcceleration)
                                 .setKinematics(constants.drivetrainKinematics)
                                 .addConstraint(new DifferentialDriveVoltageConstraint(constants.ff,
-                                        constants.drivetrainKinematics, 10))),
+                                        constants.drivetrainKinematics, 10))
+                                .addConstraint(new CentripetalAccelerationConstraint(
+                                        constants.maxRotationalAcceleration))),
                 constants);
     }
 
