@@ -90,7 +90,7 @@ public class ConstrainedTrajectory extends Trajectory {
         /**
          * Make a new list of poses from the old trajectory states 
          */
-        for(int i = 0; i <= allStates.size(); i++) {
+        for(int i = 0; i < allStates.size(); i++) {
             allPoses.add(allStates.get(i).poseMeters);
         }
 
