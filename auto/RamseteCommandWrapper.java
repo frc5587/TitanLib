@@ -1,7 +1,7 @@
 package org.frc5587.lib.auto;
 
+import java.util.ArrayList;
 import java.util.List;
-
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -108,7 +109,8 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     /**
-     * Generates a trajectory based on a start and end positions, and a list of waypoints. This should really only be used for testing and debugging, for more complex paths, PLEASE use Pathweaver.
+     * Generates a trajectory based on a start and end positions, and a list of waypoints. 
+     * This should really only be used for testing and debugging, for more complex paths, PLEASE use Pathweaver.
      * Note: you cannot specify angle for waypoint
      * 
      * @param drivetrain drivetrain instance
@@ -128,6 +130,46 @@ public class RamseteCommandWrapper extends CommandBase {
                                 .addConstraint(new CentripetalAccelerationConstraint(
                                         constants.maxRotationalAcceleration))),
                 constants);
+    }
+
+    /**
+     * Makes a new constrained trajectory from an existing trajectory.
+     * 
+     * @param drivetrain
+     * @param path
+     * @param constants
+     */
+    public Trajectory makeConstrainedTrajectory(DrivetrainBase drivetrain, Trajectory originalTrajectory, RamseteConstants constants) {
+        List<State> allStates = originalTrajectory.getStates();
+        List<Translation2d> translationList = new ArrayList<Translation2d>();
+
+        /**
+         * Make a list of all translations in the existing path so we can use it for the new generated path.
+         */
+        /* set the initial i value to 1 to make sure the first pose is ignored */
+        for(int i = 1; i < allStates.size() - 2; i++) {
+            /* The translation to add will be the differences between the current pose positions */
+            Translation2d nextTranslation = new Translation2d(
+                allStates.get(i).poseMeters.getX() - allStates.get(i + 1).poseMeters.getX(),
+                allStates.get(i).poseMeters.getY() - allStates.get(i + 1).poseMeters.getY()
+            );
+            translationList.add(nextTranslation);
+        }
+
+        /**
+         * Generate a new trajectory using TrajectoryGenerator with the 
+         * list of all translations within the existing trajectory
+         */
+        Trajectory constrainedTrajectory = TrajectoryGenerator.generateTrajectory(
+                originalTrajectory.getInitialPose(), translationList, allStates.get(allStates.size()).poseMeters, 
+                new TrajectoryConfig(constants.maxVelocity, constants.maxAcceleration)
+                        .setKinematics(constants.drivetrainKinematics)
+                        .addConstraint(new DifferentialDriveVoltageConstraint(constants.ff,
+                                constants.drivetrainKinematics, 10))
+                        .addConstraint(new CentripetalAccelerationConstraint(
+                                constants.maxRotationalAcceleration)));
+
+        return constrainedTrajectory;
     }
 
     /**
