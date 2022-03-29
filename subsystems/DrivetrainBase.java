@@ -13,6 +13,7 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -42,7 +43,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected boolean invertGyro;
     protected DifferentialDriveOdometry odometry;
     protected DifferentialDrivePoseEstimator odometryEstimator;
-    protected final LimitedPoseMap poseHistory;
+    protected final TimeInterpolatableBuffer<Double> headingBuffer = TimeInterpolatableBuffer.createDoubleBuffer(1); 
     protected final DifferentialDriveKinematics kinematics;
 
     /**
@@ -106,7 +107,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
                                                                              // Left encoder, right encoder, gyro.
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01));// Global measurement standard deviations. X,
                                                                            // Y, and theta.
-        this.poseHistory = new LimitedPoseMap(constants.historyLimit);
+        // this.poseHistory = new LimitedPoseMap(constants.historyLimit);
         this.invertGyro = constants.invertGyro;
         this.kinematics = new DifferentialDriveKinematics(constants.trackWidth);
 
@@ -315,6 +316,14 @@ public abstract class DrivetrainBase extends SubsystemBase {
         return getRotation2d().getDegrees();
     }
 
+    public double getAbsoluteHeadingRadians() {
+        return Units.degreesToRadians(ahrs.getAngle());
+    }
+
+    public Rotation2d getHeadingAtTime(double FPGATimestamp) {
+        return new Rotation2d(headingBuffer.getSample(FPGATimestamp));
+    }
+
     /**
      * @return the angular velocity in radians
      */
@@ -384,7 +393,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
         odometry.update(getRotation2d(), getLeftPositionMeters(), getRightPositionMeters());
         odometryEstimator.update(getRotation2d(), getWheelSpeeds(), getLeftPositionMeters(), getRightPositionMeters());
 
-        // Log the pose
-        poseHistory.put(Timer.getFPGATimestamp(), getPose());
+
+        // Log the heading
+        headingBuffer.addSample(Timer.getFPGATimestamp(), getAbsoluteHeadingRadians());
     }
 }
