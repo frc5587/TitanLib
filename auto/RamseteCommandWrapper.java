@@ -135,9 +135,9 @@ public class RamseteCommandWrapper extends CommandBase {
     /**
      * Makes a new constrained trajectory from an existing trajectory.
      * 
-     * @param drivetrain
-     * @param path
-     * @param constants
+     * @param drivetrain drietrain instance
+     * @param originalTrajectory the trajectory to constrain
+     * @param constants constants object
      */
     public Trajectory makeConstrainedTrajectory(DrivetrainBase drivetrain, Trajectory originalTrajectory, RamseteConstants constants) {
         List<State> allStates = originalTrajectory.getStates();
