@@ -141,19 +141,13 @@ public class RamseteCommandWrapper extends CommandBase {
      */
     public Trajectory makeConstrainedTrajectory(DrivetrainBase drivetrain, Trajectory originalTrajectory, RamseteConstants constants) {
         List<State> allStates = originalTrajectory.getStates();
-        List<Translation2d> translationList = new ArrayList<Translation2d>();
+        List<Pose2d> allPoses = new ArrayList<Pose2d>(); 
 
         /**
-         * Make a list of all translations in the existing path so we can use it for the new generated path.
+         * Make a new list of poses from the old trajectory states 
          */
-        /* set the initial i value to 1 to make sure the first pose is ignored */
-        for(int i = 1; i < allStates.size() - 2; i++) {
-            /* The translation to add will be the differences between the current pose positions */
-            Translation2d nextTranslation = new Translation2d(
-                allStates.get(i).poseMeters.getX() - allStates.get(i + 1).poseMeters.getX(),
-                allStates.get(i).poseMeters.getY() - allStates.get(i + 1).poseMeters.getY()
-            );
-            translationList.add(nextTranslation);
+        for(int i = 0; i <= allStates.size(); i++) {
+            allPoses.add(allStates.get(i).poseMeters);
         }
 
         /**
@@ -161,7 +155,7 @@ public class RamseteCommandWrapper extends CommandBase {
          * list of all translations within the existing trajectory
          */
         Trajectory constrainedTrajectory = TrajectoryGenerator.generateTrajectory(
-                originalTrajectory.getInitialPose(), translationList, allStates.get(allStates.size()).poseMeters, 
+                allPoses,
                 new TrajectoryConfig(constants.maxVelocity, constants.maxAcceleration)
                         .setKinematics(constants.drivetrainKinematics)
                         .addConstraint(new DifferentialDriveVoltageConstraint(constants.ff,
