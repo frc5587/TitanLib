@@ -92,10 +92,17 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     /**
-     * With the {@link Trajectory} instead of a start/end and waypoints, it creates the command. 
+     * Creates a new RamseteCommandWrapper from a {@link ConstrainedTrajectory}.
+     */
+    public RamseteCommandWrapper(DrivetrainBase drivetrain, ConstrainedTrajectory trajectory, RamseteConstants constants) {
+        this(drivetrain, (Trajectory) trajectory, constants);
+    }
+
+    /**
+     * Create a {@link RamseteCommand} from a trajectory
      * 
      * @param drivetrain drivetrain instance
-     * @param trajectory traject of path
+     * @param trajectory trajectory of path
      * @param constants constants object
      */
     public RamseteCommandWrapper(DrivetrainBase drivetrain, Trajectory trajectory, RamseteConstants constants) {
