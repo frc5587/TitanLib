@@ -22,6 +22,8 @@ import edu.wpi.first.util.WPIUtilJNI;
 import java.util.function.BiConsumer;
 
 /**
+ * ! Note: the unscented kalman filter sometimes becomes unstable, until this issue is fixed, its recommended not to use this file
+ * 
  * This class wraps an {@link edu.wpi.first.math.estimator.UnscentedKalmanFilter Unscented Kalman
  * Filter} to fuse latency-compensated vision measurements with differential drive encoder
  * measurements. It will correct for noisy vision measurements and encoder drift. It is intended to
