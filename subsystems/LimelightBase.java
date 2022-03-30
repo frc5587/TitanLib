@@ -74,7 +74,7 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return
      */
     public double getHorizontalAngleRadians() {
-        return Math.toRadians(tx.getDouble(0.0));
+        return Math.toRadians(tx.getDouble(0.0)) / Math.cos(Math.toRadians(ty.getDouble(0.0))); // should fix perspective shifts that occur on the sides
     }
 
     /**
@@ -83,7 +83,7 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return The distance from the Limelight to goal in meters
      */
     public double calculateDistance() {
-        return (goalHeight - lensHeight) / Math.tan(angleToGoalRadians()) + distanceOffset;
+        return (goalHeight - lensHeight) / (Math.tan(angleToGoalRadians()) * Math.cos(Math.toRadians(tx.getDouble(0.0)))) + distanceOffset;
     }
 
     /**
