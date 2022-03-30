@@ -43,7 +43,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected boolean invertGyro;
     protected DifferentialDriveOdometry odometry;
     protected DifferentialDrivePoseEstimator odometryEstimator;
-    protected final TimeInterpolatableBuffer<Double> headingBuffer = TimeInterpolatableBuffer.createDoubleBuffer(1); 
+    protected final TimeInterpolatableBuffer<Pose2d> poseHistory = TimeInterpolatableBuffer.createBuffer(1.5); 
     protected final DifferentialDriveKinematics kinematics;
 
     /**
@@ -320,10 +320,6 @@ public abstract class DrivetrainBase extends SubsystemBase {
         return Units.degreesToRadians(ahrs.getAngle());
     }
 
-    public Rotation2d getHeadingAtTime(double FPGATimestamp) {
-        return new Rotation2d(headingBuffer.getSample(FPGATimestamp));
-    }
-
     /**
      * @return the angular velocity in radians
      */
@@ -382,6 +378,10 @@ public abstract class DrivetrainBase extends SubsystemBase {
         odometryEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
     }
 
+    public Pose2d getPoseAtTime(double FPGATimestamp) {
+        return poseHistory.getSample(FPGATimestamp);
+    }
+
     /**
      * resets the positions of the encoders to 0
      */
@@ -395,6 +395,6 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
 
         // Log the heading
-        headingBuffer.addSample(Timer.getFPGATimestamp(), getAbsoluteHeadingRadians());
+        poseHistory.addSample(Timer.getFPGATimestamp(), getPose());
     }
 }
