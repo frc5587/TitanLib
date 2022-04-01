@@ -1,6 +1,5 @@
 package org.frc5587.lib.subsystems;
 
-import org.frc5587.lib.advanced.LimitedPoseMap;
 import org.frc5587.lib.math.DifferentialDrivePoseEstimator;
 import org.frc5587.lib.math.DriveSignal;
 import org.frc5587.lib.math.Kinematics;
