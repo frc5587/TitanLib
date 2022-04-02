@@ -20,6 +20,8 @@ public abstract class LimelightBase extends SubsystemBase {
     protected double goalHeight;
     protected double distanceOffset;
 
+    protected final double approximateNetworkDelaySeconds = 0.05;
+
     /**
      * <a href=
      * "https://docs.limelightvision.io/en/latest/cs_estimating_distance.html#using-a-fixed-angle-camera">This</a>
@@ -74,7 +76,7 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return
      */
     public double getHorizontalAngleRadians() {
-        return Math.toRadians(tx.getDouble(0.0)) / Math.cos(Math.toRadians(ty.getDouble(0.0))); // should fix perspective shifts that occur on the sides
+        return Math.toRadians(tx.getDouble(0.0)) / Math.cos(Math.toRadians(ty.getDouble(0.0)) + Math.toRadians(mountAngle)); // should fix perspective shifts that occur on the sides
     }
 
     /**
@@ -168,7 +170,8 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return FPGA timestamp (seconds)
      */
     public double calculateFPGAFrameTimestamp() {
-        return (tl.getLastChange() / 1000000) - Units.millisecondsToSeconds(pipelineLatencyMS());
+        // return (tl.getLastChange() / 1000000) - Units.millisecondsToSeconds(pipelineLatencyMS());
+        return Timer.getFPGATimestamp() - (Units.millisecondsToSeconds(pipelineLatencyMS()) - approximateNetworkDelaySeconds);
     }
 
     /**
