@@ -59,7 +59,7 @@ public class ObjectTracker {
      * @return angle - RADIANS
      */
     public double getRelativeAngle() {
-        return Math.atan2(getDiffY(), getDiffX()); // TODO: check if these have to be switched
+        return Math.atan2(getDiffY(), getDiffX());
     }
 
     /**
