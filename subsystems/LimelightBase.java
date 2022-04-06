@@ -170,8 +170,7 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return FPGA timestamp (seconds)
      */
     public double calculateFPGAFrameTimestamp() {
-        // return (tl.getLastChange() / 1000000) - Units.millisecondsToSeconds(pipelineLatencyMS());
-        return Timer.getFPGATimestamp() - (Units.millisecondsToSeconds(pipelineLatencyMS()) - approximateNetworkDelaySeconds);
+        return Timer.getFPGATimestamp() - totalSystemLatency();
     }
 
     /**
@@ -181,6 +180,6 @@ public abstract class LimelightBase extends SubsystemBase {
      * @return delay in seconds
      */
     public double totalSystemLatency() {
-        return Timer.getFPGATimestamp() - calculateFPGAFrameTimestamp();
+        return (Units.millisecondsToSeconds(pipelineLatencyMS()) - approximateNetworkDelaySeconds);
     }
 }
