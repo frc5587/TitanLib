@@ -19,15 +19,7 @@ public class AutoPath {
      * @param fileName name of file (everything before the extension)
      */
     public AutoPath(String fileName) {
-        filePath = "paths/output/" + fileName + ".wpilib.json";
-        path = Filesystem.getDeployDirectory().toPath().resolve(filePath);
-
-        try {
-            this.trajectory = TrajectoryUtil.fromPathweaverJson(path);
-        } catch (IOException e) {
-            // Fail hard so people know quickly when something is wrong instead of a NullPointerException down the road
-            throw new RuntimeException("Could not find trajectory file:   " + path);
-        }
+        this(fileName, false);
     }
 
     /**
@@ -40,27 +32,18 @@ public class AutoPath {
      *                             it will use the filepath 'src/main/deploy/paths/output'
      */
     public AutoPath(String fileName, boolean pathPlannerDirectory) {
-        if(!pathPlannerDirectory) {
-            filePath = "paths/output/" + fileName + ".wpilib.json";
-            path = Filesystem.getDeployDirectory().toPath().resolve(filePath);
-
-            try {
-                this.trajectory = TrajectoryUtil.fromPathweaverJson(path);
-            } catch (IOException e) {
-                // Fail hard so people know quickly when something is wrong instead of a NullPointerException down the road
-                throw new RuntimeException("Could not find trajectory file:   " + path);
-            }
-        }
-        else {
+        if(pathPlannerDirectory) {
             filePath = "pathplanner/generatedJSON/" + fileName + ".wpilib.json";
-            path = Filesystem.getDeployDirectory().toPath().resolve(filePath);
+        } else {
+            filePath = "paths/output/" + fileName + ".wpilib.json";
+        }
+        path = Filesystem.getDeployDirectory().toPath().resolve(filePath);
 
-            try {
-                this.trajectory = TrajectoryUtil.fromPathweaverJson(path);
-            } catch (IOException e) {
-                // Fail hard so people know quickly when something is wrong instead of a NullPointerException down the road
-                throw new RuntimeException("Could not find trajectory file:   " + path);
-            }
+        try {
+            this.trajectory = TrajectoryUtil.fromPathweaverJson(path);
+        } catch (IOException e) {
+            // Fail hard so people know quickly when something is wrong instead of a NullPointerException down the road
+            throw new RuntimeException("Could not find trajectory file:   " + path);
         }
     }
 }
