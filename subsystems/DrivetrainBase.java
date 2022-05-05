@@ -130,23 +130,44 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
-     * Based on 254's cheesyish drive from 2019.
+     * A field oriented drive system for differential drives
      * 
      * @param throttle  amount of power [-1, 1]
      * @param curve     amount to turn [-1, 1]
      * @param quickTurn wether not to control the amount of curve with the throttle
      *                  (slows curve down at low throttles)
      */
-    public void titeDrive(double throttle, double curve, boolean quickTurn) {
-        if (!quickTurn) {
-            curve *= throttle;
+    public void titanDrive(Rotation2d direction, double throttle, FollowDirection followDirection, boolean spinInPlace) {
+        Rotation2d heading = getRotation2d();
+        final Rotation2d forwardThreshold = Rotation2d.fromDegrees(30); // angle at which robot stops turning on a point, and starts moving in the direction
+        final Rotation2d maxSpinThreshold = Rotation2d.fromDegrees(90); // angle at which robot stops turning on a point, and starts moving in the direction
+
+        if (followDirection == FollowDirection.AUTO) {
+            if (Math.abs(heading.minus(direction).getRadians()) < Math.PI) {
+                followDirection = FollowDirection.FORWARD;
+            } else {
+                followDirection = FollowDirection.BACKWARD;
+            }
         }
 
-        // ! I'm 90% sure the math here won't work bc the units won't scale properly
-        DriveSignal signal = Kinematics.inverseKinematics(new Twist2d(throttle, 0.0, curve), constants.trackWidth);
-        double scaling_factor = Math.max(1.0, Math.max(Math.abs(signal.getLeft()), Math.abs(signal.getRight())));
+        if (followDirection == FollowDirection.BACKWARD) {
+            throttle *= -1;
+            direction.rotateBy(Rotation2d.fromDegrees(180));
+        }
 
-        tankDrive(signal.getLeft() / scaling_factor, signal.getRight() / scaling_factor);
+        Rotation2d angleError = direction.minus(heading);
+        double left, right;
+
+        if (Math.abs(angleError.getRadians()) <= forwardThreshold.getRadians()) {
+            left = throttle * (1 - angleError.getRadians() / forwardThreshold.getRadians());
+            right = throttle * (1 + angleError.getRadians() / forwardThreshold.getRadians());
+        } else if (Math.abs(angleError.getRadians()) <= maxSpinThreshold.getRadians()) {
+            
+        }
+
+
+
+
     }
 
     public void curvatureDrive(double throttle, double curve, boolean quickTurn) {
@@ -395,5 +416,9 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
         // Log the heading
         poseHistory.addSample(Timer.getFPGATimestamp(), getPose());
+    }
+
+    public enum FollowDirection  {
+        FORWARD, BACKWARD, AUTO;
     }
 }
