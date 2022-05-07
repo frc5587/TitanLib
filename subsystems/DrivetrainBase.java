@@ -9,6 +9,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -44,6 +45,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected DifferentialDrivePoseEstimator odometryEstimator;
     protected final TimeInterpolatableBuffer<Pose2d> poseHistory = TimeInterpolatableBuffer.createBuffer(1.5); 
     protected final DifferentialDriveKinematics kinematics;
+
+    protected PIDController titanDrivePID;
 
     /**
      * A constants object that provides everything needed by {@link DrivetrainBase}
@@ -130,17 +133,16 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
-     * A field oriented drive system for differential drives
+     * A field oriented drive system for differential drives.
      * 
-     * @param throttle  amount of power [-1, 1]
-     * @param curve     amount to turn [-1, 1]
-     * @param quickTurn wether not to control the amount of curve with the throttle
-     *                  (slows curve down at low throttles)
+     * @param direction direction to travel in (theta of joystick)
+     * @param throttle power to apply (r of joystick)
+     * @param followDirection whether to follow on the front, back, or automatically determine direction
+     * @param spinInPlace whether to just spin
      */
     public void titanDrive(Rotation2d direction, double throttle, FollowDirection followDirection, boolean spinInPlace) {
         Rotation2d heading = getRotation2d();
         final Rotation2d forwardThreshold = Rotation2d.fromDegrees(30); // angle at which robot stops turning on a point, and starts moving in the direction
-        final Rotation2d maxSpinThreshold = Rotation2d.fromDegrees(90); // angle at which robot stops turning on a point, and starts moving in the direction
 
         if (followDirection == FollowDirection.AUTO) {
             if (Math.abs(heading.minus(direction).getRadians()) < Math.PI) {
@@ -156,18 +158,49 @@ public abstract class DrivetrainBase extends SubsystemBase {
         }
 
         Rotation2d angleError = direction.minus(heading);
-        double left, right;
+        double spinFactor = spinInPlace? 0 : 1; 
 
-        if (Math.abs(angleError.getRadians()) <= forwardThreshold.getRadians()) {
-            left = throttle * (1 - angleError.getRadians() / forwardThreshold.getRadians());
-            right = throttle * (1 + angleError.getRadians() / forwardThreshold.getRadians());
-        } else if (Math.abs(angleError.getRadians()) <= maxSpinThreshold.getRadians()) {
-            
+        double left = throttle * (spinFactor - angleError.getRadians() / forwardThreshold.getRadians());
+        double right = throttle * (spinFactor + angleError.getRadians() / forwardThreshold.getRadians());
+        
+        tankDrive(left, right);
+    }
+
+    /**
+     * A field oriented drive system for differential drives using a PID controller instead of fuzzy logic.
+     * 
+     * @param direction direction to travel in (theta of joystick)
+     * @param throttle power to apply (r of joystick)
+     * @param followDirection whether to follow on the front, back, or automatically determine direction
+     * @param spinInPlace whether to just spin
+     */
+    public void titanDrivePID(Rotation2d direction, double throttle, FollowDirection followDirection, boolean spinInPlace) {
+        Rotation2d heading = getRotation2d();
+
+        if (followDirection == FollowDirection.AUTO) {
+            if (Math.abs(heading.minus(direction).getRadians()) < Math.PI) {
+                followDirection = FollowDirection.FORWARD;
+            } else {
+                followDirection = FollowDirection.BACKWARD;
+            }
         }
 
+        if (followDirection == FollowDirection.BACKWARD) {
+            throttle *= -1;
+            direction.rotateBy(Rotation2d.fromDegrees(180));
+        }
 
+        double output = titanDrivePID.calculate(heading.getRadians(), direction.getRadians());
+        double spinFactor = spinInPlace? 0 : 1; 
 
+        double left = throttle * (spinFactor - output);
+        double right = throttle * (spinFactor + output);
+        
+        tankDrive(left, right);
+    }
 
+    public void setTitanDrivePID(PIDController titanDrivePID) {
+        this.titanDrivePID = titanDrivePID;
     }
 
     public void curvatureDrive(double throttle, double curve, boolean quickTurn) {
