@@ -1,6 +1,7 @@
 package org.frc5587.lib.control;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class DeadbandJoystick extends Joystick {
@@ -83,5 +84,9 @@ public class DeadbandJoystick extends Joystick {
 
     public double getXCurveDampened() {
         return Curve.curve(Curve.dampen(getX(), getY()));
+    }
+
+    public Translation2d getPosition() {
+        return new Translation2d(getX(), getY());
     }
 }

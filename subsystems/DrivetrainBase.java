@@ -1,8 +1,8 @@
 package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.math.DifferentialDrivePoseEstimator;
-import org.frc5587.lib.math.DriveSignal;
-import org.frc5587.lib.math.Kinematics;
+
+import javax.management.RuntimeErrorException;
 
 import com.kauailabs.navx.frc.AHRS;
 
@@ -12,7 +12,6 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -133,31 +132,43 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
+     * Returns the follow direction for automatic following. So depending on the closest side to the desired heading, it either returns `FORWARD` or `BACKWARD`.
+     * 
+     * @param desiredHeading the desired heading for the drivetrain
+     * @return the closest direction to follow
+     */
+    public FollowDirection getAutoFollowDirection(Rotation2d desiredHeading) {
+        Rotation2d heading = getRotation2d();
+
+        if (Math.abs(heading.minus(desiredHeading).getRadians()) < Math.PI) {
+            return FollowDirection.FORWARD;
+        } else {
+            return FollowDirection.BACKWARD;
+        }
+    }
+
+    /**
      * A field oriented drive system for differential drives.
      * 
-     * @param direction direction to travel in (theta of joystick)
+     * @param desiredHeading direction to travel in (theta of joystick)
      * @param throttle power to apply (r of joystick)
      * @param followDirection whether to follow on the front, back, or automatically determine direction
      * @param spinInPlace whether to just spin
      */
-    public void titanDrive(Rotation2d direction, double throttle, FollowDirection followDirection, boolean spinInPlace) {
+    public void titanDrive(Rotation2d desiredHeading, double throttle, FollowDirection followDirection, boolean spinInPlace) {
         Rotation2d heading = getRotation2d();
         final Rotation2d forwardThreshold = Rotation2d.fromDegrees(30); // angle at which robot stops turning on a point, and starts moving in the direction
 
         if (followDirection == FollowDirection.AUTO) {
-            if (Math.abs(heading.minus(direction).getRadians()) < Math.PI) {
-                followDirection = FollowDirection.FORWARD;
-            } else {
-                followDirection = FollowDirection.BACKWARD;
-            }
+            followDirection = getAutoFollowDirection(desiredHeading);
         }
 
         if (followDirection == FollowDirection.BACKWARD) {
             throttle *= -1;
-            direction.rotateBy(Rotation2d.fromDegrees(180));
+            desiredHeading.rotateBy(Rotation2d.fromDegrees(180));
         }
 
-        Rotation2d angleError = direction.minus(heading);
+        Rotation2d angleError = desiredHeading.minus(heading);
         double spinFactor = spinInPlace? 0 : 1; 
 
         double left = throttle * (spinFactor - angleError.getRadians() / forwardThreshold.getRadians());
@@ -169,28 +180,24 @@ public abstract class DrivetrainBase extends SubsystemBase {
     /**
      * A field oriented drive system for differential drives using a PID controller instead of fuzzy logic.
      * 
-     * @param direction direction to travel in (theta of joystick)
+     * @param desiredHeading direction to travel in (theta of joystick)
      * @param throttle power to apply (r of joystick)
      * @param followDirection whether to follow on the front, back, or automatically determine direction
      * @param spinInPlace whether to just spin
      */
-    public void titanDrivePID(Rotation2d direction, double throttle, FollowDirection followDirection, boolean spinInPlace) {
+    public void titanDrivePID(Rotation2d desiredHeading, double throttle, FollowDirection followDirection, boolean spinInPlace) {
         Rotation2d heading = getRotation2d();
 
         if (followDirection == FollowDirection.AUTO) {
-            if (Math.abs(heading.minus(direction).getRadians()) < Math.PI) {
-                followDirection = FollowDirection.FORWARD;
-            } else {
-                followDirection = FollowDirection.BACKWARD;
-            }
+            followDirection = getAutoFollowDirection(desiredHeading);
         }
 
         if (followDirection == FollowDirection.BACKWARD) {
             throttle *= -1;
-            direction.rotateBy(Rotation2d.fromDegrees(180));
+            desiredHeading.rotateBy(Rotation2d.fromDegrees(180));
         }
 
-        double output = titanDrivePID.calculate(heading.getRadians(), direction.getRadians());
+        double output = titanDrivePID.calculate(heading.getRadians(), desiredHeading.getRadians());
         double spinFactor = spinInPlace? 0 : 1; 
 
         double left = throttle * (spinFactor - output);
@@ -453,5 +460,16 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
     public enum FollowDirection  {
         FORWARD, BACKWARD, AUTO;
+
+        public FollowDirection opposite() {
+            switch (this) {
+                case FORWARD:
+                    return BACKWARD;
+                case BACKWARD:
+                    return FORWARD;
+                default:
+                    throw new RuntimeException("No opposite to AUTO FollowDirection");
+            }
+        }
     }
 }
