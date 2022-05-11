@@ -48,8 +48,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         this.constants = constants;
         this.motor = motor;
         ffController = constants.ff;
-        pidController = getController();
-        limitSwitch = new DigitalInput(constants.switchPort);
+        this.limitSwitch = new DigitalInput(constants.switchPort);
     }
 
     /**
@@ -158,14 +157,6 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     */
     public void stop() {
         motor.set(0);
-    }
-
-    public double calcOutput(TrapezoidProfile.State state) {
-        return pidController.calculate(getMeasurement(), state.position);
-    }
-
-    public double calcFF(TrapezoidProfile.State state) {
-        return ffController.calculate(getMeasurement(), state.velocity);
     }
 
     @Override
