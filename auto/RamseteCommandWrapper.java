@@ -1,7 +1,7 @@
 package org.frc5587.lib.auto;
 
+import java.util.ArrayList;
 import java.util.List;
-
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.Trajectory.State;
+import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -34,22 +36,50 @@ public class RamseteCommandWrapper extends CommandBase {
     private boolean debuggingMode = false;
 
     public static class RamseteConstants {
-        public final double kS; // volts
-        public final double kV; // volts * seconds / meters
-        public final double kA; // volts * seconds / meters^2
-        public final double kP;
+        public final SimpleMotorFeedforward ff;
+        public final PIDController pid;
         public final double maxVelocity; // meters / s
         public final double maxAcceleration; // meters / s^2
+        public final double maxRotationalAcceleration; // meters / s^2
         public final DifferentialDriveKinematics drivetrainKinematics;
 
         public RamseteConstants(double kS, double kV, double kA, double kP, double maxVelocity, double maxAcceleration,
                 DifferentialDriveKinematics drivetrainKinematics) {
-            this.kS = kS;
-            this.kV = kV;
-            this.kA = kA;
-            this.kP = kP;
+            this.ff = new SimpleMotorFeedforward(kS, kV, kA);
+            this.pid = new PIDController(kP, 0, 0);
             this.maxVelocity = maxVelocity;
             this.maxAcceleration = maxAcceleration;
+            this.maxRotationalAcceleration = 1;
+            this.drivetrainKinematics = drivetrainKinematics;
+        }
+
+        public RamseteConstants(SimpleMotorFeedforward ff, PIDController pid, double maxVelocity, double maxAcceleration,
+                DifferentialDriveKinematics drivetrainKinematics) {
+            this.ff = ff;
+            this.pid = pid;
+            this.maxVelocity = maxVelocity;
+            this.maxAcceleration = maxAcceleration;
+            this.maxRotationalAcceleration = 1;
+            this.drivetrainKinematics = drivetrainKinematics;
+        }
+
+        public RamseteConstants(double kS, double kV, double kA, double kP, double maxVelocity, double maxAcceleration,
+                double maxRotationalAcceleration, DifferentialDriveKinematics drivetrainKinematics) {
+            this.ff = new SimpleMotorFeedforward(kS, kV, kA);
+            this.pid = new PIDController(kP, 0, 0);
+            this.maxVelocity = maxVelocity;
+            this.maxAcceleration = maxAcceleration;
+            this.maxRotationalAcceleration = maxRotationalAcceleration;
+            this.drivetrainKinematics = drivetrainKinematics;
+        }
+
+        public RamseteConstants(SimpleMotorFeedforward ff, PIDController pid, double maxVelocity, double maxAcceleration,
+                double maxRotationalAcceleration, DifferentialDriveKinematics drivetrainKinematics) {
+            this.ff = ff;
+            this.pid = pid;
+            this.maxVelocity = maxVelocity;
+            this.maxAcceleration = maxAcceleration;
+            this.maxRotationalAcceleration = maxRotationalAcceleration;
             this.drivetrainKinematics = drivetrainKinematics;
         }
     }
@@ -62,10 +92,17 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     /**
-     * With the {@link Trajectory} instead of a start/end and waypoints, it creates the command. 
+     * Creates a new RamseteCommandWrapper from a {@link ConstrainedTrajectory}.
+     */
+    public RamseteCommandWrapper(DrivetrainBase drivetrain, ConstrainedTrajectory trajectory, RamseteConstants constants) {
+        this(drivetrain, (Trajectory) trajectory, constants);
+    }
+
+    /**
+     * Create a {@link RamseteCommand} from a trajectory
      * 
      * @param drivetrain drivetrain instance
-     * @param trajectory traject of path
+     * @param trajectory trajectory of path
      * @param constants constants object
      */
     public RamseteCommandWrapper(DrivetrainBase drivetrain, Trajectory trajectory, RamseteConstants constants) {
@@ -79,7 +116,8 @@ public class RamseteCommandWrapper extends CommandBase {
     }
 
     /**
-     * Generates a trajectory based on a start and end positions, and a list of waypoints. This should really only be used for testing and debugging, for more complex paths, PLEASE use Pathweaver.
+     * Generates a trajectory based on a start and end positions, and a list of waypoints. 
+     * This should really only be used for testing and debugging, for more complex paths, PLEASE use Pathweaver.
      * Note: you cannot specify angle for waypoint
      * 
      * @param drivetrain drivetrain instance
@@ -94,11 +132,53 @@ public class RamseteCommandWrapper extends CommandBase {
                 TrajectoryGenerator.generateTrajectory(start, path, end,
                         new TrajectoryConfig(constants.maxVelocity, constants.maxAcceleration)
                                 .setKinematics(constants.drivetrainKinematics)
-                                .addConstraint(new DifferentialDriveVoltageConstraint(
-                                        new SimpleMotorFeedforward(constants.kS, constants.kV,
-                                                constants.kA),
-                                        constants.drivetrainKinematics, 10))),
+                                .addConstraint(new DifferentialDriveVoltageConstraint(constants.ff,
+                                        constants.drivetrainKinematics, 10))
+                                .addConstraint(new CentripetalAccelerationConstraint(
+                                        constants.maxRotationalAcceleration))),
                 constants);
+    }
+
+    /**
+     * Makes a new constrained trajectory from an existing trajectory.
+     * 
+     * @param drivetrain drietrain instance
+     * @param originalTrajectory the trajectory to constrain
+     * @param constants constants object
+     * 
+     * @return a new trajectory with the following constraints applied:
+     * <ul>
+     * <li>Maximum velocity</li>
+     * <li>Maximum acceleration</li>
+     * <li>Maximum voltage (hard set to 10 volts)</li>
+     * <li>Maximum centripetal acceleration</li>
+     * </ul>
+     */
+    public Trajectory makeConstrainedTrajectory(DrivetrainBase drivetrain, Trajectory originalTrajectory, RamseteConstants constants) {
+        List<State> allStates = originalTrajectory.getStates();
+        List<Pose2d> allPoses = new ArrayList<Pose2d>(); 
+
+        /**
+         * Make a new list of poses from the old trajectory states 
+         */
+        for(int i = 0; i <= allStates.size(); i++) {
+            allPoses.add(allStates.get(i).poseMeters);
+        }
+
+        /**
+         * Generate a new trajectory using TrajectoryGenerator with the 
+         * list of all translations within the existing trajectory
+         */
+        Trajectory constrainedTrajectory = TrajectoryGenerator.generateTrajectory(
+                allPoses,
+                new TrajectoryConfig(constants.maxVelocity, constants.maxAcceleration)
+                        .setKinematics(constants.drivetrainKinematics)
+                        .addConstraint(new DifferentialDriveVoltageConstraint(constants.ff,
+                                constants.drivetrainKinematics, 10))
+                        .addConstraint(new CentripetalAccelerationConstraint(
+                                constants.maxRotationalAcceleration)));
+
+        return constrainedTrajectory;
     }
 
     /**
@@ -112,8 +192,8 @@ public class RamseteCommandWrapper extends CommandBase {
 
         RamseteController ramseteController = new RamseteController();
 
-        PIDController left = new PIDController(constants.kP, 0, 0);
-        PIDController right = new PIDController(constants.kP, 0, 0);
+        PIDController left = constants.pid;
+        PIDController right = constants.pid;
 
         if (debuggingMode) {
             /* 
@@ -135,8 +215,7 @@ public class RamseteCommandWrapper extends CommandBase {
         }
 
         ramsete = new RamseteCommand(trajectory, drivetrain::getPose, ramseteController,
-                new SimpleMotorFeedforward(constants.kS, constants.kV,
-                        constants.kA),
+                constants.ff,
                 constants.drivetrainKinematics, drivetrain::getWheelSpeeds,
                 left,
                 right,
@@ -178,11 +257,14 @@ public class RamseteCommandWrapper extends CommandBase {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
+        
         if (willZeroOdometry) {
+            drivetrain.zeroHeading();
             drivetrain.zeroOdometry();
         }
 
         if (willSetOdometryToFirstPose) {
+            drivetrain.zeroHeading();
             drivetrain.setOdometry(trajectory.getInitialPose());
         }
 

@@ -1,7 +1,6 @@
 package org.frc5587.lib.control;
 
-import org.frc5587.lib.MathHelper;
-
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class DeadbandJoystick extends Joystick {
@@ -63,7 +62,7 @@ public class DeadbandJoystick extends Joystick {
         double value = super.getRawAxis(axis);
         // value = Math.copySign(Math.pow(Math.abs(value), exponent), value);
 
-        return MathHelper.deadband(value, deadbandCutoff);
+        return MathUtil.applyDeadband(value, deadbandCutoff);
     }
 
     public double getXExp() {

@@ -1,10 +1,12 @@
-package org.frc5587.lib;
+package org.frc5587.lib.math;
 
 /**
  * Collection of useful math functions not already provided by WPILib in
  * {@link edu.wpi.first.wpiutil.math.MathUtil}
  */
 public class MathHelper {
+    public static final double kEpsilon = 1e-12; // a very small number
+
     /**
      * Eliminates values that are not greater than the deadbandCutoff within the
      * given range <code>-1 * max</code> and <code>max</code>.
@@ -113,5 +115,42 @@ public class MathHelper {
      */
     public static int map(int x, int inMin, int inMax, int outMin, int outMax) {
         return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+    }
+
+    /**
+     * Essentially checks if `a` is within `epsilon` of `b`. It would be true if
+     * (10, 9, 2) are passed in, but false if (10, 9, 0.5) are passed in.
+     * 
+     * @param a comparing number
+     * @param b reference number
+     * @param epsilon allowable range of error
+     * @return if they're close enough
+     */
+    public static boolean epsilonEquals(double a, double b, double epsilon) {
+        return (a - epsilon <= b) && (a + epsilon >= b);
+    }
+
+    /**
+     * Essentially checks if `a` is within the default epsilon value (a very small number) of `b`. It would be true if
+     * (9.00000001, 9) are passed in, but false if (9.2, 9) are passed in.
+     * 
+     * @param a comparing number
+     * @param b reference number
+     * @return if they're close enough
+     */
+    public static boolean epsilonEquals(double a, double b) {
+        return epsilonEquals(a, b, kEpsilon);
+    }
+
+    /**
+     * Is {@link MathHelper#epsilonEquals(double, double, double)} but with {@link Integer}
+     * 
+     * @param a comparing number
+     * @param b reference number
+     * @param epsilon allowable range of error
+     * @return if they're close enough
+     */
+    public static boolean epsilonEquals(int a, int b, int epsilon) {
+        return (a - epsilon <= b) && (a + epsilon >= b);
     }
 }

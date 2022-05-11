@@ -1,5 +1,7 @@
 package org.frc5587.lib;
 
+import org.frc5587.lib.math.MathHelper;
+
 import edu.wpi.first.math.MathUtil;
 
 /**
@@ -10,6 +12,7 @@ import edu.wpi.first.math.MathUtil;
  * may be modified and shared by FRC teams. The code must be accompanied by the
  * FIRST BSD license file in the root directory of the project.
  */
+@Deprecated
 public class TitanDrive {
     public static final double kDefaultQuickStopThreshold = 0.2;
     public static final double kDefaultQuickStopAlpha = 0.1;
