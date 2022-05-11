@@ -1,16 +1,16 @@
 package org.frc5587.lib.subsystems;
 
-import org.frc5587.lib.controllers.FFController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 
 public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     protected ProfiledPIDController pidController;
-    protected FFController ffController;
+    protected ArmFeedforward ffController;
     protected DigitalInput limitSwitch;
     protected PivotingArmConstants constants;
     protected MotorController motor;
@@ -21,7 +21,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         public final int zeroOffset, encoderCPR, switchPort;
         public final boolean switchInverted;
         public final ProfiledPIDController pid;
-        public final FFController ff;
+        public final ArmFeedforward ff;
 
         public PivotingArmConstants(
                 double gearing,
@@ -31,7 +31,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
                 int switchPort,
                 boolean switchInverted,
                 ProfiledPIDController pid,
-                FFController ff) {
+                ArmFeedforward ff) {
             this.gearing = gearing;
             this.softLimits = softLimits;
             this.zeroOffset = zeroOffset;
@@ -59,7 +59,6 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
      */
     public void set(double throttle) {
         motor.set(throttle);
-        System.out.println("set the throttle to " + throttle);
     }
 
     /**
@@ -166,17 +165,17 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     }
 
     public double calcFF(TrapezoidProfile.State state) {
-        return ffController.calculateArm(getMeasurement(), state.velocity);
+        return ffController.calculate(getMeasurement(), state.velocity);
     }
 
     @Override
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
+        double ff = ffController.calculate(setpoint.position, setpoint.velocity);
+        SmartDashboard.putNumber("FEEDFORWARD", ff);
         SmartDashboard.putNumber("OUTPUT USED", output);
         SmartDashboard.putNumber("SETPOINT USED", setpoint.position);
         SmartDashboard.putNumber("GOAL USED", pidController.getGoal().position);
         SmartDashboard.putBoolean("AT SETPOINT", pidController.atGoal());
-
-        double ff = ffController.calculateArm(setpoint.position, setpoint.velocity);
 
         /** SOFT LIMITS */
 
