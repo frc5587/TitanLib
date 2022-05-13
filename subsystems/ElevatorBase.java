@@ -1,9 +1,7 @@
 package org.frc5587.lib.subsystems;
 
-import java.lang.invoke.SwitchPoint;
 import java.util.ArrayList;
 import java.util.Hashtable;
-
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -74,6 +72,8 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
              */
             switchTable.put(constants.switchPorts[i], values);
         }
+
+        SmartDashboard.getBoolean("ELEVATOR OUTPUT ON?", true);
     }
     
     /**
@@ -191,20 +191,32 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
     @Override
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
         double ff = ffController.calculate(setpoint.position, setpoint.velocity);
-        SmartDashboard.putNumber("FEEDFORWARD", ff);
-        SmartDashboard.putNumber("OUTPUT USED", output);
-        SmartDashboard.putNumber("SETPOINT USED", setpoint.position);
-        SmartDashboard.putNumber("GOAL USED", pidController.getGoal().position);
-        SmartDashboard.putBoolean("AT SETPOINT", pidController.atGoal());
+        //TODO: remove debug prints once we know this code works
+        SmartDashboard.putNumber("ELEVATOR FEEDFORWARD", ff);
+        SmartDashboard.putNumber("ELEVATOR OUTPUT USED", output);
+        SmartDashboard.putNumber("ELEVATOR SETPOINT USED", setpoint.position);
+        SmartDashboard.putNumber("ELEVATOR GOAL USED", pidController.getGoal().position);
+        SmartDashboard.putBoolean("ELEVATOR AT SETPOINT", pidController.atGoal());
 
-        if(SmartDashboard.getBoolean("OUTPUT ON?", true)) {
-            setVoltage(output + ff);
-        }
-        else if(!SmartDashboard.getBoolean("OUTPUT ON?", true) && getMeasurement() > constants.softLimits[1] && output > 0) {
-            setVoltage(0);
+        /** if the driver has set output on, useOutput. */
+        if(SmartDashboard.getBoolean("ELEVATOR OUTPUT ON?", true)) {
+            /** output should be feedforward + calculated PID. */
+            /** if the limit switch is pressed and the elevator is powered to move downward, set the voltage to 0 */
+            if(getLimitSwitchValue(constants.switchPorts[0]) && output < 0) {
+                setVoltage(0);
+            }
+
+            /** if the elevator is above the limit and is powered to move upward, set the voltage to 0 */
+            else if(!getLimitSwitchValue(constants.switchPorts[0]) && getMeasurement() > constants.softLimits[1] && output > 0) {
+                setVoltage(0);
+            }
+
+            else {
+                setVoltage(output + ff);
+            }
         }
         else {
-            useOutput(0, new TrapezoidProfile.State());
+            setVoltage(0);
         }
     }
 }

@@ -4,6 +4,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
+
+import java.util.ArrayList;
+import java.util.Hashtable;
+
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -11,15 +15,23 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     protected ProfiledPIDController pidController;
     protected ArmFeedforward ffController;
-    protected DigitalInput limitSwitch;
     protected PivotingArmConstants constants;
     protected MotorController motor;
+    /** 
+     * How to lookup from this table: 
+     * <ul>
+     * <li> Key: int switchPort </li>
+     * <li> Value: {DigitalInput limitSwitch, boolean inverted} </li>
+     * </ul>
+     */
+    protected Hashtable<Integer, ArrayList<Object>> switchTable = new Hashtable<Integer, ArrayList<Object>>();
 
     public static class PivotingArmConstants {
         public final double gearing;
         public final double[] softLimits;
-        public final int zeroOffset, encoderCPR, switchPort;
-        public final boolean switchInverted;
+        public final int zeroOffset, encoderCPR;
+        public final int[] switchPorts;
+        public final boolean[] switchesInverted;
         public final ProfiledPIDController pid;
         public final ArmFeedforward ff;
 
@@ -28,16 +40,16 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
                 double[] softLimits,
                 int zeroOffset,
                 int encoderCPR,
-                int switchPort,
-                boolean switchInverted,
+                int[] switchPorts,
+                boolean[] switchesInverted,
                 ProfiledPIDController pid,
                 ArmFeedforward ff) {
             this.gearing = gearing;
             this.softLimits = softLimits;
             this.zeroOffset = zeroOffset;
             this.encoderCPR = encoderCPR;
-            this.switchPort = switchPort;
-            this.switchInverted = switchInverted;
+            this.switchPorts = switchPorts;
+            this.switchesInverted = switchesInverted;
             this.pid = pid;
             this.ff = ff;
         }
@@ -48,7 +60,20 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         this.constants = constants;
         this.motor = motor;
         ffController = constants.ff;
-        this.limitSwitch = new DigitalInput(constants.switchPort);
+        for(int i = 0; i < constants.switchPorts.length; i++) {
+            ArrayList<Object> values = new ArrayList<Object>();
+            values.add(new DigitalInput(constants.switchPorts[i]));
+            values.add(constants.switchesInverted[i]);
+
+            /** 
+             * Lookup from this table: 
+             * Key: int switchPort
+             * Value: {DigitalInput limitSwitch, boolean inverted}
+             */
+            switchTable.put(constants.switchPorts[i], values);
+        }
+        
+        SmartDashboard.getBoolean("ARM OUTPUT ON?", true);
     }
 
     /**
@@ -68,12 +93,21 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     public void setVoltage(double voltage) {
         motor.setVoltage(voltage);
     }
-
     /**
+     * @param switchPort the port of the limit switch we want the value of
      * @return the limit switch's state, inverted if necessary.
      */
-    public boolean getLimitSwitchValue() {
-        return (constants.switchInverted ? !limitSwitch.get() : limitSwitch.get());
+    public boolean getLimitSwitchValue(int switchPort) {
+        DigitalInput lSwitch = (DigitalInput) switchTable.get(switchPort).get(0);
+        return ((boolean) switchTable.get(switchPort).get(1) ? !lSwitch.get() : lSwitch.get());
+    }
+
+    /**
+     * @param switchPort the port of the limit switch you want to get
+     * @return the DigitalInput of the switch
+     */
+    public DigitalInput getLimitSwitchObject(int switchPort) {
+        return (DigitalInput) switchTable.get(switchPort).get(0);
     }
 
     /* CALCULATIONS AND UTIL */
@@ -162,24 +196,24 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     @Override
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
         double ff = ffController.calculate(setpoint.position, setpoint.velocity);
-        SmartDashboard.putNumber("FEEDFORWARD", ff);
-        SmartDashboard.putNumber("OUTPUT USED", output);
-        SmartDashboard.putNumber("SETPOINT USED", setpoint.position);
-        SmartDashboard.putNumber("GOAL USED", pidController.getGoal().position);
-        SmartDashboard.putBoolean("AT SETPOINT", pidController.atGoal());
+        //TODO: remove debug prints once we know this code works
+        SmartDashboard.putNumber("ARM FEEDFORWARD", ff);
+        SmartDashboard.putNumber("ARM OUTPUT USED", output);
+        SmartDashboard.putNumber("ARM SETPOINT USED", setpoint.position);
+        SmartDashboard.putNumber("ARM GOAL USED", pidController.getGoal().position);
+        SmartDashboard.putBoolean("ARM AT SETPOINT", pidController.atGoal());
 
         /** SOFT LIMITS */
-
         /** if the driver has set output on, useOutput. */
-        if(SmartDashboard.getBoolean("OUTPUT ON?", true)) {
+        if(SmartDashboard.getBoolean("ARM OUTPUT ON?", true)) {
             /** output should be feedforward + calculated PID. */
             /** if the limit switch is pressed and the arm is powered to move downward, set the voltage to 0 */
-            if(getLimitSwitchValue() && output < 0) {
+            if(getLimitSwitchValue(constants.switchPorts[0]) && output < 0) {
                 setVoltage(0);
             }
 
             /** if the arm is above the limit and is powered to move upward, set the voltage to 0 */
-            else if(!getLimitSwitchValue() && getMeasurement() > constants.softLimits[1] && output > 0) {
+            else if(!getLimitSwitchValue(constants.switchPorts[0]) && getMeasurement() > constants.softLimits[1] && output > 0) {
                 setVoltage(0);
             }
 
@@ -189,7 +223,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         }
         /** otherwise, set output to 0 */
         else {
-            useOutput(0, new TrapezoidProfile.State());
+            setVoltage(0);
         }
 
         
