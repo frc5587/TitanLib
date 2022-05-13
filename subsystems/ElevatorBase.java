@@ -1,5 +1,9 @@
 package org.frc5587.lib.subsystems;
 
+import java.lang.invoke.SwitchPoint;
+import java.util.ArrayList;
+import java.util.Hashtable;
+
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -13,13 +17,21 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
     protected MotorController motor;
     protected ElevatorFeedforward ffController;
     protected ProfiledPIDController pidController;
-    protected DigitalInput limitSwitch;
+    /** 
+     * How to lookup from this table: 
+     * <ul>
+     * <li> Key: int switchPort </li>
+     * <li> Value: {DigitalInput limitSwitch, boolean inverted} </li>
+     * </ul>
+     */
+    protected Hashtable<Integer, ArrayList<Object>> switchTable = new Hashtable<Integer, ArrayList<Object>>();
 
     public static final class ElevatorConstants {
         public final double gearing, rotationsToMeters;
         public final double[] softLimits;
-        public final int zeroOffset, encoderCPR, switchPort;
-        public final boolean switchInverted;
+        public final int zeroOffset, encoderCPR;
+        public final int[] switchPorts; 
+        public final boolean[] switchesInverted;
         public final ProfiledPIDController pid;
         public final ElevatorFeedforward ff;
 
@@ -29,8 +41,8 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
                 double[] softLimits,
                 int zeroOffset,
                 int encoderCPR,
-                int switchPort,
-                boolean switchInverted,
+                int[] switchPorts,
+                boolean[] switchesInverted,
                 ProfiledPIDController pid,
                 ElevatorFeedforward ff) {
             this.gearing = gearing;
@@ -38,8 +50,8 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
             this.softLimits = softLimits;
             this.zeroOffset = zeroOffset;
             this.encoderCPR = encoderCPR;
-            this.switchPort = switchPort;
-            this.switchInverted = switchInverted;
+            this.switchPorts = switchPorts;
+            this.switchesInverted = switchesInverted;
             this.pid = pid;
             this.ff = ff;
         }
@@ -50,12 +62,22 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
         this.constants = constants;
         this.motor = motor;
         this.ffController = constants.ff;
-        this.limitSwitch = new DigitalInput(constants.switchPort);
+        for(int i = 0; i < constants.switchPorts.length; i++) {
+            ArrayList<Object> values = new ArrayList<Object>();
+            values.add(new DigitalInput(constants.switchPorts[i]));
+            values.add(constants.switchesInverted[i]);
+
+            /** 
+             * Lookup from this table: 
+             * Key: int switchPort
+             * Value: {DigitalInput limitSwitch, boolean inverted}
+             */
+            switchTable.put(constants.switchPorts[i], values);
+        }
     }
     
     /**
      * Sets the motors to a percent output
-     * 
      * @param value the percent output to set the motors to (a double -1 to 1)
      */
     public void set(double throttle) {
@@ -64,7 +86,6 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
 
     /**
      * Moves the motors by voltage instead of percent output
-     * 
      * @param voltage the voltage to set the motors to (a double -12 to 12)
      */
     public void setVoltage(double voltage) {
@@ -72,10 +93,20 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
     }
 
     /**
+     * @param switchPort the port of the limit switch we want the value of
      * @return the limit switch's state, inverted if necessary.
      */
-    public boolean getLimitSwitchValue() {
-        return (constants.switchInverted ? !limitSwitch.get() : limitSwitch.get());
+    public boolean getLimitSwitchValue(int switchPort) {
+        DigitalInput lSwitch = (DigitalInput) switchTable.get(switchPort).get(0);
+        return ((boolean) switchTable.get(switchPort).get(1) ? !lSwitch.get() : lSwitch.get());
+    }
+
+    /**
+     * @param switchPort the port of the limit switch you want to get
+     * @return the DigitalInput of the switch
+     */
+    public DigitalInput getLimitSwitchObject(int switchPort) {
+        return (DigitalInput) switchTable.get(switchPort).get(0);
     }
 
     /* CALCULATIONS AND UTIL */
