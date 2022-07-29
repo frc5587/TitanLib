@@ -1,5 +1,6 @@
 package org.frc5587.lib.controllers;
 
+@Deprecated
 public class FFController {
     public final double kS;
     public final double kCos;
