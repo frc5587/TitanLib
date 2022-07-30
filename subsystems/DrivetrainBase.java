@@ -140,7 +140,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     public FollowDirection getAutoFollowDirection(Rotation2d desiredHeading) {
         Rotation2d heading = getRotation2d();
 
-        if (Math.abs(heading.minus(desiredHeading).getRadians()) < Math.PI) {
+        if (Math.abs(heading.minus(desiredHeading).getRadians()) < Math.PI/2) {
             return FollowDirection.FORWARD;
         } else {
             return FollowDirection.BACKWARD;
@@ -163,18 +163,23 @@ public abstract class DrivetrainBase extends SubsystemBase {
             followDirection = getAutoFollowDirection(desiredHeading);
         }
 
+        // System.out.println(followDirection);
+        // System.out.println("" + heading.getDegrees() + "  " + desiredHeading.getDegrees() + "  " + throttle);
+
         if (followDirection == FollowDirection.BACKWARD) {
             throttle *= -1;
-            desiredHeading.rotateBy(Rotation2d.fromDegrees(180));
+            // desiredHeading.rotateBy(Rotation2d.fromDegrees(180));
         }
 
         Rotation2d angleError = desiredHeading.minus(heading);
         double spinFactor = spinInPlace? 0 : 1; 
+;
 
-        double left = throttle * (spinFactor - angleError.getRadians() / forwardThreshold.getRadians());
-        double right = throttle * (spinFactor + angleError.getRadians() / forwardThreshold.getRadians());
+        double left = throttle * (spinFactor + angleError.getRadians() / forwardThreshold.getRadians());
+        double right = throttle * (spinFactor - angleError.getRadians() / forwardThreshold.getRadians());
+        System.out.println("" + left + "  " + right);
         
-        tankDrive(left, right);
+        tankDrive(-left, -right);
     }
 
     /**
