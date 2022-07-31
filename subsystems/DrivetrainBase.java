@@ -157,7 +157,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
      */
     public void titanDrive(Rotation2d desiredHeading, double throttle, FollowDirection followDirection, boolean spinInPlace) {
         Rotation2d heading = getRotation2d();
-        final Rotation2d forwardThreshold = Rotation2d.fromDegrees(30); // angle at which robot stops turning on a point, and starts moving in the direction
+        final Rotation2d forwardThreshold = Rotation2d.fromDegrees(45); // angle at which robot stops turning on a point, and starts moving in the direction
 
         if (followDirection == FollowDirection.AUTO) {
             followDirection = getAutoFollowDirection(desiredHeading);
@@ -168,18 +168,23 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
         if (followDirection == FollowDirection.BACKWARD) {
             throttle *= -1;
-            // desiredHeading.rotateBy(Rotation2d.fromDegrees(180));
+            desiredHeading.rotateBy(Rotation2d.fromDegrees(180));
         }
 
         Rotation2d angleError = desiredHeading.minus(heading);
         double spinFactor = spinInPlace? 0 : 1; 
 ;
 
-        double left = throttle * (spinFactor + angleError.getRadians() / forwardThreshold.getRadians());
-        double right = throttle * (spinFactor - angleError.getRadians() / forwardThreshold.getRadians());
-        System.out.println("" + left + "  " + right);
+        double left = throttle * (spinFactor - (angleError.getRadians() / forwardThreshold.getRadians()));
+        double right = throttle * (spinFactor + (angleError.getRadians() / forwardThreshold.getRadians()));
+        System.out.println("" + -left + "  " +- right);
         
-        tankDrive(-left, -right);
+
+        if (followDirection == FollowDirection.BACKWARD) {
+            tankDrive(-right, -left);
+        } else {
+            tankDrive(-left, -right);
+        }
     }
 
     /**
