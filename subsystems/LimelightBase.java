@@ -98,7 +98,7 @@ public abstract class LimelightBase extends SubsystemBase {
     /**
      * 
      */
-    protected enum LedValues {
+    public enum LedValues {
         DEFAULT,
         OFF,
         BLINK,
