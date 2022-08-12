@@ -1,17 +1,17 @@
 package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.math.DifferentialDrivePoseEstimator;
-import org.frc5587.lib.math.DriveSignal;
-import org.frc5587.lib.math.Kinematics;
+
+import javax.management.RuntimeErrorException;
 
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -44,6 +44,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected DifferentialDrivePoseEstimator odometryEstimator;
     protected final TimeInterpolatableBuffer<Pose2d> poseHistory = TimeInterpolatableBuffer.createBuffer(1.5); 
     protected final DifferentialDriveKinematics kinematics;
+
+    protected PIDController titanDrivePID;
 
     /**
      * A constants object that provides everything needed by {@link DrivetrainBase}
@@ -130,23 +132,88 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
-     * Based on 254's cheesyish drive from 2019.
+     * Returns the follow direction for automatic following. So depending on the closest side to the desired heading, it either returns `FORWARD` or `BACKWARD`.
      * 
-     * @param throttle  amount of power [-1, 1]
-     * @param curve     amount to turn [-1, 1]
-     * @param quickTurn wether not to control the amount of curve with the throttle
-     *                  (slows curve down at low throttles)
+     * @param desiredHeading the desired heading for the drivetrain
+     * @return the closest direction to follow
      */
-    public void titeDrive(double throttle, double curve, boolean quickTurn) {
-        if (!quickTurn) {
-            curve *= throttle;
+    public FollowDirection getAutoFollowDirection(Rotation2d desiredHeading) {
+        Rotation2d heading = getRotation2d();
+
+        if (Math.abs(heading.minus(desiredHeading).getRadians()) < Math.PI/2) {
+            return FollowDirection.FORWARD;
+        } else {
+            return FollowDirection.BACKWARD;
+        }
+    }
+
+    /**
+     * A field oriented drive system for differential drives.
+     * 
+     * @param desiredHeading direction to travel in (theta of joystick)
+     * @param throttle power to apply (r of joystick)
+     * @param followDirection whether to follow on the front, back, or automatically determine direction
+     * @param spinInPlace whether to just spin
+     */
+    public void titanDrive(Rotation2d desiredHeading, double throttle, FollowDirection followDirection, boolean spinInPlace) {
+        Rotation2d heading = getRotation2d();
+        final Rotation2d forwardThreshold = Rotation2d.fromDegrees(60); // angle at which robot stops turning on a point, and starts moving in the direction
+
+        if (followDirection == FollowDirection.AUTO) {
+            followDirection = getAutoFollowDirection(desiredHeading);
         }
 
-        // ! I'm 90% sure the math here won't work bc the units won't scale properly
-        DriveSignal signal = Kinematics.inverseKinematics(new Twist2d(throttle, 0.0, curve), constants.trackWidth);
-        double scaling_factor = Math.max(1.0, Math.max(Math.abs(signal.getLeft()), Math.abs(signal.getRight())));
+        if (followDirection == FollowDirection.BACKWARD) {
+            throttle *= -1;
+            heading = heading.plus(Rotation2d.fromDegrees(180));
+        }
 
-        tankDrive(signal.getLeft() / scaling_factor, signal.getRight() / scaling_factor);
+        Rotation2d angleError = desiredHeading.minus(heading);
+        double spinFactor = spinInPlace? 0 : 1; 
+;
+
+        double left = throttle * (spinFactor - (angleError.getRadians() / forwardThreshold.getRadians()));
+        double right = throttle * (spinFactor + (angleError.getRadians() / forwardThreshold.getRadians()));
+        
+
+        if (followDirection == FollowDirection.BACKWARD) {
+            tankDrive(-right, -left);
+        } else {
+            tankDrive(-left, -right);
+        }
+    }
+
+    /**
+     * A field oriented drive system for differential drives using a PID controller instead of fuzzy logic.
+     * 
+     * @param desiredHeading direction to travel in (theta of joystick)
+     * @param throttle power to apply (r of joystick)
+     * @param followDirection whether to follow on the front, back, or automatically determine direction
+     * @param spinInPlace whether to just spin
+     */
+    public void titanDrivePID(Rotation2d desiredHeading, double throttle, FollowDirection followDirection, boolean spinInPlace) {
+        Rotation2d heading = getRotation2d();
+
+        if (followDirection == FollowDirection.AUTO) {
+            followDirection = getAutoFollowDirection(desiredHeading);
+        }
+
+        if (followDirection == FollowDirection.BACKWARD) {
+            throttle *= -1;
+            desiredHeading.rotateBy(Rotation2d.fromDegrees(180));
+        }
+
+        double output = titanDrivePID.calculate(heading.getRadians(), desiredHeading.getRadians());
+        double spinFactor = spinInPlace? 0 : 1; 
+
+        double left = throttle * (spinFactor - output);
+        double right = throttle * (spinFactor + output);
+        
+        tankDrive(left, right);
+    }
+
+    public void setTitanDrivePID(PIDController titanDrivePID) {
+        this.titanDrivePID = titanDrivePID;
     }
 
     public void curvatureDrive(double throttle, double curve, boolean quickTurn) {
@@ -395,5 +462,20 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
         // Log the heading
         poseHistory.addSample(Timer.getFPGATimestamp(), getPose());
+    }
+
+    public enum FollowDirection  {
+        FORWARD, BACKWARD, AUTO;
+
+        public FollowDirection opposite() {
+            switch (this) {
+                case FORWARD:
+                    return BACKWARD;
+                case BACKWARD:
+                    return FORWARD;
+                default:
+                    throw new RuntimeException("No opposite to AUTO FollowDirection");
+            }
+        }
     }
 }
