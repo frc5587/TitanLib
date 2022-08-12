@@ -1,4 +1,4 @@
-# Java-Libs
+# TitanLib
 
 This is a repository for all of the Java files that carry over year-to-year for FRC Team 5587, Titan Robotics. All of these files are free for use for another team or personal projects so long as use complies with the license in this repository.
 
@@ -12,7 +12,7 @@ $ javadoc -d ./docs/ <path_to_file>
 Afterwards, open the `index.html` file found in the `docs/` folder however you wish.
 
 
-## Add Java-Libs to a Repository as a Submodule
+## Add TitanLib to a Repository as a Submodule
 
 In the main repository:
 
@@ -26,8 +26,8 @@ $ mkdir -p <directory_location>
 
 3. Add the submodule to the repository in the desired location: 
 ```bash
-$ git submodule add https://github.com/frc5587/Java-Libs.git <directory_location/new_submodule_folder> 
-(eg: git submodule add https://github.com/frc5587/Java-Libs.git src/main/java/org/frc5587/lib)
+$ git submodule add https://github.com/frc5587/TitanLib.git <directory_location/new_submodule_folder> 
+(eg: git submodule add https://github.com/frc5587/TitanLib.git src/main/java/org/frc5587/lib)
 ```
 
 Note: the branch of the submodule repo can be switched through the git tab on the vscode sidebar.
