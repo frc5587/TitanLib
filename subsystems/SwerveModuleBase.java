@@ -1,6 +1,7 @@
 package org.frc5587.lib.subsystems;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
@@ -139,9 +140,29 @@ public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
         setAngleDegrees(angleDegrees);
     }
 
+    /**
+     * Sets motor speed in percent output
+     * @param speed a double -1 to 1
+     */
+    public void rotateMotor(double speed) {
+        turnMotor.set(speed);
+    }
+
+    /**
+     * Sets motor output in voltage
+     * @param voltage a double -12 to 12 or between min/max voltage the motor can handle
+     */
+    public void rotateMotorVolts(double voltage) {
+        turnMotor.setVoltage(voltage);
+    }
+
     @Override
     public double getMeasurement() {
         return getRotations() * 2 * Math.PI;
     }
     
+    @Override
+    public void useOutput(double output, TrapezoidProfile.State state) {
+        rotateMotorVolts(output);
+    }
 }
