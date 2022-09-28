@@ -4,7 +4,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
-public abstract class SwerveModuleBase extends ProfiledPIDSubsystem{
+public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
     protected MotorController driveMotor;
     protected MotorController turnMotor;
     protected SwerveModuleConstants constants;
