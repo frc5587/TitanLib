@@ -2,8 +2,6 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.math.DifferentialDrivePoseEstimator;
 
-import javax.management.RuntimeErrorException;
-
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Timer;
