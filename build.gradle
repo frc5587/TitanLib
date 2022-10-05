@@ -8,8 +8,6 @@ plugins {
    id "edu.wpi.first.GradleRIO" version "2022.4.1"
 }
 
-apply plugin: 'maven-publish'
-
 group = 'org.frc5587'
 
 sourceCompatibility = JavaVersion.VERSION_11
@@ -54,8 +52,8 @@ dependencies {
 publishing {
    publications {
       maven(MavenPublication) {
-         groupId = 'org.frc5587'
-         artifactId = 'titanlib'
+         groupId = 'org.frc5587.titanlib'
+         artifactId = 'library'
          version = "${version}"
 
          from components.java
