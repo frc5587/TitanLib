@@ -51,7 +51,7 @@ dependencies {
 
 publishing {
    publications {
-      maven(MavenPublication) {
+      mavenJava(MavenPublication) {
          groupId = 'org.frc5587.titanlib'
          artifactId = 'library'
          version = "${version}"
