@@ -1,33 +1,26 @@
 # TitanLib
 
-This is a repository for all of the Java files that carry over year-to-year for FRC Team 5587, Titan Robotics. All of these files are free for use for another team or personal projects so long as use complies with the license in this repository.
+[![Release](https://jitpack.io/v/org.frc5587/TitanLib.svg)](https://jitpack.io/#org.frc5587/TitanLib)
 
-## Generating Documentation
+---
 
-To generate documentation, simply use the `javadoc` command on your desired file:
-```bash
-$ javadoc -d ./docs/ <path_to_file>
+TitanLib is an FRC library developed by Titan Robotics, FRC 5587 that contains base classes for many subsystems, as well as abstractions for many control systems & autonomous navigation.
+
+## Add TitanLib to a Repository as a Gradle Dependency
+
+1. Add the JitPack repository to your `build.gradle` file
+```groovy
+repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+}
 ```
+[![Release](https://jitpack.io/v/org.frc5587/TitanLib.svg)](https://jitpack.io/#org.frc5587/TitanLib)
 
-Afterwards, open the `index.html` file found in the `docs/` folder however you wish.
-
-
-## Add TitanLib to a Repository as a Submodule
-
-In the main repository:
-
-1. Run `git init` in the vscode terminal
-
-2. Create the directory path where you want the submodule to be located. This can be done either manually or with 
-```bash 
-$ mkdir -p <directory_location> 
-(eg: mkdir -p src/main/java/org/frc5587/)
+2. Add the TitanLib dependency to `build.gradle` (replace `<Tag>` with the version above)
+```groovy
+dependencies {
+    ...
+    implementation 'org.frc5587:TitanLib:<Tag>'
+}
 ```
-
-3. Add the submodule to the repository in the desired location: 
-```bash
-$ git submodule add https://github.com/frc5587/TitanLib.git <directory_location/new_submodule_folder> 
-(eg: git submodule add https://github.com/frc5587/TitanLib.git src/main/java/org/frc5587/lib)
-```
-
-Note: the branch of the submodule repo can be switched through the git tab on the vscode sidebar.

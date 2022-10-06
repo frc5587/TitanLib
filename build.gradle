@@ -21,10 +21,6 @@ sourceSets {
    }
 }
 
-configurations {
-   jaxDoclet
-}
-
 dependencies { 
    implementation wpi.java.deps.wpilib()
    implementation wpi.java.vendor.java()
