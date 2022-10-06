@@ -1,0 +1,62 @@
+buildscript {
+   ext.WPI_VER = "2022.4.1"
+}
+
+plugins {
+   id "java"
+   id "maven-publish"
+   id "edu.wpi.first.GradleRIO" version "2022.4.1"
+}
+
+group = 'org.frc5587'
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+sourceSets {
+   main {
+      java {
+         srcDir "src"
+      }
+   }
+}
+
+dependencies { 
+   implementation wpi.java.deps.wpilib()
+   implementation wpi.java.vendor.java()
+
+   nativeDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
+   nativeDebug wpi.java.vendor.jniDebug(wpi.platforms.desktop)
+   simulationDebug wpi.sim.enableDebug()
+
+   nativeRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
+   nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
+   simulationRelease wpi.sim.enableRelease()
+
+   implementation "edu.wpi.first.ntcore:ntcore-java:${WPI_VER}"
+   implementation "edu.wpi.first.wpiutil:wpiutil-java:${WPI_VER}"
+   runtimeOnly "edu.wpi.first.ntcore:ntcore-jni:${WPI_VER}:windowsx86"
+   runtimeOnly "edu.wpi.first.ntcore:ntcore-jni:${WPI_VER}:windowsx86-64"
+   runtimeOnly "edu.wpi.first.ntcore:ntcore-jni:${WPI_VER}:linuxx86-64"
+   runtimeOnly "edu.wpi.first.ntcore:ntcore-jni:${WPI_VER}:osxx86-64"
+
+   implementation group: 'org.knowm.xchart', name: 'xchart', version: '3.2.2'
+
+   testImplementation 'junit:junit:4.12'
+}
+
+publishing {
+   publications {
+      mavenJava(MavenPublication) {
+         groupId = 'org.frc5587.titanlib'
+         artifactId = 'library'
+         version = "${version}"
+
+         from components.java
+      }
+   }
+}
+
+jar {
+   from sourceSets.main.allSource
+}
