@@ -5,7 +5,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
-public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
+public abstract class SwerveModule extends ProfiledPIDSubsystem {
     protected MotorController driveMotor;
     protected MotorController turnMotor;
     protected SwerveModuleConstants constants;
@@ -22,7 +22,7 @@ public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
         }
     }
 
-    public SwerveModuleBase(MotorController driveMotor, MotorController turnMotor, SwerveModuleConstants constants) {
+    public SwerveModule(MotorController driveMotor, MotorController turnMotor, SwerveModuleConstants constants) {
         super(constants.pid);
 
         this.driveMotor = driveMotor;

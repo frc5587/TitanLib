@@ -20,10 +20,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 
-import org.frc5587.lib.subsystems.DrivetrainBase;
+import org.frc5587.lib.subsystems.DifferentialDriveBase;
 
 public class RamseteCommandWrapper extends CommandBase {
-    private final DrivetrainBase drivetrain; 
+    private final DifferentialDriveBase drivetrain; 
     private final Trajectory trajectory;
     private final RamseteConstants constants;
 
@@ -87,14 +87,14 @@ public class RamseteCommandWrapper extends CommandBase {
     /**
      * Creates a new RamseteCommandWrapper from an {@link AutoPath}.
      */
-    public RamseteCommandWrapper(DrivetrainBase drivetrain, AutoPath path, RamseteConstants constants) {
+    public RamseteCommandWrapper(DifferentialDriveBase drivetrain, AutoPath path, RamseteConstants constants) {
         this(drivetrain, path.trajectory, constants);
     }
 
     /**
      * Creates a new RamseteCommandWrapper from a {@link ConstrainedTrajectory}.
      */
-    public RamseteCommandWrapper(DrivetrainBase drivetrain, ConstrainedTrajectory trajectory, RamseteConstants constants) {
+    public RamseteCommandWrapper(DifferentialDriveBase drivetrain, ConstrainedTrajectory trajectory, RamseteConstants constants) {
         this(drivetrain, (Trajectory) trajectory, constants);
     }
 
@@ -105,7 +105,7 @@ public class RamseteCommandWrapper extends CommandBase {
      * @param trajectory trajectory of path
      * @param constants constants object
      */
-    public RamseteCommandWrapper(DrivetrainBase drivetrain, Trajectory trajectory, RamseteConstants constants) {
+    public RamseteCommandWrapper(DifferentialDriveBase drivetrain, Trajectory trajectory, RamseteConstants constants) {
         addRequirements(drivetrain);
 
         this.drivetrain = drivetrain;
@@ -126,7 +126,7 @@ public class RamseteCommandWrapper extends CommandBase {
      * @param end end position
      * @param constants constants object
      */
-    public RamseteCommandWrapper(DrivetrainBase drivetrain, Pose2d start, List<Translation2d> path, Pose2d end,
+    public RamseteCommandWrapper(DifferentialDriveBase drivetrain, Pose2d start, List<Translation2d> path, Pose2d end,
             RamseteConstants constants) {
         this(drivetrain,
                 TrajectoryGenerator.generateTrajectory(start, path, end,
@@ -154,7 +154,7 @@ public class RamseteCommandWrapper extends CommandBase {
      * <li>Maximum centripetal acceleration</li>
      * </ul>
      */
-    public Trajectory makeConstrainedTrajectory(DrivetrainBase drivetrain, Trajectory originalTrajectory, RamseteConstants constants) {
+    public Trajectory makeConstrainedTrajectory(DifferentialDriveBase drivetrain, Trajectory originalTrajectory, RamseteConstants constants) {
         List<State> allStates = originalTrajectory.getStates();
         List<Pose2d> allPoses = new ArrayList<Pose2d>(); 
 
