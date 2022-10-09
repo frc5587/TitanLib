@@ -17,10 +17,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class SwerveDriveBase extends SubsystemBase {
     //modules are numbered left to right, front to back
-    protected SwerveModule module1;
-    protected SwerveModule module2;
-    protected SwerveModule module3;
-    protected SwerveModule module4;
+    protected SwerveModuleBase module1;
+    protected SwerveModuleBase module2;
+    protected SwerveModuleBase module3;
+    protected SwerveModuleBase module4;
     protected DriveConstants constants;
 
     // ! ODOMETRY
@@ -44,7 +44,7 @@ public class SwerveDriveBase extends SubsystemBase {
         }
     }
 
-    public SwerveDriveBase(SwerveModule module1, SwerveModule module2, SwerveModule module3, SwerveModule module4, DriveConstants constants) {
+    public SwerveDriveBase(SwerveModuleBase module1, SwerveModuleBase module2, SwerveModuleBase module3, SwerveModuleBase module4, DriveConstants constants) {
         this.module1 = module1;
         this.module2 = module2;
         this.module3 = module3;
