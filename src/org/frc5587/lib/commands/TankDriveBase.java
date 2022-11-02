@@ -9,12 +9,12 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 /**
  * Tank Drive for a Differential Drive
  */
-public class TankDrive extends CommandBase {
+public class TankDriveBase extends CommandBase {
     private final DrivetrainBase drivetrain;
     private final DoubleSupplier leftThrottleSupplier, rightThrottleSupplier;
 
     // TankDrive uses input from two joysticks to drive each side of the robot.
-    public TankDrive(DrivetrainBase drivetrain, DoubleSupplier leftThrottleSupplier, DoubleSupplier rightThrottleSupplier) {
+    public TankDriveBase(DrivetrainBase drivetrain, DoubleSupplier leftThrottleSupplier, DoubleSupplier rightThrottleSupplier) {
         addRequirements(drivetrain);
 
         this.drivetrain = drivetrain;

@@ -9,14 +9,14 @@ import java.util.function.DoubleSupplier;
 /**
  * Arcade Drive for a DifferentialDrive
  */
-public class ArcadeDrive extends CommandBase {
+public class ArcadeDriveBase extends CommandBase {
     private final DrivetrainBase drivetrain;
     private final DoubleSupplier throttleSupplier, curveSupplier;
 
     double throttle;
     double curve;
 
-    public ArcadeDrive(DrivetrainBase drivetrain, DoubleSupplier throttleSupplier, DoubleSupplier curveSupplier) {
+    public ArcadeDriveBase(DrivetrainBase drivetrain, DoubleSupplier throttleSupplier, DoubleSupplier curveSupplier) {
         this.drivetrain = drivetrain;
         this.throttleSupplier = throttleSupplier;
         this.curveSupplier = curveSupplier;

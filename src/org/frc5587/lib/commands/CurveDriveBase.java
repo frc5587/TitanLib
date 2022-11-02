@@ -10,13 +10,13 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 /**
  * Curve Drive for a DifferentialDrive
  */
-public class CurveDrive extends CommandBase {
+public class CurveDriveBase extends CommandBase {
     private final DrivetrainBase drivetrain;
     private final double quickTurnCurveMultiplier;
     private final DoubleSupplier throttleSupplier, curveSupplier;
     private final BooleanSupplier quickTurnSupplier;
 
-    public CurveDrive(DrivetrainBase drivetrain, double quickTurnCurveMultiplier, DoubleSupplier throttleSupplier, DoubleSupplier curveSupplier, BooleanSupplier quickTurnSupplier) {
+    public CurveDriveBase(DrivetrainBase drivetrain, double quickTurnCurveMultiplier, DoubleSupplier throttleSupplier, DoubleSupplier curveSupplier, BooleanSupplier quickTurnSupplier) {
         this.drivetrain = drivetrain;
         this.quickTurnCurveMultiplier = quickTurnCurveMultiplier;
         this.throttleSupplier = throttleSupplier;
