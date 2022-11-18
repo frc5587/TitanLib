@@ -165,4 +165,9 @@ public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
     public void useOutput(double output, TrapezoidProfile.State state) {
         rotateMotorVolts(output);
     }
+
+    public void stop() {
+        driveMotor.set(0);
+        turnMotor.set(0);
+    }
 }

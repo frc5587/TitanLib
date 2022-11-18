@@ -4,7 +4,6 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -103,4 +102,11 @@ public class SwerveDriveBase extends SubsystemBase {
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     } 
+
+    public void stop() {
+        module1.stop();
+        module2.stop();
+        module3.stop();
+        module4.stop();
+    }
 }
