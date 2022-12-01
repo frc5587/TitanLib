@@ -13,12 +13,8 @@ public abstract class PistonControl extends SubsystemBase {
  * Creates new doublesolenoids for the amount of piston ports specified in
  * constants.java
  */
-public PistonControl(int[][] pistonIDS) {
-    doubleSolenoidPistons = new DoubleSolenoid[pistonIDS.length];
-
-    for (int i = 0; i < pistonIDS.length; i++) {
-        doubleSolenoidPistons[i] = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, pistonIDS[i][0], pistonIDS[i][1]);
-    }
+public PistonControl(DoubleSolenoid[] solenoids) {
+    doubleSolenoidPistons = solenoids;
 }
 
 // Implementation: pistonsSet(kForward)
