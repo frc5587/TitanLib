@@ -1,6 +1,6 @@
 package org.frc5587.lib.commands;
 
-import org.frc5587.lib.subsystems.DrivetrainBase;
+import org.frc5587.lib.subsystems.DifferentialDriveBase;
 
 import java.util.function.DoubleSupplier;
 
@@ -10,11 +10,11 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
  * Tank Drive for a Differential Drive
  */
 public class TankDriveBase extends CommandBase {
-    private final DrivetrainBase drivetrain;
+    private final DifferentialDriveBase drivetrain;
     private final DoubleSupplier leftThrottleSupplier, rightThrottleSupplier;
 
     // TankDrive uses input from two joysticks to drive each side of the robot.
-    public TankDriveBase(DrivetrainBase drivetrain, DoubleSupplier leftThrottleSupplier, DoubleSupplier rightThrottleSupplier) {
+    public TankDriveBase(DifferentialDriveBase drivetrain, DoubleSupplier leftThrottleSupplier, DoubleSupplier rightThrottleSupplier) {
         addRequirements(drivetrain);
 
         this.drivetrain = drivetrain;

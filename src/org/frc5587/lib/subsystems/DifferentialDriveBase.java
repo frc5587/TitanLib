@@ -24,7 +24,7 @@ import edu.wpi.first.math.util.Units;
  * A base drivetrain that includes support for arcade drive, tank drive,
  * and autonomous odometry.
  */
-public abstract class DrivetrainBase extends SubsystemBase {
+public abstract class DifferentialDriveBase extends SubsystemBase {
     /** create leader and follower motors for the drivetrain */
     protected MotorController left;
     protected MotorController right;
@@ -46,7 +46,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected PIDController titanDrivePID;
 
     /**
-     * A constants object that provides everything needed by {@link DrivetrainBase}
+     * A constants object that provides everything needed by {@link DifferentialDriveBase}
      */
     public static class DriveConstants {
         public final double wheelDiameterMeters, gearing, cpr, distancePerTick, trackWidth;
@@ -54,7 +54,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
         public final boolean invertGyro;
 
         /**
-         * A constants object that provides everything needed by {@link DrivetrainBase}
+         * A constants object that provides everything needed by {@link DifferentialDriveBase}
          * 
          * @param wheelDiameterMeters the wheel diameter in meters
          * @param historyLimit        the limit of inputs for LimitedPoseMap
@@ -88,7 +88,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
      * @param constants a {@link DriveConstants} object containing all constants
      *                  used by the class
      */
-    public DrivetrainBase(MotorController left, MotorController right, DriveConstants constants) {
+    public DifferentialDriveBase(MotorController left, MotorController right, DriveConstants constants) {
         this.constants = constants;
         this.left = left;
         this.right = right;
@@ -424,7 +424,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     /**
-     * If vision data is being updated, this could end up being more accurate than {@link DrivetrainBase#getPose}, otherwise it will be the exact same thing.
+     * If vision data is being updated, this could end up being more accurate than {@link DifferentialDriveBase#getPose}, otherwise it will be the exact same thing.
      * 
      * @return the estimated position of the robot on the field
      */

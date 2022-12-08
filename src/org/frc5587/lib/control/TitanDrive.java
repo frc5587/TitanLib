@@ -1,14 +1,14 @@
 package org.frc5587.lib.control;
 
-import org.frc5587.lib.subsystems.DrivetrainBase;
-import org.frc5587.lib.subsystems.DrivetrainBase.FollowDirection;
+import org.frc5587.lib.subsystems.DifferentialDriveBase;
+import org.frc5587.lib.subsystems.DifferentialDriveBase.FollowDirection;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class TitanDrive extends CommandBase {
-    private final DrivetrainBase drivetrain;
+    private final DifferentialDriveBase drivetrain;
 
     private final DeadbandJoystick joystick;
     private final int turnModeButtonID = 1;
@@ -17,7 +17,7 @@ public class TitanDrive extends CommandBase {
     private final ControlMode controlMode;
     private FollowDirection currentMode = FollowDirection.AUTO;
 
-    public TitanDrive(DrivetrainBase drivetrain, DeadbandJoystick joystick, ControlMode controlMode) {
+    public TitanDrive(DifferentialDriveBase drivetrain, DeadbandJoystick joystick, ControlMode controlMode) {
         this.drivetrain = drivetrain;
         this.joystick = joystick;
         this.controlMode = controlMode;
