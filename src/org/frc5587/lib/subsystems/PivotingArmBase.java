@@ -60,18 +60,6 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         this.constants = constants;
         this.motor = motor;
         ffController = constants.ff;
-        for(int i = 0; i < constants.switchPorts.length; i++) {
-            ArrayList<Object> values = new ArrayList<Object>();
-            values.add(new DigitalInput(constants.switchPorts[i]));
-            values.add(constants.switchesInverted[i]);
-
-            /** 
-             * Lookup from this table: 
-             * Key: int switchPort
-             * Value: {DigitalInput limitSwitch, boolean inverted}
-             */
-            switchTable.put(constants.switchPorts[i], values);
-        }
         
         SmartDashboard.getBoolean("ARM OUTPUT ON?", true);
     }
@@ -92,22 +80,6 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
      */
     public void setVoltage(double voltage) {
         motor.setVoltage(voltage);
-    }
-    /**
-     * @param switchPort the port of the limit switch we want the value of
-     * @return the limit switch's state, inverted if necessary.
-     */
-    public boolean getLimitSwitchValue(int switchPort) {
-        DigitalInput lSwitch = (DigitalInput) switchTable.get(switchPort).get(0);
-        return ((boolean) switchTable.get(switchPort).get(1) ? !lSwitch.get() : lSwitch.get());
-    }
-
-    /**
-     * @param switchPort the port of the limit switch you want to get
-     * @return the DigitalInput of the switch
-     */
-    public DigitalInput getLimitSwitchObject(int switchPort) {
-        return (DigitalInput) switchTable.get(switchPort).get(0);
     }
 
     /* CALCULATIONS AND UTIL */
@@ -202,30 +174,5 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         SmartDashboard.putNumber("ARM SETPOINT USED", setpoint.position);
         SmartDashboard.putNumber("ARM GOAL USED", pidController.getGoal().position);
         SmartDashboard.putBoolean("ARM AT SETPOINT", pidController.atGoal());
-
-        /** SOFT LIMITS */
-        /** if the driver has set output on, useOutput. */
-        if(SmartDashboard.getBoolean("ARM OUTPUT ON?", true)) {
-            /** output should be feedforward + calculated PID. */
-            /** if the limit switch is pressed and the arm is powered to move downward, set the voltage to 0 */
-            if(getLimitSwitchValue(constants.switchPorts[0]) && output < 0) {
-                setVoltage(0);
-            }
-
-            /** if the arm is above the limit and is powered to move upward, set the voltage to 0 */
-            else if(!getLimitSwitchValue(constants.switchPorts[0]) && getMeasurement() > constants.softLimits[1] && output > 0) {
-                setVoltage(0);
-            }
-
-            else {
-                setVoltage(output + ff);
-            }
-        }
-        /** otherwise, set output to 0 */
-        else {
-            setVoltage(0);
-        }
-
-        
     }
 }
