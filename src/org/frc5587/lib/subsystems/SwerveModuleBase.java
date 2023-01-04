@@ -27,6 +27,7 @@ public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
 
         this.driveMotor = driveMotor;
         this.turnMotor = turnMotor;
+        this.constants = constants;
 
         configureMotors();
         this.enable();
