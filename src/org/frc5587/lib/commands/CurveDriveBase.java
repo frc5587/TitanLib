@@ -1,22 +1,21 @@
 package org.frc5587.lib.commands;
 
-import org.frc5587.lib.subsystems.DrivetrainBase;
+import org.frc5587.lib.subsystems.DifferentialDriveBase;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /**
  * Curve Drive for a DifferentialDrive
  */
 public class CurveDriveBase extends CommandBase {
-    private final DrivetrainBase drivetrain;
+    private final DifferentialDriveBase drivetrain;
     private final double quickTurnCurveMultiplier;
     private final DoubleSupplier throttleSupplier, curveSupplier;
     private final BooleanSupplier quickTurnSupplier;
 
-    public CurveDriveBase(DrivetrainBase drivetrain, double quickTurnCurveMultiplier, DoubleSupplier throttleSupplier, DoubleSupplier curveSupplier, BooleanSupplier quickTurnSupplier) {
+    public CurveDriveBase(DifferentialDriveBase drivetrain, double quickTurnCurveMultiplier, DoubleSupplier throttleSupplier, DoubleSupplier curveSupplier, BooleanSupplier quickTurnSupplier) {
         this.drivetrain = drivetrain;
         this.quickTurnCurveMultiplier = quickTurnCurveMultiplier;
         this.throttleSupplier = throttleSupplier;
