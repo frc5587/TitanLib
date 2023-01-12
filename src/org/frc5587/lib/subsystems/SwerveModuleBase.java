@@ -30,7 +30,8 @@ public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
         this.turnMotor = turnMotor;
         this.constants = constants;
 
-        this.enable();
+        // configureMotors();
+        // this.enable();
     }
 
     /** @return Raw encoder ticks from the rotational motor for angle */
