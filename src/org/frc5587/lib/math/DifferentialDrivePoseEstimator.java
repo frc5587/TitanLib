@@ -265,7 +265,7 @@ public class DifferentialDrivePoseEstimator {
         StateSpaceUtil.poseTo3dVector(
             getEstimatedPosition()
                 .transformBy(
-                    visionRobotPoseMeters.minus(m_poseBuffer.getSample(timestampSeconds)))));
+                    visionRobotPoseMeters.minus(m_poseBuffer.getSample(timestampSeconds).get()))));
   }
 
   /**

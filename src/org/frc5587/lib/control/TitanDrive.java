@@ -10,14 +10,14 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class TitanDrive extends CommandBase {
     private final DrivetrainBase drivetrain;
 
-    private final DeadbandJoystick joystick;
+    private final DeadbandCommandJoystick joystick;
     private final int turnModeButtonID = 1;
     private final int followModeButtonID = 3;
     private final int resetHeadingButtonID = 4;
     private final ControlMode controlMode;
     private FollowDirection currentMode = FollowDirection.AUTO;
 
-    public TitanDrive(DrivetrainBase drivetrain, DeadbandJoystick joystick, ControlMode controlMode) {
+    public TitanDrive(DrivetrainBase drivetrain, DeadbandCommandJoystick joystick, ControlMode controlMode) {
         this.drivetrain = drivetrain;
         this.joystick = joystick;
         this.controlMode = controlMode;
@@ -30,25 +30,25 @@ public class TitanDrive extends CommandBase {
         Translation2d joystickPosition = joystick.getPosition();
         Rotation2d desiredHeading = (new Rotation2d(joystickPosition.getY(), joystickPosition.getX())).plus(Rotation2d.fromDegrees(180));
 
-        if (joystick.getRawButtonPressed(resetHeadingButtonID)) {
+        if (joystick.button(resetHeadingButtonID).getAsBoolean()) {
             drivetrain.zeroHeading();
         }
 
         switch (controlMode) {
             case HoldFlip:
-                if (joystick.getRawButtonPressed(followModeButtonID)) {
+                if (joystick.button(followModeButtonID).getAsBoolean()) {
                     if (currentMode == FollowDirection.AUTO) {
                         currentMode = drivetrain.getAutoFollowDirection(desiredHeading).opposite();
                     } else {
                         currentMode = currentMode.opposite();
                     }
-                } else if (joystick.getRawButtonReleased(followModeButtonID)) {
+                } else if (joystick.button(followModeButtonID).getAsBoolean()) {
                     currentMode = FollowDirection.AUTO;
                 }
                 break;
 
             case HoldForward:
-                if (joystick.getRawButton(followModeButtonID)) {
+                if (joystick.button(followModeButtonID).getAsBoolean()) {
                     currentMode = FollowDirection.FORWARD;
                 } else {
                     currentMode = FollowDirection.AUTO;
@@ -56,7 +56,7 @@ public class TitanDrive extends CommandBase {
                 break;
 
             case Manual:
-                if (joystick.getRawButton(followModeButtonID)) {
+                if (joystick.button(followModeButtonID).getAsBoolean()) {
                     currentMode = FollowDirection.BACKWARD;
                 } else {
                     currentMode = FollowDirection.FORWARD;
@@ -64,7 +64,7 @@ public class TitanDrive extends CommandBase {
                 break;
 
             case Toggle:
-                if (joystick.getRawButtonPressed(followModeButtonID)) {
+                if (joystick.button(followModeButtonID).getAsBoolean()) {
                     currentMode = drivetrain.getAutoFollowDirection(desiredHeading).opposite();
                 } else if (currentMode == drivetrain.getAutoFollowDirection(desiredHeading)) {
                     currentMode = FollowDirection.AUTO;
@@ -76,7 +76,7 @@ public class TitanDrive extends CommandBase {
 
 
 
-        drivetrain.titanDrive(desiredHeading, joystickPosition.getNorm(), currentMode, joystick.getRawButton(turnModeButtonID));
+        drivetrain.titanDrive(desiredHeading, joystickPosition.getNorm(), currentMode, joystick.button(turnModeButtonID).getAsBoolean());
     }
     
     public enum ControlMode {
