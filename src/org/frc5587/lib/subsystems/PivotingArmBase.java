@@ -63,7 +63,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         super(constants.pid);
         this.constants = constants;
         this.motor = motor;
-        this.pidController = constants.pid;
+        this.pidController = getController();
         ffController = constants.ff;
         for(int i = 0; i < constants.switchPorts.length; i++) {
             ArrayList<Object> values = new ArrayList<Object>();
@@ -228,6 +228,10 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
 
         if(!SmartDashboard.getBoolean("ARM OUTPUT ON?", true)) {
             this.disable();
+        }
+
+        else {
+            this.enable();
         }
     }
 }
