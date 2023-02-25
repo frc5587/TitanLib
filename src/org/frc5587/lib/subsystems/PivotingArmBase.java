@@ -27,7 +27,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     protected Hashtable<Integer, ArrayList<Object>> switchTable = new Hashtable<Integer, ArrayList<Object>>();
 
     public static class PivotingArmConstants {
-        public final double gearing;
+        public final double gearing, velocityDenominator, offsetFromHorizontalRadians;
         public final double[] softLimits;
         public final int zeroOffset, encoderCPR;
         public final int[] switchPorts;
@@ -37,6 +37,8 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
 
         public PivotingArmConstants(
                 double gearing,
+                double velocityDenominator,
+                double offsetFromHorizontalRadians,
                 double[] softLimits,
                 int zeroOffset,
                 int encoderCPR,
@@ -45,6 +47,8 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
                 ProfiledPIDController pid,
                 ArmFeedforward ff) {
             this.gearing = gearing;
+            this.velocityDenominator = velocityDenominator;
+            this.offsetFromHorizontalRadians = offsetFromHorizontalRadians;
             this.softLimits = softLimits;
             this.zeroOffset = zeroOffset;
             this.encoderCPR = encoderCPR;
@@ -59,7 +63,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         super(constants.pid);
         this.constants = constants;
         this.motor = motor;
-        this.pidController = getController();
+        this.pidController = constants.pid;
         ffController = constants.ff;
         for(int i = 0; i < constants.switchPorts.length; i++) {
             ArrayList<Object> values = new ArrayList<Object>();
@@ -73,7 +77,10 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
              */
             switchTable.put(constants.switchPorts[i], values);
         }
-        
+
+        configureMotors();
+        this.enable();
+
         SmartDashboard.putBoolean("ARM OUTPUT ON?", true);
     }
 
@@ -139,7 +146,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
      * @param value value to divide by the encoder counts per revolution set in constants
      */
     public double applyCPR(double value) {
-        return value / constants.encoderCPR;
+        return value / (constants.encoderCPR * constants.velocityDenominator);
     }
 
     /**
@@ -196,37 +203,31 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
 
     @Override
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
-        double ff = ffController.calculate(setpoint.position, setpoint.velocity);
-        //TODO: remove debug prints once we know this code works
-        SmartDashboard.putNumber("ARM FEEDFORWARD", ff);
-        SmartDashboard.putNumber("ARM OUTPUT USED", output);
-        SmartDashboard.putNumber("ARM SETPOINT USED", setpoint.position);
-        SmartDashboard.putNumber("ARM GOAL USED", pidController.getGoal().position);
-        SmartDashboard.putBoolean("ARM AT SETPOINT", pidController.atGoal());
+        double ff = ffController.calculate(setpoint.position+constants.offsetFromHorizontalRadians, setpoint.velocity);
 
         /** SOFT LIMITS */
-        /** if the driver has set output on, useOutput. */
-        if(SmartDashboard.getBoolean("ARM OUTPUT ON?", true)) {
-            /** output should be feedforward + calculated PID. */
-            /** if the limit switch is pressed and the arm is powered to move downward, set the voltage to 0 */
-            if(getLimitSwitchValue(constants.switchPorts[0]) && output < 0) {
-                setVoltage(0);
-            }
-
-            /** if the arm is above the limit and is powered to move upward, set the voltage to 0 */
-            else if(!getLimitSwitchValue(constants.switchPorts[0]) && getMeasurement() > constants.softLimits[1] && output > 0) {
-                setVoltage(0);
-            }
-
-            else {
-                setVoltage(output + ff);
-            }
-        }
-        /** otherwise, set output to 0 */
-        else {
+        /** output should be feedforward + calculated PID. */
+        /** if the limit switch is pressed and the arm is powered to move downward, set the voltage to 0 */
+        if(getLimitSwitchValue(constants.switchPorts[0]) && output < 0) {
             setVoltage(0);
         }
 
-        
+        /** if the arm is above the limit and is powered to move upward, set the voltage to 0 */
+        else if(!getLimitSwitchValue(constants.switchPorts[0]) && getMeasurement() > constants.softLimits[1] && output > 0) {
+            setVoltage(0);
+        }
+
+        else {
+            setVoltage(output + ff);
+        }
+    }
+
+    @Override
+    public void periodic() {
+        super.periodic();
+
+        if(!SmartDashboard.getBoolean("ARM OUTPUT ON?", true)) {
+            this.disable();
+        }
     }
 }
