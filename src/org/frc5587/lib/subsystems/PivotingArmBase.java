@@ -74,7 +74,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
             switchTable.put(constants.switchPorts[i], values);
         }
         
-        SmartDashboard.getBoolean("ARM OUTPUT ON?", true);
+        SmartDashboard.putBoolean("ARM OUTPUT ON?", true);
     }
 
     /**
