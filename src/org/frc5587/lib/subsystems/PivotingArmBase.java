@@ -1,6 +1,5 @@
 package org.frc5587.lib.subsystems;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -80,8 +79,6 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
 
         configureMotors();
         this.enable();
-
-        SmartDashboard.putBoolean("ARM OUTPUT ON?", true);
     }
 
     /**
@@ -146,7 +143,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
      * @param value value to divide by the encoder counts per revolution set in constants
      */
     public double applyCPR(double value) {
-        return value / (constants.encoderCPR * constants.velocityDenominator);
+        return value / (constants.encoderCPR);
     }
 
     /**
@@ -219,19 +216,6 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
 
         else {
             setVoltage(output + ff);
-        }
-    }
-
-    @Override
-    public void periodic() {
-        super.periodic();
-
-        if(!SmartDashboard.getBoolean("ARM OUTPUT ON?", true)) {
-            this.disable();
-        }
-
-        else {
-            this.enable();
         }
     }
 }
