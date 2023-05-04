@@ -4,7 +4,6 @@ import org.frc5587.lib.subsystems.DifferentialDriveBase;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /**
