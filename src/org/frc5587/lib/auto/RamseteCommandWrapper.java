@@ -17,12 +17,11 @@ import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 
 import org.frc5587.lib.subsystems.DifferentialDriveBase;
 
-public class RamseteCommandWrapper extends CommandBase {
+public class RamseteCommandWrapper extends Command {
     private final DifferentialDriveBase drivetrain; 
     private final Trajectory trajectory;
     private final RamseteConstants constants;
