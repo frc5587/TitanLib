@@ -1,14 +1,15 @@
 package org.frc5587.lib.commands;
 
-import org.frc5587.lib.subsystems.DifferentialDriveBase;
 import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import org.frc5587.lib.subsystems.DifferentialDriveBase;
+
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Tank Drive for a Differential Drive
  */
-public class TankDriveBase extends CommandBase {
+public class TankDriveBase extends Command {
     private final DifferentialDriveBase drivetrain;
     private final DoubleSupplier leftThrottleSupplier, rightThrottleSupplier;
 

@@ -1,5 +1,7 @@
 package org.frc5587.lib.subsystems;
 
+import java.util.Optional;
+
 import org.frc5587.lib.math.DifferentialDrivePoseEstimator;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
 
@@ -98,7 +101,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
          * (mostly constants)
          */
         Rotation2d currentAngle = getRotation2d();
-        this.odometry = new DifferentialDriveOdometry(currentAngle);
+        this.odometry = new DifferentialDriveOdometry(currentAngle, 0, 0);
         this.odometryEstimator = new DifferentialDrivePoseEstimator(getRotation2d(), getPose(), // ! these numbers are 100% not tuned
                 new MatBuilder<>(Nat.N5(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.02, 0.02), // State measurement standard
                                                                                          // deviations. X, Y, theta.
@@ -338,7 +341,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
         zeroHeading(); // ! I'm not sure if this is necessary, we'll see
         ahrs.setAngleAdjustment(pose.getRotation().getDegrees());
 
-        odometry.resetPosition(pose, getRotation2d());
+        odometry.resetPosition(getRotation2d(), getWheelPositions(), pose);
         odometryEstimator.resetPosition(pose, getRotation2d());
     }
 
@@ -403,6 +406,13 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
     }
 
     /**
+     * @return the wheel positions based on the encoders.
+     */
+    public DifferentialDriveWheelPositions getWheelPositions() {
+        return new DifferentialDriveWheelPositions(getLeftPositionMeters(), getRightPositionMeters());
+    }
+
+    /**
      * @return the X and Y velocities as a {@link ChassisSpeeds} object
      */
     public ChassisSpeeds getChassisSpeeds() {
@@ -442,7 +452,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
         odometryEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
     }
 
-    public Pose2d getPoseAtTime(double FPGATimestamp) {
+    public Optional<Pose2d> getPoseAtTime(double FPGATimestamp) {
         return poseHistory.getSample(FPGATimestamp);
     }
 

@@ -1,17 +1,17 @@
 buildscript {
-   ext.WPI_VER = "2022.4.1"
+   ext.WPI_VER = "2024.1.1"
 }
 
 plugins {
    id "java"
    id "maven-publish"
-   id "edu.wpi.first.GradleRIO" version "2022.4.1"
+   id "edu.wpi.first.GradleRIO" version "2024.1.1"
 }
 
 group = 'org.frc5587'
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 sourceSets {
    main {

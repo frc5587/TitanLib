@@ -2,7 +2,7 @@ package org.frc5587.lib.subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import org.frc5587.lib.controllers.UnifiedShooterController;
 
