@@ -16,12 +16,11 @@ public abstract class SwerveModuleBase {
         public final double angleMotorGearRatio;
         public final double driveMotorGearRatio;
 
-        @Deprecated()
+        @Deprecated
         /**
          * @param angleOffset the offset to subtract from the absolute encoder reading.
-         *                    Note: @deprecated the field angleOffset is deprecated and should not be used.
-         *                    Instead, use the native firmware-zero feature of the absolute encoder (i.e. zero
-         *                    the encoder in Phoenix Tuner.
+         *                    Note: this field is deprecated. Use native firmware
+         *                    zeroing/offsets instead.
          * @param wheelCircumferenceMeters the wheel circumference in meters.
          * @param maxSpeedMetersPerSecond the maximum desired speed of the drive motors in m/s.
          * @param angleMotorEncoderCPR the counts per revolution of the angle motor's encoder.
@@ -37,6 +36,9 @@ public abstract class SwerveModuleBase {
          * @param driveMotorGearRatio the gear ration between the drive motor's output shaft and the
          *                            wheel's rotation. For L1 SDS Mk4i modules, this would be 8.14.
          *                            L2 SDS Mk4i modules, this would be 6.75.
+         * @deprecated the field angleOffset is deprecated and should not be used.
+         *             Instead, use the native firmware-zero feature of the absolute encoder (i.e. zero
+         *             the encoder in Phoenix Tuner.
          */
         public SwerveModuleConstants(int moduleNumber, Rotation2d angleOffset, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, double angleMotorEncoderCPR, double driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
             this.moduleNumber = moduleNumber;
