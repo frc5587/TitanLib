@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 
 public abstract class SwerveModuleBase {
     public static class SwerveModuleConstants {
+        public final int moduleNumber;
         public final Rotation2d angleOffset;
         public final double wheelCircumferenceMeters;
         public final double maxSpeedMetersPerSecond;
@@ -37,7 +38,8 @@ public abstract class SwerveModuleBase {
          *                            wheel's rotation. For L1 SDS Mk4i modules, this would be 8.14.
          *                            L2 SDS Mk4i modules, this would be 6.75.
          */
-        public SwerveModuleConstants(Rotation2d angleOffset, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, double angleMotorEncoderCPR, double driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
+        public SwerveModuleConstants(int moduleNumber, Rotation2d angleOffset, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, double angleMotorEncoderCPR, double driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
+            this.moduleNumber = moduleNumber;
             this.angleOffset = angleOffset;
             this.wheelCircumferenceMeters = wheelCircumferenceMeters;
             this.maxSpeedMetersPerSecond = maxSpeedMetersPerSecond;
@@ -63,7 +65,8 @@ public abstract class SwerveModuleBase {
          * @param driveMotorGearRatio the gear ration between the drive motor's output shaft and the
          *                            wheel's rotation. For L2 SDS Mk4i modules, this would be 6.75.
          */
-        public SwerveModuleConstants(double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, double angleMotorEncoderCPR, double driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
+        public SwerveModuleConstants(int moduleNumber, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, double angleMotorEncoderCPR, double driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
+            this.moduleNumber = moduleNumber;
             this.angleOffset = new Rotation2d();
             this.wheelCircumferenceMeters = wheelCircumferenceMeters;
             this.maxSpeedMetersPerSecond = maxSpeedMetersPerSecond;
@@ -74,16 +77,14 @@ public abstract class SwerveModuleBase {
         }
     }
 
-    public int moduleNumber;
     protected Rotation2d angleOffset;
     protected Rotation2d lastAngle = new Rotation2d();
     protected MotorController angleMotor;
     protected MotorController driveMotor;
     protected SwerveModuleConstants moduleConstants;
 
-    public SwerveModuleBase(int moduleNumber, SwerveModuleConstants moduleConstants, MotorController angleMotor, MotorController driveMotor) {
+    public SwerveModuleBase(SwerveModuleConstants moduleConstants, MotorController angleMotor, MotorController driveMotor) {
         this.moduleConstants = moduleConstants;
-        this.moduleNumber = moduleNumber;
         this.angleOffset = moduleConstants.angleOffset;
         
         configureAngleEncoder();
