@@ -11,8 +11,8 @@ public abstract class SwerveModuleBase {
         public final Rotation2d angleOffset;
         public final double wheelCircumferenceMeters;
         public final double maxSpeedMetersPerSecond;
-        public final double angleMotorEncoderCPR;
-        public final double driveMotorEncoderCPR;
+        public final int angleMotorEncoderCPR;
+        public final int driveMotorEncoderCPR;
         public final double angleMotorGearRatio;
         public final double driveMotorGearRatio;
 
@@ -40,7 +40,7 @@ public abstract class SwerveModuleBase {
          *             Instead, use the native firmware-zero feature of the absolute encoder (i.e. zero
          *             the encoder in Phoenix Tuner.
          */
-        public SwerveModuleConstants(int moduleNumber, Rotation2d angleOffset, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, double angleMotorEncoderCPR, double driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
+        public SwerveModuleConstants(int moduleNumber, Rotation2d angleOffset, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, int angleMotorEncoderCPR, int driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
             this.moduleNumber = moduleNumber;
             this.angleOffset = angleOffset;
             this.wheelCircumferenceMeters = wheelCircumferenceMeters;
@@ -67,7 +67,7 @@ public abstract class SwerveModuleBase {
          * @param driveMotorGearRatio the gear ration between the drive motor's output shaft and the
          *                            wheel's rotation. For L2 SDS Mk4i modules, this would be 6.75.
          */
-        public SwerveModuleConstants(int moduleNumber, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, double angleMotorEncoderCPR, double driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
+        public SwerveModuleConstants(int moduleNumber, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, int angleMotorEncoderCPR, int driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
             this.moduleNumber = moduleNumber;
             this.angleOffset = new Rotation2d();
             this.wheelCircumferenceMeters = wheelCircumferenceMeters;
