@@ -101,7 +101,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
          * (mostly constants)
          */
         Rotation2d currentAngle = getRotation2d();
-        this.odometry = new DifferentialDriveOdometry(currentAngle, 0, 0);
+        this.odometry = new DifferentialDriveOdometry(currentAngle, getLeftPositionMeters(), getRightPositionMeters());
         this.odometryEstimator = new DifferentialDrivePoseEstimator(getRotation2d(), getPose(), // ! these numbers are 100% not tuned
                 new MatBuilder<>(Nat.N5(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.02, 0.02), // State measurement standard
                                                                                          // deviations. X, Y, theta.
@@ -341,7 +341,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
         zeroHeading(); // ! I'm not sure if this is necessary, we'll see
         ahrs.setAngleAdjustment(pose.getRotation().getDegrees());
 
-        odometry.resetPosition(getRotation2d(), getWheelPositions(), pose);
+        odometry.resetPosition(getRotation2d(), getLeftPositionMeters(), getRightPositionMeters(), getPose());
         odometryEstimator.resetPosition(pose, getRotation2d());
     }
 
