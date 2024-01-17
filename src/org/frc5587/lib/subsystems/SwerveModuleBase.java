@@ -101,7 +101,7 @@ public abstract class SwerveModuleBase {
         this.driveMotor = driveMotor;
         // configureDriveMotor();
 
-        lastAngle = getState().angle;
+        lastAngle = new Rotation2d();//getState().angle;
     }
 
     /**
