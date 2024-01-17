@@ -91,7 +91,7 @@ public abstract class SwerveModuleBase {
         this.moduleConstants = moduleConstants;
         this.angleOffset = moduleConstants.angleOffset;
         
-        configureAngleEncoder();
+        // configureAngleEncoder();
         
         /* Angle Motor Config */
         this.angleMotor = angleMotor;
