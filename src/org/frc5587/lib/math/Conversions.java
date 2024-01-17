@@ -4,10 +4,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 
 public class Conversions {
     public static Rotation2d motorOutputToMechanismOutput(Rotation2d motorOutput, int encoderCPR, double gearRatio) {
-        return Rotation2d.fromRotations(motorOutput.getRotations() * (gearRatio * encoderCPR));
+        return Rotation2d.fromRotations(motorOutput.getRotations() / (gearRatio * encoderCPR));
     }
     public static Rotation2d mechanismOutputToMotorOutput(Rotation2d mechanismOutput, int encoderCPR, double gearRatio) {
-        return Rotation2d.fromRotations(mechanismOutput.getRotations() / (gearRatio * encoderCPR));
+        return Rotation2d.fromRotations(mechanismOutput.getRotations() * (gearRatio * encoderCPR));
     }
 
     /**
