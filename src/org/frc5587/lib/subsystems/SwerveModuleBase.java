@@ -1,5 +1,7 @@
 package org.frc5587.lib.subsystems;
 
+import org.frc5587.lib.math.Conversions;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -164,8 +166,7 @@ public abstract class SwerveModuleBase {
      */
     public void setAngle(SwerveModuleState desiredState) {
         Rotation2d optimizedAngle = (Math.abs(desiredState.speedMetersPerSecond) <= (moduleConstants.maxSpeedMetersPerSecond * 0.05)) ? lastAngle : desiredState.angle; //Prevent rotating module if speed is less then 5%. Prevents Jittering.
-        
-        setAngleMotorPosition(optimizedAngle);
+        setAngleMotorPosition(Conversions.mechanismOutputToMotorOutput(optimizedAngle, moduleConstants.angleMotorEncoderCPR, moduleConstants.angleMotorGearRatio));
         lastAngle = optimizedAngle;
     }
 
@@ -186,7 +187,7 @@ public abstract class SwerveModuleBase {
      *         relative to the wheel's rotation.
      */
     public Rotation2d getAngle(){
-        return Rotation2d.fromDegrees((360 * getAngleMotorEncoderPosition() / moduleConstants.angleMotorEncoderCPR) / moduleConstants.angleMotorGearRatio);
+        return Conversions.motorOutputToMechanismOutput(getAngleMotorEncoderPosition(), moduleConstants.angleMotorEncoderCPR, moduleConstants.angleMotorGearRatio);
     }
 
     /**
@@ -207,7 +208,7 @@ public abstract class SwerveModuleBase {
     }
 
     public void resetToAbsolute() {
-        setAngleMotorEncoderPosition(getAbsoluteEncoderValue().minus(angleOffset));
+        setAngleMotorEncoderPosition(Conversions.mechanismOutputToMotorOutput(getAbsoluteEncoderValue().minus(angleOffset), moduleConstants.angleMotorEncoderCPR, moduleConstants.angleMotorGearRatio));
     }
 
     protected abstract void setAngleMotorPosition(Rotation2d position);
@@ -227,12 +228,12 @@ public abstract class SwerveModuleBase {
     /**
      * @return the raw position value returned by the angle motor's built-in encoder.
      */
-    protected abstract double getAngleMotorEncoderPosition();
+    protected abstract Rotation2d getAngleMotorEncoderPosition();
 
     /**
      * @return the raw position value returned by the drive motor's built-in encoder.
      */
-    protected abstract double getDriveMotorEncoderPosition();
+    protected abstract Rotation2d getDriveMotorEncoderPosition();
 
     /**
      * @return the raw velocity value returned by the drive motor's built-in encoder.
@@ -299,7 +300,7 @@ public abstract class SwerveModuleBase {
 
     public SwerveModulePosition getPosition(){
         return new SwerveModulePosition(
-            getDriveMotorEncoderPosition() * moduleConstants.wheelCircumferenceMeters / (moduleConstants.driveMotorGearRatio * moduleConstants.driveMotorEncoderCPR), 
+            Conversions.motorOutputToMeters(getDriveMotorEncoderPosition(), moduleConstants.driveMotorEncoderCPR, moduleConstants.driveMotorGearRatio, moduleConstants.wheelCircumferenceMeters),
             getAngle()
         );
     }

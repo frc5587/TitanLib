@@ -3,22 +3,30 @@ package org.frc5587.lib.math;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 public class Conversions {
-    public static Rotation2d motorOutputToMechanismOutput(Rotation2d motorOutput, double encoderCPR, double gearRatio) {
-        return Rotation2d.fromDegrees(motorOutput.getDegrees() / (360. / (gearRatio * encoderCPR)));
+    public static Rotation2d motorOutputToMechanismOutput(Rotation2d motorOutput, int encoderCPR, double gearRatio) {
+        return Rotation2d.fromDegrees(motorOutput.getRotations() / (360. / (gearRatio * encoderCPR)));
     }
-    public static Rotation2d mechanismOutputToMotorOutput(Rotation2d mechanismOutput, double encoderCPR, double gearRatio) {
-        return Rotation2d.fromDegrees(mechanismOutput.getDegrees() * (360. / (gearRatio * encoderCPR)));
+    public static Rotation2d mechanismOutputToMotorOutput(Rotation2d mechanismOutput, int encoderCPR, double gearRatio) {
+        return Rotation2d.fromDegrees(mechanismOutput.getRotations() * (360. / (gearRatio * encoderCPR)));
     }
 
     /**
      * Assumes that the encoder is returning pure rotations with no CPR.
      */
     public static Rotation2d motorOutputToMechanismOutput(Rotation2d motorOutput, double gearRatio) {
-        return Rotation2d.fromDegrees(motorOutput.getDegrees() / (360. / (gearRatio)));
+        return Rotation2d.fromDegrees(motorOutput.getRotations() / (360. / (gearRatio)));
+    }
+
+    public static Rotation2d mechanismOutputToMotorOutput(Rotation2d mechanismOutput, double gearRatio) {
+        return Rotation2d.fromDegrees(mechanismOutput.getRotations() * (360. / (gearRatio)));
+    }
+
+    public static double motorOutputToMeters(Rotation2d motorOutput, int encoderCPR, double gearRatio, double wheelCircumferenceMeters) {
+        return motorOutput.getRotations() * (wheelCircumferenceMeters / (gearRatio * encoderCPR));
     }
     
-    public static Rotation2d mechanismOutputToMotorOutput(Rotation2d mechanismOutput, double gearRatio) {
-        return Rotation2d.fromDegrees(mechanismOutput.getDegrees() * (360. / (gearRatio)));
+    public static double motorOutputToMeters(Rotation2d motorOutput, double gearRatio, double wheelCircumferenceMeters) {
+        return motorOutput.getRotations() * (wheelCircumferenceMeters / (gearRatio));
     }
 
     /**
