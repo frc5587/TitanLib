@@ -95,11 +95,11 @@ public abstract class SwerveModuleBase {
         
         /* Angle Motor Config */
         this.angleMotor = angleMotor;
-        configureAngleMotor();
+        // configureAngleMotor();
 
         /* Drive Motor Config */
         this.driveMotor = driveMotor;
-        configureDriveMotor();
+        // configureDriveMotor();
 
         lastAngle = getState().angle;
     }
