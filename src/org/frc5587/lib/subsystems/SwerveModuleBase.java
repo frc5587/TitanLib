@@ -208,7 +208,7 @@ public abstract class SwerveModuleBase {
     }
 
     public void resetToAbsolute() {
-        setAngleMotorEncoderPosition(Conversions.mechanismOutputToMotorOutput(getAbsoluteEncoderValue().minus(angleOffset), moduleConstants.angleMotorEncoderCPR, moduleConstants.angleMotorGearRatio));
+        setAngleMotorEncoderPosition(getAbsoluteEncoderValue());//Conversions.mechanismOutputToMotorOutput(getAbsoluteEncoderValue().minus(angleOffset), moduleConstants.angleMotorEncoderCPR, moduleConstants.angleMotorGearRatio));
     }
 
     protected abstract void setAngleMotorPosition(Rotation2d position);
