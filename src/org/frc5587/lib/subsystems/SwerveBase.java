@@ -119,6 +119,13 @@ public class SwerveBase extends SubsystemBase {
     }
 
     /**
+     * @return the robot's current robot relative chassis speeds
+     */
+    public ChassisSpeeds getChassisSpeeds() {
+        return kinematics.toChassisSpeeds(getModuleStates());
+    }
+
+    /**
      * @return the robot pose from the pose estimator.
      */
     public Pose2d getPose() {
