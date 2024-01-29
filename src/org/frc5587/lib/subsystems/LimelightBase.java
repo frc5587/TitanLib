@@ -1,7 +1,8 @@
 package org.frc5587.lib.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.net.PortForwarder;
@@ -15,10 +16,10 @@ public abstract class LimelightBase extends SubsystemBase {
     protected NetworkTableEntry tl = limelightTable.getEntry("tl");
     protected NetworkTableEntry ledMode = limelightTable.getEntry("ledMode");
 
-    protected double mountAngle;
-    protected double lensHeight;
-    protected double goalHeight;
-    protected double distanceOffset;
+    protected double mountAngle = 0;
+    protected double lensHeight = 0;
+    protected double goalHeight = 0;
+    protected double distanceOffset = 0;
 
     protected final double approximateNetworkDelaySeconds = 0.05;
 
@@ -43,6 +44,20 @@ public abstract class LimelightBase extends SubsystemBase {
         this.goalHeight = goalHeight;
         this.distanceOffset = distanceOffset;
 
+        // Allow access to limelight when connected over USB
+        PortForwarder.add(5800, "limelight.local", 5800);
+        PortForwarder.add(5801, "limelight.local", 5801);
+        PortForwarder.add(5802, "limelight.local", 5802);
+        PortForwarder.add(5803, "limelight.local", 5803);
+        PortForwarder.add(5804, "limelight.local", 5804);
+        PortForwarder.add(5805, "limelight.local", 5805);
+    }
+
+    /**
+     * Create a Limelight for use with AprilTags where mount angle, lens height, goal
+     * height, and distanceOffset are all handled within Limelight OS.
+     */
+    public LimelightBase() {
         // Allow access to limelight when connected over USB
         PortForwarder.add(5800, "limelight.local", 5800);
         PortForwarder.add(5801, "limelight.local", 5801);
@@ -86,6 +101,46 @@ public abstract class LimelightBase extends SubsystemBase {
      */
     public double calculateDistance() {
         return (goalHeight - lensHeight) / (Math.tan(angleToGoalRadians()) * Math.cos(Math.toRadians(tx.getDouble(0.0)))) + distanceOffset;
+    }
+
+    /**
+     * Gets the MegaTag botpose relative to the blue driver station where (0, 0) is
+     * at the bottom-left corner of a blue-left field map.
+     * @return a Pose2d representing the robot's pose relative to the blue driver station
+     */
+    public Pose2d getWPIBlueBotpose() {
+        double[] limelightBotPose = limelightTable.getEntry("botpose_wpiblue").getDoubleArray(new double[6]);
+        return new Pose2d(limelightBotPose[0], limelightBotPose[1], Rotation2d.fromDegrees(limelightBotPose[5]));
+    }
+    
+    /**
+     * Gets the MegaTag botpose relative to the red driver station where (0, 0) is
+     * at the top-right corner of a blue-left field map.
+     * @return a Pose2d representing the robot's pose relative to the red driver station
+     */
+    public Pose2d getWPIRedBotpose() {
+        double[] limelightBotPose = limelightTable.getEntry("botpose_wpired").getDoubleArray(new double[6]);
+        return new Pose2d(limelightBotPose[0], limelightBotPose[1], Rotation2d.fromDegrees(limelightBotPose[5]));
+    }
+
+    /**
+     * Gets the MegaTag botpose relative to the field where (0, 0) is at the center
+     * of a field map.
+     * @return a Pose2d representing the robot's pose relative to the red driver station
+     */
+    public Pose2d getFieldSpaceBotpose() {
+        double[] limelightBotPose = limelightTable.getEntry("botpose").getDoubleArray(new double[6]);
+        return new Pose2d(limelightBotPose[0], limelightBotPose[1], Rotation2d.fromDegrees(limelightBotPose[5]));
+    }
+
+    /**
+     * Gets the MegaTag botpose relative to the target where (0, 0) is at the center
+     * of the target.
+     * @return a Pose2d representing the robot's pose relative to the red driver station
+     */
+    public Pose2d getTargetSpaceBotpose() {
+        double[] limelightBotPose = limelightTable.getEntry("botpose_targetspace").getDoubleArray(new double[6]);
+        return new Pose2d(limelightBotPose[0], limelightBotPose[1], Rotation2d.fromDegrees(limelightBotPose[5]));
     }
 
     /**
