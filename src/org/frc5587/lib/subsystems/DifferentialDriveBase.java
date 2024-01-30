@@ -1,5 +1,7 @@
 package org.frc5587.lib.subsystems;
 
+import java.util.Optional;
+
 import org.frc5587.lib.math.DifferentialDrivePoseEstimator;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -98,7 +100,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
          * (mostly constants)
          */
         Rotation2d currentAngle = getRotation2d();
-        this.odometry = new DifferentialDriveOdometry(currentAngle);
+        this.odometry = new DifferentialDriveOdometry(currentAngle, getLeftPositionMeters(), getRightPositionMeters());
         this.odometryEstimator = new DifferentialDrivePoseEstimator(getRotation2d(), getPose(), // ! these numbers are 100% not tuned
                 new MatBuilder<>(Nat.N5(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.02, 0.02), // State measurement standard
                                                                                          // deviations. X, Y, theta.
@@ -338,7 +340,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
         zeroHeading(); // ! I'm not sure if this is necessary, we'll see
         ahrs.setAngleAdjustment(pose.getRotation().getDegrees());
 
-        odometry.resetPosition(pose, getRotation2d());
+        odometry.resetPosition(getRotation2d(), getLeftPositionMeters(), getRightPositionMeters(), getPose());
         odometryEstimator.resetPosition(pose, getRotation2d());
     }
 
@@ -442,8 +444,9 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
         odometryEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
     }
 
-    public Pose2d getPoseAtTime(double FPGATimestamp) {
-        return poseHistory.getSample(FPGATimestamp);
+    public Optional<Pose2d> getPoseAtTime(double FPGATimestamp) {
+        Optional<Pose2d> pose = poseHistory.getSample(FPGATimestamp);
+        return pose;
     }
 
     /**

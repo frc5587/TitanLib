@@ -2,9 +2,9 @@ package org.frc5587.lib.control;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 
-public class DeadbandJoystick extends Joystick {
+public class DeadbandCommandJoystick extends CommandJoystick {
     private static double DEFAULT_DEADBAND = 0.05; 
     private final double deadbandCutoff;
     private final double exponent;
@@ -37,7 +37,7 @@ public class DeadbandJoystick extends Joystick {
      *
      * @param port The port on the Driver Station that the joystick is plugged into.
      */
-    public DeadbandJoystick(int port, double exp) {
+    public DeadbandCommandJoystick(int port, double exp) {
         this(port, exp, DEFAULT_DEADBAND);
     }
 
@@ -47,11 +47,11 @@ public class DeadbandJoystick extends Joystick {
      *
      * @param port The port on the Driver Station that the joystick is plugged into.
      */
-    public DeadbandJoystick(int port) {
+    public DeadbandCommandJoystick(int port) {
         this(port, 1);
     }
 
-    public DeadbandJoystick(int port, double exp, double deadband) {
+    public DeadbandCommandJoystick(int port, double exp, double deadband) {
         super(port);
         this.exponent = exp;
         this.deadbandCutoff = deadband;

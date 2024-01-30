@@ -9,6 +9,7 @@ public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
     protected MotorController driveMotor;
     protected MotorController turnMotor;
     protected SwerveModuleConstants constants;
+    protected double maxvoltage = 8;
     
     public static class SwerveModuleConstants {
         public final double gearing;
@@ -27,9 +28,10 @@ public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
 
         this.driveMotor = driveMotor;
         this.turnMotor = turnMotor;
+        this.constants = constants;
 
-        configureMotors();
-        this.enable();
+        // configureMotors();
+        // this.enable();
     }
 
     /** @return Raw encoder ticks from the rotational motor for angle */
@@ -115,9 +117,23 @@ public abstract class SwerveModuleBase extends ProfiledPIDSubsystem {
      * @param speed the motor's speed in percent output, a double -1 to 1
      * @param angle the module's angle in radians
      */
-    public void drive(double speed, double angle) {
-        setSpeed(speed);
-        setAngle(angle);
+    // public void drive(double speed, double angle) {
+    //     setSpeed(speed);
+    //     setAngle(angle);
+    // }
+
+    public void drive (double speed, double angle) {
+        driveMotor.set(speed);
+
+        double setpoint = angle * (maxvoltage * 0.5) + (maxvoltage * 0.5); // Optimization offset can be calculated here.
+        if (setpoint < 0) {
+            setpoint = maxvoltage + setpoint;
+        }
+        if (setpoint > maxvoltage) {
+            setpoint = setpoint - maxvoltage;
+        }
+
+        constants.pid.setGoal(setpoint);
     }
 
     /**
