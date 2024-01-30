@@ -1,11 +1,11 @@
 buildscript {
-   ext.WPI_VER = "2024.1.1"
+   ext.WPI_VER = "2024.2.1"
 }
 
 plugins {
    id "java"
    id "maven-publish"
-   id "edu.wpi.first.GradleRIO" version "2024.1.1"
+   id "edu.wpi.first.GradleRIO" version "2024.2.1"
 }
 
 group = 'org.frc5587'
