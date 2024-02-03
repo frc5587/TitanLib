@@ -1,56 +1,45 @@
 package org.frc5587.lib.subsystems;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
 public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
-    protected ProfiledPIDController pidController;
-    protected ArmFeedforward ffController;
-    protected PivotingArmConstants constants;
-    protected MotorController motor;
-    protected String subsystemName;
+    private final ArmFeedforward ffController;
+    private final PivotingArmConstants constants;
+    private final MotorController motor;
 
     public static class PivotingArmConstants {
-        public final double gearing, velocityDenominator, offsetFromHorizontalRadians;
-        public final double[] softLimits;
-        public final int zeroOffset, encoderCPR;
+        public final double gearing;
+        public final Rotation2d[] softLimits;
+        public final Rotation2d offsetFromHorizontal, zeroOffset;
         public final ProfiledPIDController pid;
         public final ArmFeedforward ff;
 
         public PivotingArmConstants(
                 double gearing,
-                double velocityDenominator,
-                double offsetFromHorizontalRadians,
-                double[] softLimits,
-                int zeroOffset,
-                int encoderCPR,
+                Rotation2d offsetFromHorizontal,
+                Rotation2d[] softLimits,
+                Rotation2d zeroOffset,
                 ProfiledPIDController pid,
                 ArmFeedforward ff) {
             this.gearing = gearing;
-            this.velocityDenominator = velocityDenominator;
-            this.offsetFromHorizontalRadians = offsetFromHorizontalRadians;
             this.softLimits = softLimits;
+            this.offsetFromHorizontal = offsetFromHorizontal;
             this.zeroOffset = zeroOffset;
-            this.encoderCPR = encoderCPR;
             this.pid = pid;
             this.ff = ff;
         }
     }
     
-    public PivotingArmBase(String subsystemName, PivotingArmConstants constants, MotorController motor) {
+    public PivotingArmBase(PivotingArmConstants constants, MotorController motor) {
         super(constants.pid);
         this.constants = constants;
         this.motor = motor;
-        this.pidController = getController();
-        this.subsystemName = subsystemName;
         this.ffController = constants.ff;
-        
-        SmartDashboard.putBoolean(subsystemName + " Output On?", true);
     }
 
     /**
@@ -74,17 +63,22 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     /* CALCULATIONS AND UTIL */
     /* The implementing class needs to handle encoders for us as we don't know what type the arm is using */
     /** @return the encoder's position */
-    public abstract double getEncoderPosition();
+    public abstract Rotation2d getEncoderPosition();
 
     /** @return the encoder's velocity */
     public abstract double getEncoderVelocity();
 
     /** @param position the position to set the encoder to */
-    public abstract void setEncoderPosition(double position);
+    public abstract void setEncoderPosition(Rotation2d position);
 
     /**
      * Configure the motors. This should handle things like reversal,
      * idle mode, motor sensor ports, etc.
+     * 
+     * Note: You MUST use this method in the subclass constructor, otherwise
+     * your motors will not be configured. This cannot be implemented in the
+     * PivotingArmBase class constructor because of NullPointer/initialization
+     * order.
      */
     public abstract void configureMotors();
 
@@ -92,30 +86,23 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
      * @param value value to divide by the gearing set in constants
      */
     public double applyGearing(double value) {
-        return value / constants.gearing;
-    }
-
-    /**
-     * @param value value to divide by the encoder counts per revolution set in constants
-     */
-    public double applyCPR(double value) {
-        return value / constants.encoderCPR;
+        return value / (constants.gearing);
     }
 
     /**
      * @return the position of the subsystem in rotations,
      *         accounting for gearing and encoder counts per revolution.
      */
-    public double getRotations() {
-        return applyCPR(applyGearing(getEncoderPosition()));
+    public Rotation2d getPosition() {
+        return Rotation2d.fromRotations(applyGearing(getEncoderPosition().getRotations()));
     }
 
     /**
-     * @return the velocity of the subsystem (in RPS),
-     *         accounting for encoderCPR and gearing.
+     * @return the velocity of the subsystem (in Rotations Per Second),
+     *         accounting for gearing.
      */
-    public double getRotationsPerSecond() {
-        return applyCPR(applyGearing(getEncoderVelocity()));
+    public double getVelocityRotationsPerSecond() {
+        return applyGearing(getEncoderVelocity());
     }
 
     /**
@@ -123,37 +110,21 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
      */
     @Override
     public double getMeasurement() {
-        return getRotations() * 2 * Math.PI;
+        return getAngleRadians();
     }
 
     /**
     * @return the angle of the arm in degrees
     */
     public double getAngleDegrees() {
-        return getRotations() * 360;
+        return getPosition().getDegrees();
     }
 
     /**
     * @return the angle of the arm in radians
     */
     public double getAngleRadians() {
-        return Units.degreesToRadians(getAngleDegrees());
-    }
-
-    /**
-     * @param ticks the number of encoder ticks to convert to radians
-     * @return the number of radians corresponding to the encoder ticks
-     */
-    public double encoderTicksToRadians(double ticks) {
-        return applyCPR(applyGearing(ticks)) * 2 * Math.PI;
-    }
-
-    /**
-     * @param radians the number of radians to convert to encoder ticks
-     * @return the number of encoder ticks corresponding to radians
-     */
-    public int radiansToEncoderTicks(double radians) {
-        return Math.round((float) ((radians * constants.gearing * constants.encoderCPR) / 2 / Math.PI));
+        return getPosition().getRadians();
     }
 
     /**
@@ -172,15 +143,7 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
 
     @Override
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
-        double ff = ffController.calculate(setpoint.position+constants.offsetFromHorizontalRadians, setpoint.velocity);
-        
-        /** if the driver has set output on, useOutput. */
-        if(SmartDashboard.getBoolean(subsystemName + " Output On?", true)) {
-            setVoltage(output + ff);
-        }
-        /** otherwise, set output to 0 */
-        else {
-            setVoltage(0);
-        }
+        double ff = ffController.calculate(setpoint.position+constants.offsetFromHorizontal.getRadians(), setpoint.velocity);
+        setVoltage(output + ff);
     }
 }
