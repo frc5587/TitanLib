@@ -5,9 +5,9 @@ import org.frc5587.lib.subsystems.DifferentialDriveBase.FollowDirection;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
-public class TitanDrive extends CommandBase {
+public class TitanDrive extends Command {
     private final DifferentialDriveBase drivetrain;
 
     private final DeadbandCommandJoystick joystick;

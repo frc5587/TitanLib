@@ -1,15 +1,15 @@
 package org.frc5587.lib.commands;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import java.util.function.DoubleSupplier;
 
 import org.frc5587.lib.subsystems.DifferentialDriveBase;
 
-import java.util.function.DoubleSupplier;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Arcade Drive for a DifferentialDrive
  */
-public class ArcadeDriveBase extends CommandBase {
+public class ArcadeDriveBase extends Command {
     private final DifferentialDriveBase drivetrain;
     private final DoubleSupplier throttleSupplier, curveSupplier;
 

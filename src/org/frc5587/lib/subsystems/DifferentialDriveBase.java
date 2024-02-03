@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
 
@@ -405,6 +406,13 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
     }
 
     /**
+     * @return the wheel positions based on the encoders.
+     */
+    public DifferentialDriveWheelPositions getWheelPositions() {
+        return new DifferentialDriveWheelPositions(getLeftPositionMeters(), getRightPositionMeters());
+    }
+
+    /**
      * @return the X and Y velocities as a {@link ChassisSpeeds} object
      */
     public ChassisSpeeds getChassisSpeeds() {
@@ -445,8 +453,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
     }
 
     public Optional<Pose2d> getPoseAtTime(double FPGATimestamp) {
-        Optional<Pose2d> pose = poseHistory.getSample(FPGATimestamp);
-        return pose;
+        return poseHistory.getSample(FPGATimestamp);
     }
 
     /**

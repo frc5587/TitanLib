@@ -1,15 +1,16 @@
 package org.frc5587.lib.commands;
 
-import org.frc5587.lib.subsystems.DifferentialDriveBase;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+
+import org.frc5587.lib.subsystems.DifferentialDriveBase;
+
+import edu.wpi.first.wpilibj2.command.Command;
 
 /**
  * Curve Drive for a DifferentialDrive
  */
-public class CurveDriveBase extends CommandBase {
+public class CurveDriveBase extends Command {
     private final DifferentialDriveBase drivetrain;
     private final double quickTurnCurveMultiplier;
     private final DoubleSupplier throttleSupplier, curveSupplier;
