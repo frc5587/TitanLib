@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     private final ArmFeedforward ffController;
     private final PivotingArmConstants constants;
-    protected MotorController motor;
+    private final MotorController motor;
 
     public static class PivotingArmConstants {
         public final double gearing;
