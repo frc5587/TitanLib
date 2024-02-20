@@ -37,6 +37,7 @@ public abstract class GyroBase {
         this.yawZeroOffset = yawZeroOffset;
         this.mode = mode;
         this.supplyMode = supplyMode;
+        this.inverted = inverted;
     }
 
     public GyroBase() {
@@ -122,21 +123,21 @@ public abstract class GyroBase {
      * @return the roll without subtracting the roll offset (but with any necessary mode conversion and inversion)
      */
     public Rotation2d getUnZeroedRoll() {
-        return convertMeasurementByMode(getRawRoll()).times(this.inverted ? -1. : 1);
+        return convertMeasurementByMode(getRawRoll()).times(this.inverted ? -1. : 1.);
     }
     
     /**
      * @return the pitch without subtracting the pitch offset (but with any necessary mode conversion and inversion)
      */
     public Rotation2d getUnZeroedPitch() {
-        return convertMeasurementByMode(getRawPitch()).times(this.inverted ? -1. : 1);
+        return convertMeasurementByMode(getRawPitch()).times(this.inverted ? -1. : 1.);
     }
 
     /**
      * @return the yaw without subtracting the yaw offset (but with any necessary mode conversion and inversion)
      */
     public Rotation2d getUnZeroedYaw() {
-        return convertMeasurementByMode(getRawYaw()).times(this.inverted ? -1. : 1);
+        return convertMeasurementByMode(getRawYaw()).times(this.inverted ? -1. : 1.);
     }
 
     /**
