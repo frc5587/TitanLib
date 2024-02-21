@@ -158,8 +158,7 @@ public class SwerveBase extends SubsystemBase {
      * @param pose the position to reset the odometry to.
      */
     public void resetOdometry(Pose2d pose) {
-        gyro.zeroYaw();
-        gyro.setYawZeroOffset(pose.getRotation());
+        gyro.setYaw(pose.getRotation());
 
         odometry.resetPosition(getYaw(), getModulePositions(), pose);
         poseEstimator.resetPosition(getYaw(), getModulePositions(), pose);

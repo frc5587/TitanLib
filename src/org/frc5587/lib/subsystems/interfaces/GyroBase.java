@@ -168,7 +168,7 @@ public abstract class GyroBase {
     }
 
     public void setYaw(Rotation2d yaw) {
-        gyro.setYawZeroOffset(gyro.getUnZeroedYaw().plus(yaw));
+        setYawZeroOffset(getUnZeroedYaw().plus(yaw));
     }
 
     public Rotation2d getRoll() {
