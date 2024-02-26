@@ -76,7 +76,7 @@ public class SwerveBase extends SubsystemBase {
      *                   of the robot may not be the same as the velocity calculated in the chassis speeds, but
      *                   it will probably be proportional.
      */
-    public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
+    public void driveWithModuleStates(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates =
             kinematics.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -90,7 +90,38 @@ public class SwerveBase extends SubsystemBase {
                         rotation));
 
         setModuleStates(swerveModuleStates, isOpenLoop);
-    }    
+    }
+
+    /**
+     * @param translation the amount of x-and-y-change to move the robot by - note that the measurement
+     *                    given to this translation may not be the actual amount that the robot moves;
+     *                    this is more like a proportional output (i.e. if the translation is 3 meters
+     *                    by 4 meters, the robot may move 0.5 meters by 0.7 meters).
+     * @param rotation the amount of rotation to move the robot by - note that the measurement given to
+     *                 this rotation may not be the actual amount that the robot moves; this is more like
+     *                 a proportional output (i.e. if the rotation is 50 degrees, the robot may move 12.5
+     *                 degrees).
+     * @param fieldRelative whether the input should be taken as field relative. For example: if true, a
+     *                      positive x will move the robot away from the driver no matter the rotation of
+     *                      the robot, and if false, a positive x will move the robot towards its own front
+     *                      no matter the rotation of the robot, and so on.
+     * @param isOpenLoop whether to use open-loop velocity control for the drive motors. If false, the velocity
+     *                   of the robot may not be the same as the velocity calculated in the chassis speeds, but
+     *                   it will probably be proportional.
+     */
+    public void drive(Translation2d translation, double rotation, boolean fieldRelative,
+            boolean isOpenLoop) {
+        setChassisSpeeds(fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                translation.getX(),
+                translation.getY(),
+                rotation,
+                getYaw())
+                : new ChassisSpeeds(
+                        translation.getX(),
+                        translation.getY(),
+                        rotation),
+                isOpenLoop);
+    }
 
     /**
      * Sets the desired states of each module.
@@ -111,11 +142,19 @@ public class SwerveBase extends SubsystemBase {
     }
 
     /**
-     * Sets the module states based on chassis speeds.
+     * Sets the module states based on chassis speeds with closed loop control.
      */
     public void setChassisSpeeds(ChassisSpeeds speeds) {
-        speeds = new ChassisSpeeds(-speeds.vxMetersPerSecond, -speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
+        speeds = new ChassisSpeeds(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
         setModuleStates(kinematics.toSwerveModuleStates(speeds));
+    }
+    
+    /**
+     * Sets the module states based on chassis speeds.
+     */
+    public void setChassisSpeeds(ChassisSpeeds speeds, boolean isOpenLoop) {
+        speeds = new ChassisSpeeds(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
+        setModuleStates(kinematics.toSwerveModuleStates(speeds), isOpenLoop);
     }
 
     /**
