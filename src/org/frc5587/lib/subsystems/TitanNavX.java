@@ -52,4 +52,8 @@ public class TitanNavX extends GyroBase {
     public Rotation2d getRawYaw() {
         return Rotation2d.fromDegrees(gyro.getYaw());
     }
+
+    public AHRS getNavX() {
+        return this.gyro;
+    }
 }

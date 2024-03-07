@@ -18,11 +18,12 @@ public class TitanPigeon2 extends GyroBase {
     }
 
     public TitanPigeon2(int canID, boolean inverted) {
-        super(true);
+        super(inverted);
         this.gyro = new Pigeon2(canID);
     }
 
     public TitanPigeon2(int canID, String canBus, boolean inverted) {
+        super(inverted);
         this.gyro = new Pigeon2(canID, canBus);
     }
 
@@ -44,5 +45,9 @@ public class TitanPigeon2 extends GyroBase {
     @Override
     public Rotation2d getRawAccumulatedYaw() {
         return Rotation2d.fromDegrees(gyro.getAngle());
+    }
+
+    public Pigeon2 getPigeon2() {
+        return this.gyro;
     }
 }
