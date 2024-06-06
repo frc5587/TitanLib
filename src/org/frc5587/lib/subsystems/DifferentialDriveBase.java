@@ -103,11 +103,11 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
         Rotation2d currentAngle = getRotation2d();
         this.odometry = new DifferentialDriveOdometry(currentAngle, getLeftPositionMeters(), getRightPositionMeters());
         this.odometryEstimator = new DifferentialDrivePoseEstimator(getRotation2d(), getPose(), // ! these numbers are 100% not tuned
-                new MatBuilder<>(Nat.N5(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.02, 0.02), // State measurement standard
+                MatBuilder.fill(Nat.N5(), Nat.N1(), 0.02, 0.02, 0.01, 0.02, 0.02), // State measurement standard
                                                                                          // deviations. X, Y, theta.
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), // Local measurement standard deviations.
+                MatBuilder.fill(Nat.N3(), Nat.N1(), 0.02, 0.02, 0.01), // Local measurement standard deviations.
                                                                              // Left encoder, right encoder, gyro.
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01));// Global measurement standard deviations. X,
+                MatBuilder.fill(Nat.N3(), Nat.N1(), 0.1, 0.1, 0.01));// Global measurement standard deviations. X,
                                                                            // Y, and theta.
         // this.poseHistory = new LimitedPoseMap(constants.historyLimit);
         this.invertGyro = constants.invertGyro;
