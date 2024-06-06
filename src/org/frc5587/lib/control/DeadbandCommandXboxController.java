@@ -2,6 +2,7 @@ package org.frc5587.lib.control;
 
 import org.frc5587.lib.math.MathHelper;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class DeadbandCommandXboxController extends CommandXboxController {
@@ -39,7 +40,7 @@ public class DeadbandCommandXboxController extends CommandXboxController {
     }
 
     /**
-     * Whether the trigger is currently depressed.
+     * Whether the left trigger is currently depressed.
      * 
      * @return the state of the trigger.
      */
@@ -47,7 +48,32 @@ public class DeadbandCommandXboxController extends CommandXboxController {
         return super.getLeftTriggerAxis() > deadbandCutoff;
     }
 
+      /**
+     * Whether the right trigger is currently depressed.
+     * 
+     * @return the state of the trigger.
+     */
     public boolean getRightTrigger() {
         return super.getRightTriggerAxis() > deadbandCutoff;
+    }
+
+    @Override
+    public double getLeftX() {
+        return getRawAxis(XboxController.Axis.kLeftX.value);
+    }
+
+    @Override
+    public double getLeftY() {
+        return getRawAxis(XboxController.Axis.kLeftY.value);
+    }
+
+    @Override
+    public double getRightX() {
+        return getRawAxis(XboxController.Axis.kRightX.value);
+    }
+
+    @Override
+    public double getRightY() {
+        return getRawAxis(XboxController.Axis.kRightY.value);
     }
 }
