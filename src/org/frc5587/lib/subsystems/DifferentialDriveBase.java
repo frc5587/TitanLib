@@ -450,7 +450,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
     }
 
     /**
-     * resets the positions of the encoders to 0
+     * Resets the positions of the encoders to 0
      */
     protected abstract void resetEncoders();
 
