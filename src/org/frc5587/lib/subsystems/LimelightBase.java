@@ -2,7 +2,9 @@ package org.frc5587.lib.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.net.PortForwarder;
@@ -134,13 +136,23 @@ public abstract class LimelightBase extends SubsystemBase {
     }
 
     /**
-     * Gets the MegaTag botpose relative to the target where (0, 0) is at the center
+     * Gets the 2D MegaTag botpose relative to the target where (0, 0) is at the center
      * of the target.
      * @return a Pose2d representing the robot's pose relative to the red driver station
      */
-    public Pose2d getTargetSpaceBotpose() {
+    public Pose2d get2DTargetSpaceBotpose() {
         double[] limelightBotPose = limelightTable.getEntry("botpose_targetspace").getDoubleArray(new double[6]);
         return new Pose2d(limelightBotPose[0], limelightBotPose[1], Rotation2d.fromDegrees(limelightBotPose[5]));
+    }
+
+    /**
+     * Gets the 3D MegaTag botpose relative to the target where (0, 0, 0) is at the center
+     * of the target.
+     * @return a Pose3d representing the robot's pose relative to the red driver station
+     */
+    public Pose3d get3DTargetSpacePose() {
+        double[] limelightBotPose = limelightTable.getEntry("botpose_targetspace").getDoubleArray(new double[6]);
+        return new Pose3d(limelightBotPose[0], limelightBotPose[1], Math.abs(limelightBotPose[2]), new Rotation3d(0, 0, Rotation2d.fromDegrees(limelightBotPose[4]).getRadians()));
     }
 
     /**
