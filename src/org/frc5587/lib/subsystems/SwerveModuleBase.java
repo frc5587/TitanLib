@@ -293,19 +293,24 @@ public abstract class SwerveModuleBase {
 
     public SwerveModuleState getState(){
         return new SwerveModuleState(
-            ((getDriveMotorEncoderVelocity() * 600. / 42.) / moduleConstants.driveMotorGearRatio) * moduleConstants.wheelCircumferenceMeters / 60,
-            getAngle()
-        ); 
-    }
-
-    public SwerveModulePosition getPosition(){
-        return new SwerveModulePosition(
-            Conversions.motorOutputToMeters(getDriveMotorEncoderPosition(), moduleConstants.driveMotorEncoderCPR, moduleConstants.driveMotorGearRatio, moduleConstants.wheelCircumferenceMeters),
+            (getDriveMotorEncoderVelocity() / moduleConstants.driveMotorGearRatio) * moduleConstants.wheelCircumferenceMeters,
             getAngle()
         );
     }
 
+    public SwerveModulePosition getPosition(){
+        return new SwerveModulePosition(
+            Conversions.motorOutputToMeters(getDriveMotorEncoderPosition().times(1.), moduleConstants.driveMotorEncoderCPR, moduleConstants.driveMotorGearRatio, moduleConstants.wheelCircumferenceMeters),
+            getAngle()
+        );
+    }
+
+    public double mpsToRotationsPerSecond(double velocityMPS) {
+        return ((velocityMPS) / (moduleConstants.wheelCircumferenceMeters * moduleConstants.driveMotorGearRatio));
+    }
+
+
     public void stop() {
-        setDesiredState(getState(), true);
+        setDesiredState(new SwerveModuleState(0, getAngle()), true);
     }
 }
