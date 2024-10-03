@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 public abstract class SwerveModuleBase {
     public static class SwerveModuleConstants {
         public final int moduleNumber;
-        public final Rotation2d angleOffset;
         public final double wheelCircumferenceMeters;
         public final double maxSpeedMetersPerSecond;
         public final int angleMotorEncoderCPR;
@@ -18,11 +17,7 @@ public abstract class SwerveModuleBase {
         public final double angleMotorGearRatio;
         public final double driveMotorGearRatio;
 
-        @Deprecated
         /**
-         * @param angleOffset the offset to subtract from the absolute encoder reading.
-         *                    Note: this field is deprecated. Use native firmware
-         *                    zeroing/offsets instead.
          * @param wheelCircumferenceMeters the wheel circumference in meters.
          * @param maxSpeedMetersPerSecond the maximum desired speed of the drive motors in m/s.
          * @param angleMotorEncoderCPR the counts per revolution of the angle motor's encoder.
@@ -35,43 +30,12 @@ public abstract class SwerveModuleBase {
          *                             (Falcon 500, Kraken X60) have a CPR of 2048.
          * @param angleMotorGearRatio the gear ratio between the angle motor's output shaft and the
          *                            wheel's rotation. For SDS Mk4i modules, this would be 21.429.
-         * @param driveMotorGearRatio the gear ration between the drive motor's output shaft and the
+         * @param driveMotorGearRatio the gear ratio between the drive motor's output shaft and the
          *                            wheel's rotation. For L1 SDS Mk4i modules, this would be 8.14.
          *                            L2 SDS Mk4i modules, this would be 6.75.
-         * @deprecated the field angleOffset is deprecated and should not be used.
-         *             Instead, use the native firmware-zero feature of the absolute encoder (i.e. zero
-         *             the encoder in Phoenix Tuner.
-         */
-        public SwerveModuleConstants(int moduleNumber, Rotation2d angleOffset, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, int angleMotorEncoderCPR, int driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
-            this.moduleNumber = moduleNumber;
-            this.angleOffset = angleOffset;
-            this.wheelCircumferenceMeters = wheelCircumferenceMeters;
-            this.maxSpeedMetersPerSecond = maxSpeedMetersPerSecond;
-            this.angleMotorEncoderCPR = angleMotorEncoderCPR;
-            this.driveMotorEncoderCPR = driveMotorEncoderCPR;
-            this.angleMotorGearRatio = angleMotorGearRatio;
-            this.driveMotorGearRatio = driveMotorGearRatio;
-        }
-
-        /**
-         * @param wheelCircumferenceMeters the wheel circumference in meters.
-         * @param maxSpeedMetersPerSecond the maximum desired speed of the drive motors in m/s.
-         * @param angleMotorEncoderCPR the counts per revolution of the angle motor's encoder.
-         *                             SPARK MAXes already handle this value, so this value would
-         *                             be 1 for swerves using SPARK MAX. CTRE motors with Talon FX
-         *                             (Falcon 500, Kraken X60) have a CPR of 2048.
-         * @param driveMotorEncoderCPR the counts per revolution of the drive motor's encoder.
-         *                             SPARK MAXes already handle this value, so this value would
-         *                             be 1 for swerves using SPARK MAX. CTRE motors with Talon FX
-         *                             (Falcon 500, Kraken X60) have a CPR of 2048.
-         * @param angleMotorGearRatio the gear ratio between the angle motor's output shaft and the
-         *                            wheel's rotation. For SDS Mk4i modules, this would be 21.429.
-         * @param driveMotorGearRatio the gear ration between the drive motor's output shaft and the
-         *                            wheel's rotation. For L2 SDS Mk4i modules, this would be 6.75.
          */
         public SwerveModuleConstants(int moduleNumber, double wheelCircumferenceMeters, double maxSpeedMetersPerSecond, int angleMotorEncoderCPR, int driveMotorEncoderCPR, double angleMotorGearRatio, double driveMotorGearRatio) {
             this.moduleNumber = moduleNumber;
-            this.angleOffset = new Rotation2d();
             this.wheelCircumferenceMeters = wheelCircumferenceMeters;
             this.maxSpeedMetersPerSecond = maxSpeedMetersPerSecond;
             this.angleMotorEncoderCPR = angleMotorEncoderCPR;
@@ -81,7 +45,6 @@ public abstract class SwerveModuleBase {
         }
     }
 
-    protected Rotation2d angleOffset;
     protected Rotation2d lastAngle = new Rotation2d();
     protected MotorController angleMotor;
     protected MotorController driveMotor;
@@ -89,7 +52,6 @@ public abstract class SwerveModuleBase {
 
     public SwerveModuleBase(SwerveModuleConstants moduleConstants, MotorController angleMotor, MotorController driveMotor) {
         this.moduleConstants = moduleConstants;
-        this.angleOffset = moduleConstants.angleOffset;
         
         // configureAngleEncoder();
         
@@ -190,22 +152,7 @@ public abstract class SwerveModuleBase {
         return Conversions.motorOutputToMechanismOutput(getAngleMotorEncoderPosition(), moduleConstants.angleMotorEncoderCPR, moduleConstants.angleMotorGearRatio);
     }
 
-    /**
-     * Here, raw value implies that the angle offset has <i>not</i> been subtracted from the
-     * encoder value. Note that angle offsets are deprecated in this class, so in implementations
-     * that account for that, this and {@link SwerveModuleBase#getAbsoluteEncoderValue()} will be
-     * functionally identical.
-     */
-    public abstract Rotation2d getRawAbsoluteEncoderValue();
-
-    /**
-     * Here, the angle offset <i>has</i> been subtracted from the raw encoder value. Note that angle
-     * offsets are deprecated in this class, so in implementations that account for that, this and 
-     * {@link SwerveModuleBase#getRawAbsoluteEncoderValue()} will be functionally identical.
-     */
-    public Rotation2d getAbsoluteEncoderValue() {
-        return getRawAbsoluteEncoderValue().minus(angleOffset);
-    }
+    public abstract Rotation2d getAbsoluteEncoderValue();
 
     public void resetToAbsolute() {
         setAngleMotorEncoderPosition(Conversions.mechanismOutputToMotorOutput(getAbsoluteEncoderValue(), moduleConstants.angleMotorEncoderCPR, moduleConstants.angleMotorGearRatio));
@@ -305,6 +252,10 @@ public abstract class SwerveModuleBase {
         );
     }
 
+    /**
+     * @param velocityMPS Velocity in meters/second.
+     * @return Velocity in rotations/second.
+     */
     public double mpsToRotationsPerSecond(double velocityMPS) {
         return ((velocityMPS) / (moduleConstants.wheelCircumferenceMeters * moduleConstants.driveMotorGearRatio));
     }
