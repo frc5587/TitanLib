@@ -13,7 +13,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -201,6 +203,15 @@ public class SwerveBase extends SubsystemBase {
 
         odometry.resetPosition(getYaw(), getModulePositions(), pose);
         poseEstimator.resetPosition(getYaw(), getModulePositions(), pose);
+    }
+
+    /**
+     * Resets odometry, gyro yaw, and pose estimator to a specified starting pose depending on the robot's current alliance.
+     * @param redPose starting pose for the red alliance
+     * @param bluePose starting pose for the blue alliance
+     */
+    public void resetOdometryToStartingPose(Pose2d redPose, Pose2d bluePose) {
+        resetOdometry(DriverStation.getAlliance().orElseGet(() -> Alliance.Blue).equals(Alliance.Blue) ? bluePose : redPose);
     }
 
     /**
