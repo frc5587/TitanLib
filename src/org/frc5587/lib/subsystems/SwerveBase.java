@@ -193,7 +193,17 @@ public class SwerveBase extends SubsystemBase {
     public Pose2d getEstimatedPose() {
         return poseEstimator.getEstimatedPosition();
     }
-
+    
+    /**
+     * @param redPose starting pose for the red alliance
+     * @param bluePose starting pose for the blue alliance
+     * 
+     * @return the starting pose for the robot's selected alliance
+     */
+    public Pose2d getAlliancePose(Pose2d redPose, Pose2d bluePose) {
+        return (DriverStation.getAlliance().orElseGet(() -> Alliance.Blue).equals(Alliance.Blue) ? bluePose : redPose);
+    }
+    
     /**
      * Resets odometry, gyro yaw, and pose estimator to the given pose.
      * @param pose the position to reset the odometry to.
@@ -205,14 +215,6 @@ public class SwerveBase extends SubsystemBase {
         poseEstimator.resetPosition(getYaw(), getModulePositions(), pose);
     }
 
-    /**
-     * Resets odometry, gyro yaw, and pose estimator to a specified starting pose depending on the robot's current alliance.
-     * @param redPose starting pose for the red alliance
-     * @param bluePose starting pose for the blue alliance
-     */
-    public void resetOdometryToStartingPose(Pose2d redPose, Pose2d bluePose) {
-        resetOdometry(DriverStation.getAlliance().orElseGet(() -> Alliance.Blue).equals(Alliance.Blue) ? bluePose : redPose);
-    }
 
     /**
      * Resets odometry, gyro yaw, and pose estimator to an empty Pose2d
