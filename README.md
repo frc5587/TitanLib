@@ -21,6 +21,6 @@ repositories {
 ```groovy
 dependencies {
     ...
-    implementation 'org.frc5587:TitanLib:<Tag>'
+    implementation 'com.github.frc5587:TitanLib:<Tag>'
 }
 ```
