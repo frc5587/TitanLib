@@ -1,16 +1,16 @@
 package org.frc5587.lib.subsystems;
 
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 
 import org.frc5587.lib.controllers.UnifiedShooterController;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public abstract class FixedHoodedShooterBase extends SubsystemBase {
-    protected CANSparkMax leadMotor;
-    protected CANSparkMax followerMotor;
+    protected SparkMax leadMotor;
+    protected SparkMax followerMotor;
     protected RelativeEncoder encoder;
     protected boolean hasTwoMotors; // false for one, true for two motors
     protected UnifiedShooterController shooterController;
@@ -28,7 +28,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
         this(leadMotorID);
 
         hasTwoMotors = true;
-        followerMotor = new CANSparkMax(followerMotorID, MotorType.kBrushless);
+        followerMotor = new SparkMax(followerMotorID, MotorType.kBrushless);
         // followerMotor.follow(leadMotor);
 
         
@@ -47,7 +47,7 @@ public abstract class FixedHoodedShooterBase extends SubsystemBase {
         super();
 
         hasTwoMotors = false;
-        leadMotor = new CANSparkMax(leadMotorID, MotorType.kBrushless);
+        leadMotor = new SparkMax(leadMotorID, MotorType.kBrushless);
 
 
         configureLeaderSpark();

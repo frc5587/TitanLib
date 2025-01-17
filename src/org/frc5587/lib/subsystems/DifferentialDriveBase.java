@@ -4,7 +4,8 @@ import java.util.Optional;
 
 import org.frc5587.lib.math.DifferentialDrivePoseEstimator;
 
-import com.kauailabs.navx.frc.AHRS;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.MatBuilder;
@@ -39,7 +40,7 @@ public abstract class DifferentialDriveBase extends SubsystemBase {
     protected DriveConstants constants;
 
     /** create variables needed for odometry. */
-    protected AHRS ahrs = new AHRS();
+    protected AHRS ahrs = new AHRS(NavXComType.kMXP_SPI);
     protected boolean invertGyro;
     protected DifferentialDriveOdometry odometry;
     protected DifferentialDrivePoseEstimator odometryEstimator;

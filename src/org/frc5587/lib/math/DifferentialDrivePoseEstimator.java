@@ -4,7 +4,6 @@
 
 package org.frc5587.lib.math;
 
-import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.StateSpaceUtil;
@@ -180,34 +179,8 @@ public class DifferentialDrivePoseEstimator {
   private Matrix<N5, N1> f(Matrix<N5, N1> x, Matrix<N3, N1> u) {
     // Apply a rotation matrix. Note that we do *not* add x--Runge-Kutta does that for us.
     var theta = x.get(2, 0);
-    var toFieldRotation =
-        new MatBuilder<>(Nat.N5(), Nat.N5())
-            .fill(
-                Math.cos(theta),
-                -Math.sin(theta),
-                0,
-                0,
-                0,
-                Math.sin(theta),
-                Math.cos(theta),
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1);
+    double[] storage = {Math.cos(theta),-Math.sin(theta),0,0,0,Math.sin(theta),Math.cos(theta),0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1};
+    var toFieldRotation = new Matrix<>(Nat.N5(), Nat.N5(), storage);
     return toFieldRotation.times(
         VecBuilder.fill(u.get(0, 0), u.get(1, 0), u.get(2, 0), u.get(0, 0), u.get(1, 0)));
   }
@@ -260,8 +233,10 @@ public class DifferentialDrivePoseEstimator {
    *     source in this case.
    */
   public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+    double[] storage = {0,0,0};
     m_visionCorrect.accept(
-        new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.0, 0.0, 0.0),
+        // new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.0, 0.0, 0.0),
+        new Matrix<>(Nat.N3(), Nat.N1(), storage),
         StateSpaceUtil.poseTo3dVector(
             getEstimatedPosition()
                 .transformBy(

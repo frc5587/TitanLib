@@ -2,34 +2,24 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.subsystems.interfaces.GyroBase;
 
-import com.kauailabs.navx.frc.AHRS;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.SerialPort;
 
 public class TitanNavX extends GyroBase {
     private final AHRS gyro;
 
     public TitanNavX() {
-        this.gyro = new AHRS();
+        this.gyro = new AHRS(NavXComType.kMXP_SPI);
     }
 
     public TitanNavX(boolean inverted) {
         super(inverted);
-        this.gyro = new AHRS();
+        this.gyro = new AHRS(NavXComType.kMXP_SPI);
     }
 
-    public TitanNavX(SPI.Port port) {
-        this.gyro = new AHRS(port);
-    }
-
-    public TitanNavX(I2C.Port port) {
-        this.gyro = new AHRS(port);
-    }
-
-    public TitanNavX(SerialPort.Port port) {
+    public TitanNavX(NavXComType port) {
         this.gyro = new AHRS(port);
     }
 
