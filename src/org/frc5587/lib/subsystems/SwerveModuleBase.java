@@ -2,10 +2,11 @@ package org.frc5587.lib.subsystems;
 
 import org.frc5587.lib.math.Conversions;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 
 public abstract class SwerveModuleBase {
     public static class SwerveModuleConstants {
@@ -46,11 +47,11 @@ public abstract class SwerveModuleBase {
     }
 
     protected Rotation2d lastAngle = new Rotation2d();
-    protected MotorController angleMotor;
-    protected MotorController driveMotor;
+    protected TalonFX angleMotor;
+    protected TalonFX driveMotor;
     protected SwerveModuleConstants moduleConstants;
 
-    public SwerveModuleBase(SwerveModuleConstants moduleConstants, MotorController angleMotor, MotorController driveMotor) {
+    public SwerveModuleBase(SwerveModuleConstants moduleConstants, TalonFX angleMotor, TalonFX driveMotor) {
         this.moduleConstants = moduleConstants;
         
         // configureAngleEncoder();
