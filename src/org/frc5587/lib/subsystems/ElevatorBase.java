@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
-public abstract class ElevatorBase extends ProfiledPIDSubsystem {
+public abstract class ElevatorBase extends ProfiledPIDController {
     protected ElevatorConstants constants;
     protected MotorController motor;
     protected ElevatorFeedforward ffController;
@@ -30,7 +30,10 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
         public final int zeroOffset, encoderCPR;
         public final int[] switchPorts; 
         public final boolean[] switchesInverted;
-        public final ProfiledPIDController pid;
+        public final double Kp;
+        public final double Ki;
+        public final double Kd;
+        public final TrapezoidProfile.Constraints constraints;
         public final ElevatorFeedforward ff;
 
         public ElevatorConstants(
@@ -41,7 +44,10 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
                 int encoderCPR,
                 int[] switchPorts,
                 boolean[] switchesInverted,
-                ProfiledPIDController pid,
+                double Kp,
+                double Ki,
+                double Kd,
+                TrapezoidProfile.Constraints constraints,
                 ElevatorFeedforward ff) {
             this.gearing = gearing;
             this.rotationsToMeters = rotationsToMeters;
@@ -50,13 +56,16 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
             this.encoderCPR = encoderCPR;
             this.switchPorts = switchPorts;
             this.switchesInverted = switchesInverted;
-            this.pid = pid;
+            this.Kp = Kp;
+            this.Ki = Ki;
+            this.Kd = Kd;
+            this.constraints = constraints;
             this.ff = ff;
         }
     }
     
     public ElevatorBase(ElevatorConstants constants, MotorController motor) {
-        super(constants.pid);
+        super(constants.Kp, constants.Ki, constants.Kd, constants.constraints);
         this.constants = constants;
         this.motor = motor;
         this.ffController = constants.ff;
@@ -169,7 +178,6 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
     /**
      * @return The elevator's position in meters
      */
-    @Override
     public double getMeasurement() {
         return rotationsToMeasurement(getRotations());
     }
@@ -188,7 +196,6 @@ public abstract class ElevatorBase extends ProfiledPIDSubsystem {
         motor.set(0);
     }
 
-    @Override
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
         double ff = ffController.calculate(setpoint.position, setpoint.velocity);
         //TODO: remove debug prints once we know this code works
