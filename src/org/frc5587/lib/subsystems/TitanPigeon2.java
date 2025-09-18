@@ -44,7 +44,7 @@ public class TitanPigeon2 extends GyroBase {
 
     @Override
     public Rotation2d getRawAccumulatedYaw() {
-        return Rotation2d.fromDegrees(gyro.getAngle());
+        return Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()); //Unsure if works
     }
 
     public Pigeon2 getPigeon2() {

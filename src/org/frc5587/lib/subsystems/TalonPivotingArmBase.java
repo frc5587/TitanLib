@@ -6,9 +6,9 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public abstract class TalonPivotingArmBase extends ProfiledPIDSubsystem {
+public abstract class TalonPivotingArmBase extends ProfiledPIDController implements Subsystem {
     private final ArmFeedforward ffController;
     private final PivotingArmConstants constants;
     private final TalonFX motor;
@@ -17,7 +17,10 @@ public abstract class TalonPivotingArmBase extends ProfiledPIDSubsystem {
         public final double gearing;
         public final Rotation2d[] softLimits;
         public final Rotation2d offsetFromHorizontal, zeroOffset;
-        public final ProfiledPIDController pid;
+        public final double Kp;
+        public final double Ki;
+        public final double Kd;
+        public final TrapezoidProfile.Constraints constraints;
         public final ArmFeedforward ff;
 
         public PivotingArmConstants(
@@ -25,19 +28,25 @@ public abstract class TalonPivotingArmBase extends ProfiledPIDSubsystem {
                 Rotation2d offsetFromHorizontal,
                 Rotation2d[] softLimits,
                 Rotation2d zeroOffset,
-                ProfiledPIDController pid,
+                double Kp,
+                double Ki,
+                double Kd,
+                TrapezoidProfile.Constraints constraints,
                 ArmFeedforward ff) {
             this.gearing = gearing;
             this.softLimits = softLimits;
             this.offsetFromHorizontal = offsetFromHorizontal;
             this.zeroOffset = zeroOffset;
-            this.pid = pid;
+            this.Kp = Kp;
+            this.Ki = Ki;
+            this.Kd = Kd;
+            this.constraints = constraints;
             this.ff = ff;
         }
     }
     
     public TalonPivotingArmBase(PivotingArmConstants constants, TalonFX motor) {
-        super(constants.pid);
+        super(constants.Kp, constants.Ki, constants.Kd, constants.constraints);
         this.constants = constants;
         this.motor = motor;
         this.ffController = constants.ff;
@@ -109,7 +118,6 @@ public abstract class TalonPivotingArmBase extends ProfiledPIDSubsystem {
     /**
      * @return The arm's angle in radians
      */
-    @Override
     public double getMeasurement() {
         return getAngleRadians();
     }
@@ -142,7 +150,6 @@ public abstract class TalonPivotingArmBase extends ProfiledPIDSubsystem {
         motor.set(0);
     }
 
-    @Override
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
         double ff = ffController.calculate(setpoint.position+constants.offsetFromHorizontal.getRadians(), setpoint.velocity);
         setVoltage(output + ff);
