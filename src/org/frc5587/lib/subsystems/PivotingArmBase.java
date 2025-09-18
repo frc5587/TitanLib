@@ -5,9 +5,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
-public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
+public abstract class PivotingArmBase extends ProfiledPIDController {
     private final ArmFeedforward ffController;
     private final PivotingArmConstants constants;
     private final MotorController motor;
@@ -16,7 +15,10 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         public final double gearing;
         public final Rotation2d[] softLimits;
         public final Rotation2d offsetFromHorizontal, zeroOffset;
-        public final ProfiledPIDController pid;
+        public final double Kd;
+        public final double Ki;
+        public final double Kp;
+        public final TrapezoidProfile.Constraints constraints;
         public final ArmFeedforward ff;
 
         public PivotingArmConstants(
@@ -24,19 +26,25 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
                 Rotation2d offsetFromHorizontal,
                 Rotation2d[] softLimits,
                 Rotation2d zeroOffset,
-                ProfiledPIDController pid,
+                double Kp,
+                double Ki,
+                double Kd,
+                TrapezoidProfile.Constraints constraints,
                 ArmFeedforward ff) {
             this.gearing = gearing;
             this.softLimits = softLimits;
             this.offsetFromHorizontal = offsetFromHorizontal;
             this.zeroOffset = zeroOffset;
-            this.pid = pid;
+            this.Kp = Kp;
+            this.Ki = Ki;
+            this.Kd = Kd;
+            this.constraints = constraints;
             this.ff = ff;
         }
     }
     
     public PivotingArmBase(PivotingArmConstants constants, MotorController motor) {
-        super(constants.pid);
+        super(constants.Kp, constants.Ki, constants.Kd, constants.constraints);
         this.constants = constants;
         this.motor = motor;
         this.ffController = constants.ff;
@@ -108,7 +116,6 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
     /**
      * @return The arm's angle in radians
      */
-    @Override
     public double getMeasurement() {
         return getAngleRadians();
     }
@@ -141,7 +148,6 @@ public abstract class PivotingArmBase extends ProfiledPIDSubsystem {
         motor.set(0);
     }
 
-    @Override
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
         double ff = ffController.calculate(setpoint.position+constants.offsetFromHorizontal.getRadians(), setpoint.velocity);
         setVoltage(output + ff);
