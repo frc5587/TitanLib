@@ -5,8 +5,9 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public abstract class PivotingArmBase extends ProfiledPIDController {
+public abstract class PivotingArmBase extends ProfiledPIDController implements Subsystem{
     private final ArmFeedforward ffController;
     private final PivotingArmConstants constants;
     private final MotorController motor;
