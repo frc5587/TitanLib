@@ -5,12 +5,12 @@ import org.frc5587.lib.pid.PID;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 
-@Deprecated
-public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
+public abstract class FPIDSubsystem extends ProfiledPIDController implements Subsystem{
     protected FPIDConstants constants;
     protected MotorController motorGroup;
+    protected boolean m_enabled;
 
     public static class FPIDConstants {
         public double gearing;
@@ -44,11 +44,10 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
     */
     public FPIDSubsystem(FPIDConstants constants, MotorController motorGroup) {
         super(
-                new ProfiledPIDController(
-                        constants.pid.kP,
-                        constants.pid.kI,
-                        constants.pid.kD,
-                        constants.constraints));
+                constants.pid.kP,
+                constants.pid.kI,
+                constants.pid.kD,
+                constants.constraints);
         this.constants = constants;
         this.motorGroup = motorGroup;
 
@@ -100,24 +99,35 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
      * @return the subsystem's measurement in the units used by the implementing
      *         subsystem.
      */
-    @Override
     public double getMeasurement() {
         return rotationsToMeasurement(getRotations());
     }
 
     /**
-     * Uses PID output to move the mechanism
-     * <p>
-     * Make sure that the implementing class overrides this, because all
-     * FPIDSubsystems will use output differently.
+     * Used to be in PIDSubsystem, so we need to put it in everything we switch over.
      */
     @Override
-    protected abstract void useOutput(double output, TrapezoidProfile.State profileState);
+    public void periodic() {
+        if (m_enabled) {
+            useOutput(calculate(getMeasurement()), getSetpoint());
+        }
+    }
+
+    /** 
+     * Used to be in PIDSubsystem, so we need to put it in everything we switch over.
+     * 
+     * Enables the PID control. Resets the controller. 
+     * */
+    public void enable() {
+        m_enabled = true;
+        reset(getMeasurement());
+    }
 
     /**
+     * Used to be in PIDSubsystem, so we need to put it in everything we switch over.
+     * 
      * Disables PID without using useOutput
      */
-    @Override
     public void disable() {
         this.m_enabled = false;
         try {
@@ -126,6 +136,26 @@ public abstract class FPIDSubsystem extends ProfiledPIDSubsystem {
             System.out.println(e + " Could not get motor group.");
         }
     }
+
+    /**
+     * Used to be in PIDSubsystem, so we need to put it in everything we switch over.
+     * 
+     * Returns whether the controller is enabled.
+     *
+     * @return Whether the controller is enabled.
+     */
+    public boolean isEnabled() {
+        return m_enabled;
+    }
+
+    /**
+     * Uses PID output to move the mechanism
+     * <p>
+     * Make sure that the implementing class overrides this, because all
+     * FPIDSubsystems will use output differently.
+     */
+    protected abstract void useOutput(double output, TrapezoidProfile.State profileState);
+
 
     /**
      * @param value value to divide by the gearing set in constants
