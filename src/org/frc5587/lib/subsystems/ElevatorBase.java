@@ -210,6 +210,10 @@ public abstract class ElevatorBase extends ProfiledPIDController implements Subs
         useOutput(0, new State());
     }
 
+    public boolean isEnabled() {
+        return m_enabled;
+    }
+
     /**
      * Used to be in PIDSubsystem, so we need to put it in everything we switch over.
      */

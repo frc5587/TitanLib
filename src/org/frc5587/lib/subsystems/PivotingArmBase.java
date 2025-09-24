@@ -8,7 +8,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public abstract class PivotingArmBase extends ProfiledPIDController implements Subsystem{
+public abstract class PivotingArmBase extends ProfiledPIDController implements Subsystem {
     protected boolean m_enabled;
 
     private final ArmFeedforward ffController;
@@ -164,9 +164,10 @@ public abstract class PivotingArmBase extends ProfiledPIDController implements S
         useOutput(0, new State());
     }
 
-    /**
-     * Used to be in PIDSubsystem, so we need to put it in everything we switch over.
-     */
+    public boolean isEnabled() {
+        return m_enabled;
+    }
+
     @Override
     public void periodic() {
         if (m_enabled) {
