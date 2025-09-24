@@ -7,6 +7,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
+@Deprecated
 public abstract class FPIDSubsystem extends ProfiledPIDController implements Subsystem{
     protected FPIDConstants constants;
     protected MotorController motorGroup;
