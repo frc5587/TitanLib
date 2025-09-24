@@ -4,10 +4,13 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public abstract class PivotingArmBase extends ProfiledPIDController implements Subsystem{
+    protected boolean m_enabled;
+
     private final ArmFeedforward ffController;
     private final PivotingArmConstants constants;
     private final MotorController motor;
@@ -147,6 +150,28 @@ public abstract class PivotingArmBase extends ProfiledPIDController implements S
     */
     public void stop() {
         motor.set(0);
+    }
+
+    /** Enables the PID control. Resets the controller. */
+    public void enable() {
+        m_enabled = true;
+        reset(getMeasurement());
+    }
+
+    /** Disables the PID control. Sets output to zero. */
+    public void disable() {
+        m_enabled = false;
+        useOutput(0, new State());
+    }
+
+    /**
+     * Used to be in PIDSubsystem, so we need to put it in everything we switch over.
+     */
+    @Override
+    public void periodic() {
+        if (m_enabled) {
+            useOutput(calculate(getMeasurement()), getSetpoint());
+        }
     }
 
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
