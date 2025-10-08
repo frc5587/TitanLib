@@ -5,18 +5,15 @@ import java.util.Hashtable;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public abstract class ElevatorBase extends ProfiledPIDController implements Subsystem {
+public abstract class ElevatorBase extends TitanPIDSubsystem {
     protected ElevatorConstants constants;
     protected MotorController motor;
     protected ElevatorFeedforward ffController;
     protected ProfiledPIDController pidController;
-    protected boolean m_enabled;
     /** 
      * How to lookup from this table: 
      * <ul>
@@ -32,10 +29,7 @@ public abstract class ElevatorBase extends ProfiledPIDController implements Subs
         public final int zeroOffset, encoderCPR;
         public final int[] switchPorts; 
         public final boolean[] switchesInverted;
-        public final double Kp;
-        public final double Ki;
-        public final double Kd;
-        public final TrapezoidProfile.Constraints constraints;
+        public final ProfiledPIDController pid;
         public final ElevatorFeedforward ff;
 
         public ElevatorConstants(
@@ -46,10 +40,7 @@ public abstract class ElevatorBase extends ProfiledPIDController implements Subs
                 int encoderCPR,
                 int[] switchPorts,
                 boolean[] switchesInverted,
-                double Kp,
-                double Ki,
-                double Kd,
-                TrapezoidProfile.Constraints constraints,
+                ProfiledPIDController pid,
                 ElevatorFeedforward ff) {
             this.gearing = gearing;
             this.rotationsToMeters = rotationsToMeters;
@@ -58,16 +49,13 @@ public abstract class ElevatorBase extends ProfiledPIDController implements Subs
             this.encoderCPR = encoderCPR;
             this.switchPorts = switchPorts;
             this.switchesInverted = switchesInverted;
-            this.Kp = Kp;
-            this.Ki = Ki;
-            this.Kd = Kd;
-            this.constraints = constraints;
+            this.pid = pid;
             this.ff = ff;
         }
     }
     
     public ElevatorBase(ElevatorConstants constants, MotorController motor) {
-        super(constants.Kp, constants.Ki, constants.Kd, constants.constraints);
+        super(constants.pid);
         this.constants = constants;
         this.motor = motor;
         this.ffController = constants.ff;
@@ -180,6 +168,7 @@ public abstract class ElevatorBase extends ProfiledPIDController implements Subs
     /**
      * @return The elevator's position in meters
      */
+    @Override
     public double getMeasurement() {
         return rotationsToMeasurement(getRotations());
     }
@@ -198,32 +187,7 @@ public abstract class ElevatorBase extends ProfiledPIDController implements Subs
         motor.set(0);
     }
 
-    /** Enables the PID control. Resets the controller. */
-    public void enable() {
-        m_enabled = true;
-        reset(getMeasurement());
-    }
-
-    /** Disables the PID control. Sets output to zero. */
-    public void disable() {
-        m_enabled = false;
-        useOutput(0, new State());
-    }
-
-    public boolean isEnabled() {
-        return m_enabled;
-    }
-
-    /**
-     * Used to be in PIDSubsystem, so we need to put it in everything we switch over.
-     */
     @Override
-    public void periodic() {
-        if (m_enabled) {
-            useOutput(calculate(getMeasurement()), getSetpoint());
-        }
-    }
-
     public void useOutput(double output, TrapezoidProfile.State setpoint) {
         double ff = ffController.calculate(setpoint.position, setpoint.velocity);
         //TODO: remove debug prints once we know this code works
